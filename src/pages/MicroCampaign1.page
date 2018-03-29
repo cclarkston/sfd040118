@@ -1,0 +1,91 @@
+<apex:page sidebar="false" showHeader="false">
+	<apex:composition template="TemplateMicroPage1">
+		<apex:define name="HeaderNav">
+			<nav>
+			<ul>
+				<li><a href="Home">Home</a></li>
+				<li><a href="About">About</a></li>
+				<li><a href="ContactUs">Contact Us</a></li>
+			</ul>
+			</nav>
+		</apex:define>
+		<apex:define name="Left">
+			<nav>
+			<ul>
+				<li><a href="Items/Item1">Item 1</a></li>
+				<li><a href="Items/Item2">Item 2</a></li>
+				<li><a href="Items/Item3">Item 3</a></li>
+			</ul>
+			</nav>
+		</apex:define>
+		<apex:define name="Center">
+			<h2>Campaign Copy</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+			Praesent at metus orci, a ultricies nunc. Proin sed hendrerit felis.
+			Pellentesque habitant morbi tristique senectus et netus et malesuada
+			fames ac turpis egestas. Sed nec quam urna. Sed metus urna, laoreet
+			non accumsan at, suscipit ac nulla. Phasellus eu dui sit amet tellus
+			posuere convallis quis nec augue. Donec sed hendrerit lacus. Maecenas
+			ipsum diam, dignissim eu eleifend ut, ultrices non erat. Donec et
+			tristique odio. Duis tortor felis, lobortis quis egestas eu,
+			convallis eget leo. Curabitur interdum, tellus in suscipit
+			consectetur, felis est pretium lorem, eget eleifend sapien odio sed
+			mi. Integer tincidunt enim nec mauris hendrerit non molestie nisi
+			porttitor. Cras adipiscing urna at nisl varius imperdiet. Phasellus
+			porttitor cursus porta. Vestibulum lectus neque, egestas ac posuere
+			viverra, semper et justo.</p>
+			<p>In nec diam felis, non tempor erat. Nam a diam ligula, vitae
+			molestie augue. Phasellus eleifend magna a lectus vehicula at semper
+			felis gravida. Nam a diam nec odio gravida ornare. Pellentesque
+			aliquam mattis nisl, at ullamcorper purus malesuada sit amet. Donec
+			lacus leo, condimentum non elementum id, congue at metus. Proin sit
+			amet quam ac massa tristique luctus. Proin sit amet nisl justo. Duis
+			sed leo eget elit rutrum tincidunt dapibus eget risus. Praesent at
+			augue massa, sed bibendum erat.</p>
+			<p>Pellentesque varius elit vitae est pharetra tincidunt. Aenean
+			lobortis tincidunt urna, eu sollicitudin diam dignissim id. Donec
+			vitae mauris eu leo tempus suscipit non sit amet dolor. Nam quis leo
+			sapien. Suspendisse potenti. Aenean eget vehicula ipsum. Aenean
+			fermentum, neque ut lobortis aliquam, orci odio fermentum massa, at
+			molestie quam leo eget erat.</p>
+			<p>Maecenas sapien eros, egestas vitae pharetra et, scelerisque
+			sed tortor. In tempus augue sit amet odio condimentum commodo.
+			Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
+			posuere cubilia Curae; Pellentesque habitant morbi tristique senectus
+			et netus et malesuada fames ac turpis egestas. Nullam tincidunt
+			tincidunt lacinia. Nullam euismod adipiscing erat sit amet venenatis.
+			Nunc sit amet purus pellentesque lacus vulputate convallis ac sit
+			amet ipsum. Suspendisse vel risus purus. Suspendisse in lacus elit,
+			at tincidunt quam. Proin a orci nec nisi ullamcorper consectetur.
+			Suspendisse posuere, sem non feugiat commodo, mi massa rutrum enim,
+			eget volutpat velit ligula sit amet augue. Ut pulvinar volutpat
+			rhoncus. Quisque felis mi, gravida quis euismod id, suscipit a eros.
+			Phasellus in tincidunt felis. Pellentesque enim tortor, iaculis
+			congue egestas viverra, vulputate at tellus. Nullam nulla erat,
+			mattis quis adipiscing sed, consectetur vitae diam.</p>
+			<p>Nunc nibh orci, ultricies condimentum feugiat sit amet,
+			dapibus eget est. Aliquam imperdiet sapien in magna gravida
+			tincidunt. Vestibulum at felis id turpis aliquet sodales. Sed sed
+			tortor eu justo iaculis mattis eget quis sapien. Curabitur rutrum dui
+			accumsan purus luctus sed tincidunt sapien dictum. Proin a libero
+			est, a sagittis mauris. Morbi ut turpis magna, nec laoreet nibh.
+			Praesent gravida mattis lacus, eu condimentum nulla congue et. Cras
+			auctor tempus lectus eu dignissim. Sed placerat tristique nisl,
+			convallis tempor orci condimentum nec. Fusce quis mattis felis.
+			Curabitur cursus porta sem in rhoncus. Duis interdum dui ac libero
+			consequat vitae vulputate ante rutrum. Mauris at dolor nisi, non
+			iaculis augue. Sed vehicula feugiat sollicitudin. Fusce placerat,
+			nunc et aliquam blandit, est nunc ultricies nisi, a dapibus mauris
+			lacus eget leo.</p>
+		</apex:define>
+		<apex:define name="Right"></apex:define>
+		<apex:define name="FooterNav">
+			<nav>
+			<ul>
+				<li><a href="http://clearchoice.com" target="_blank">ClearChoice.com</a></li>
+			</ul>
+			</nav>
+			<p>&copy; CopyRight {! YEAR(TODAY()) }</p>
+		</apex:define>
+	</apex:composition>
+</apex:page>

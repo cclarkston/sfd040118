@@ -1,0 +1,184 @@
+<apex:page controller="dp_drag_test" sidebar="false" showHeader="false" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClearCare</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-pot.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>     
+  
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'lib/prototype.js')}"></script>
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'src/scriptaculous.js')}"></script>
+  
+     <script type="text/javascript">
+        
+         window.onload = function() {
+            alert('test 1');
+            Sortable.create('slist',{tag:'li',onUpdate: function(item) {
+                var list = Sortable.options(item).element; 
+                alert(Sortable.serialize(list,{'list':'list'}).escapeHTML());
+/*                var pass_string = Sortable.serialize(list,{'list':'list'});
+                af_sort(pass_string);              */
+              }
+            });
+            alert('test 2');
+            Sortable.create('sdiv',{tag:'span',onUpdate: function(item) {
+                var list = Sortable.options(item).element; 
+                alert(Sortable.serialize(list,{'list':'list'}).escapeHTML());
+/*                var pass_string = Sortable.serialize(list,{'list':'list'});
+                af_sort(pass_string);              */
+              }
+            });
+            alert('finished');
+         }
+            
+         function qserialize(container, name) {
+            alert('test');
+            /*$('display').innerHTML = 'Serialization of ' + $(container).id + ' is: <br/><pre>' + Sortable.serialize( container,{name:name} ) + '</pre>';            */
+            var pass_string = Sortable.serialize( container,{name:name} );
+            af_sort(pass_string);
+         }
+         
+         function reset_sort() {
+           Sortable.create('namelist',{tag:'li',onUpdate: function(item) {
+                var list = Sortable.options(item).element; 
+                /*alert(Sortable.serialize(list,{'list':'list'}).escapeHTML());*/
+                var pass_string = Sortable.serialize(list,{'list':'list'});
+                af_sort(pass_string);              
+              }
+            });
+         }
+      </script>
+
+      <style type="text/css">
+        <!-- li { cursor: move; } -->
+        .sortable {
+          cursor : move;          
+        }
+        
+            .sortable:hover {
+      background:#b9c9f9;
+      font-weight:normal;
+
+    }
+    
+        .hidden_parent:hover > td > .hidden_hover {
+      visibility:visible;
+    }
+        
+    ul.full_row {
+      width:100%;
+      list-style-type: none;
+    } 
+        
+    .gray_under {
+       display:inline-block;
+       border-bottom:1px solid #bfbfbf;
+       padding-left:5px;
+       padding-right:5px;
+       font-weight:bold;
+
+     <!--text-decoration: underline;
+      -moz-text-decoration-color: #bfbfbf; /* Code for Firefox */
+      text-decoration-color: #bfbfbf;-->
+    }
+    
+    li.odd {
+      padding-left:5px;
+      border-bottom:1px dotted #bfbfbf;
+    }
+           
+    li.even {
+      padding-left:5px;
+      background:#f5f5f5;
+      border-bottom:1px dotted #bfbfbf;
+    }
+    
+    .id_cell {
+      display:inline-block;
+      min-width:300px;
+    }
+    
+    .name_cell {
+      display:inline-block;
+      min-width:500px;
+    }
+  </style>
+  
+</head>
+<body>
+<apex:form >
+<apex:outputpanel id="main_holder">
+<apex:actionFunction name="body_refresh" reRender="main_holder"/>
+<apex:actionFunction name="af_sort" reRender="main_holder" action="{!test_function_sort}" oncomplete="reset_sort();" >
+  <apex:param name="pthru" value="" />
+</apex:actionFunction>
+<apex:messages />
+
+      Apt : {!ca.name}<br />
+      <p>Drag and drop list items to sort them out properly</p>
+
+      <div style="width:80%">
+      <ul class="full_row" style="padding-bottom:0;margin-bottom:0;">
+        <li>
+          <span class="id_cell"><span class="gray_under">ID</span></span>
+          <span class="name_cell"><span class="gray_under">Appointment</span></span>
+        </li>
+      </ul>
+      <ul id="slist" class="full_row">      
+         <apex:variable var="rowclassname" value="odd" />    
+         <apex:repeat var="procedure" value="{!procedure_list}">
+           <li class="{!rowclassname} sortable hidden_parent" id="list_{!procedure.id}">
+             <span class="id_cell">{!procedure.id}</span>
+             <span class="name_cell">{!procedure.clinical_procedure__r.name}</span>
+             <span class="hidden_hover">Test Hidden</span>
+           </li>
+           <apex:variable var="rowclassname" value="{!if(rowclassname=='odd','even','odd')}" />
+         </apex:repeat>
+      </ul>
+      </div>
+      
+      
+      <div id="sdiv" style="padding-left:40px;padding-top:2em;">
+        <apex:repeat var="procedure" value="{!procedure_list}">
+            <span class="sortable" id="list_{!procedure.id}" style="display:block">
+              <a>{!procedure.id} - {!procedure.clinical_procedure__r.name}</a>
+            </span>
+        </apex:repeat>
+      </div>
+
+      <!--<p>Click following button to see serialized list which can be
+         passed to backend script, like PHP, AJAX or CGI</p>
+            
+      <button type="button" value="Click Me"  onclick="qserialize('namelist', 'list');"> Serialize
+      </button>-->
+
+      <div id="display" style="clear:both;padding-top:32px"></div>
+      
+      <!--<div class="hidden_parent">Div Testing.....<span class="hidden_hover">Hidden</span></div>
+      <span class="hidden_parent">Testing....<span class="hidden_hover">Hidden</span></span>
+      <table ><tr class="hidden_parent"><td >Table Testing......<span class="hidden_hover">Hidden</span></td></tr></table>-->
+      
+</apex:outputpanel>
+</apex:form>
+</body>
+</apex:page>

@@ -1,0 +1,5 @@
+<apex:component >
+	<apex:attribute name="lead"    description="The Lead"    type="Lead"    />
+	<apex:attribute name="account" description="The Account" type="Account" />
+
+</apex:component>

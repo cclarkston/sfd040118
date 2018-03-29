@@ -1,0 +1,264 @@
+<apex:page controller="ctrl_lab_ticket" sidebar="false">    
+<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" />
+<apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>       
+<apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>
+  
+<script>
+function use_fancy_cursor(t) {
+  document.body.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+  t.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+}
+
+function default_cursor(t) {
+  document.body.style.cursor = 'default';
+  t.style.cursor='default';
+}
+</script>  
+
+
+ <script>
+var ie_check = false;
+var ie_ver; 
+
+function getInternetExplorerVersion()
+// Returns the version of Internet Explorer or a -1
+// (indicating the use of another browser).
+{
+  var rv = -1; // Return value assumes failure.
+  if (navigator.appName == 'Microsoft Internet Explorer') {
+    var ua = navigator.userAgent;
+    var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+    if (re.exec(ua) != null)
+      rv = parseFloat( RegExp.$1 );
+  }
+  return rv;
+}
+
+function ietruebody(){
+return (document.compatMode && document.compatMode!="BackCompat")? document.documentElement : document.body
+}
+
+var ie=document.all;
+var ns6=document.getElementById && !document.all
+var offsetxpoint=-250;
+var offsetypoint=20;
+
+function note_modal(e) {
+  /*getScrollXY() ;
+  alertSize();
+  if(!ie_check)
+    ie_ver = getInternetExplorerVersion();    
+//  alert('Height : ' + scrH + ' Width : ' + scrW + ' X Pos : ' + scrX + ' Y Pos : ' + scrY + ' PageY : ' + e.pageY + ' PageX : ' + e.pageX);  
+  if (! document.styleSheets) return
+    var CSSRules;  // IE uses rules...
+    for (var i = 0; i < document.styleSheets.length; i++) {
+        (document.styleSheets[0].cssRules) ? CSSRules = 'cssRules' : CSSRules = 'rules';     
+        for (var j = 0; j < document.styleSheets[i][CSSRules].length; j++) {                             
+            if (document.styleSheets[i][CSSRules][j].selectorText == '.modalPopup_outer') {  
+  //            alert('Test');                        
+              var curX=(ns6)?e.pageX : e.clientX+ietruebody().scrollLeft;
+              var curY=(ns6)?e.pageY : e.clientY+ietruebody().scrollTop;
+    //          alert('Cur X: ' + curX + ' Cur Y : ' + curY);
+      //        alert('ietruebody.clientwidth : ' + ietruebody().clientWidth + ' Client X : ' + e.clientX + ' Offset : ' + offsetxpoint );
+              var rightedge=ie&&!window.opera? e.clientX+offsetxpoint + 500 : e.clientX+offsetxpoint-20 + 500;
+              var bottomedge=ie&&!window.opera? ietruebody().clientHeight-e.clientY-offsetypoint : window.innerHeight-e.clientY-offsetypoint-20
+        //      alert('Right Edge : ' + rightedge + ' bottom edge : ' + bottomedge);
+          //    alert('Width : ' + document.styleSheets[i][CSSRules][j].style.width );              
+              var leftedge=(offsetxpoint<0)? offsetxpoint*(-1) : -1000
+            //  alert('Left Edge : ' + leftedge);
+              var newleft;
+              var newtop;             
+               
+              if (rightedge>scrW)
+                newleft = curX-500+"px";   
+              else if (curX<leftedge)
+                newleft = curX;
+              else
+                newleft = curX+offsetxpoint+"px"; 
+       //       alert(newleft);
+              document.styleSheets[i][CSSRules][j].style.left = newleft; 
+              if(curY-scrY<300) 
+                newtop = scrY-75;
+              else
+                newtop = curY-300;
+              document.styleSheets[i][CSSRules][j].style.top = newtop+"px";                                          
+      }
+    }   
+  }*/
+  display_nform();       
+}
+</script>
+
+<style>
+  span.form_line {
+    display:block;
+    padding-bottom:1em;    
+  }
+
+  .modalPopup_outer {
+    top:200px;  
+    left:20%;
+  }
+  
+  span.form_tag {
+    font-weight:bold;
+    width:110px;
+    display:inline-block; 
+  }   
+
+  span.section_header {
+    display:block;
+    width:800px;
+    border-bottom:2px solid black;
+    padding-left:20px;
+  }
+
+  span.section_tag {
+    color:blue; 
+    font-size:12pt;
+  }
+
+ span.note_header {
+    font-weight:bold;
+    color:blue;
+    display:block;
+    padding-bottom:5px;
+  }
+  
+    span.note_detail {
+    font-style:italic;
+    display:block; 
+    padding-bottom:7px;
+    width:750px;
+    padding-left:10px;
+    padding-top:2px;
+    padding-bottom:2px;
+    border-top:1px dotted #008080;
+    border-bottom:1px dotted #008080;
+    margin-bottom:1em;
+    padding-right:10px;
+    line-height:20px;
+
+  }
+
+
+</style>
+
+<apex:form id="ticket_form" style="padding-top:0;display:inline;margin-top:0;" >  
+<apex:actionFunction oncomplete="default_cursor(this);"  action="{!display_note_form}" name="display_nform" reRender="modal_holder" />
+<apex:outputpanel id="ticket_holder" layout="block" style="width:80%;padding-left:5%;">  
+  <apex:actionRegion > <apex:outputpanel layout="block" id="ticket_details" style="padding-top:1em;padding-bottom:2em;">
+      <apex:outputPanel rendered="{!display_error_msg}" layout="block" >
+        <apex:outputtext value="{!error_msgs}" escape="false" style="padding-left:20px;"/><br /><br />
+      </apex:outputPanel>
+  
+
+  <table width="100%">
+    <tr><td width="50%">
+  
+    <span class="form_line"> 
+      <span class="form_tag">Ticket # :</span> <apex:outputfield value="{!lab_ticket.name}" /></span>    
+    <span class="form_line">     
+      <span class="form_tag">Patient Name :</span> <apex:outputfield value="{!lab_ticket.windent_patient__r.name}" /></span>
+    <span class="form_line">     
+      <span class="form_tag">Apt Date :</span> <apex:outputfield value="{!lab_ticket.Apt_Date__c}" /> <span style="display:inline-block;width:20px;">&nbsp;</span>  <apex:outputfield value="{!lab_ticket.Time_From__c}" />&nbsp;to&nbsp; <apex:outputfield value="{!lab_ticket.Time_To__c}" /> </span>
+    <span class="form_line">
+      <span class="form_tag">Case Type :</span> <apex:outputfield value="{!lab_ticket.Case_Type__c}" rendered="{!display_standard}"/><apex:inputfield value="{!lab_ticket.Case_Type__c}" rendered="{!display_admin}" /></span>
+    <span class="form_line">
+      <span class="form_tag">Procedure :</span> <apex:outputfield value="{!lab_ticket.Procedure_Type__c}" rendered="{!display_standard}"/><apex:inputfield value="{!lab_ticket.Procedure_Type__c}" rendered="{!display_admin}" /></span>
+    <span class="form_line">
+      <span class="form_tag">Status :</span> <apex:outputfield value="{!lab_ticket.Status__c}" /></span>
+
+  
+    
+    </td><td> 
+     <span class="form_line"> 
+       ***Barcode Holder*** </span>    
+     <span class="form_line"> 
+       <span class="form_tag">Assigned To :</span><apex:outputfield value="{!lab_ticket.assigned_to__r.name}" rendered="{!display_standard}"/><apex:inputfield value="{!lab_ticket.Assigned_To__c}" rendered="{!display_admin}" /></span>        
+    <span class="form_line">
+      <span class="form_tag">Assigned Time :</span><apex:outputfield value="{!lab_ticket.Assigned_Time__c}" /></span>     
+    <span class="form_line"> 
+      <span class="form_tag">Assigned By :</span><apex:outputfield value="{!lab_ticket.Assigned_By__c}" /></span>                
+    <span class="form_line"> 
+      <span class="form_tag">Time Spent : </span><apex:outputtext value="{!total_time}" />&nbsp;minute(s)</span>                
+    <span class="form_line"> 
+       <apex:commandbutton value="Save Changes" action="{!save_ticket}" rendered="{!display_admin}" rerender="ticket_holder" onclick="use_fancy_cursor(this);" oncomplete="default_cursor(this);"  /></span>         
+     
+   </td></tr></table>
+
+   </apex:outputpanel></apex:actionRegion>  
+
+  <apex:outputpanel id="work_holder" layout="block" style="padding-bottom:3em">     
+   <apex:actionFunction oncomplete="default_cursor(this);"  action="{!stop_work}" name="stop_time" reRender="ticket_holder" >
+     <apex:param name="tnum" value="" /> 
+   </apex:actionFunction>  
+   <span class="section_header"><span class="section_tag" style="padding-right:50px;">Work Performed</span>  <apex:commandbutton value="Start Work" rendered="{!display_start_work}" action="{!start_work}" rerender="ticket_holder" /><span style="display:inline-block;width:15px;">&nbsp;</span> <apex:commandbutton value="Case Completed" rerender="ticket_holder" action="{!close_case}" rendered="{!display_case_close}" /></span>  
+   <p style="padding-left:20px;padding-top:1em;">  
+    <table class="accs_details" width="850px;">
+    <tr class="control">
+      <td width="40%">Technician</td>
+      <td width="20%">Start Time</td>
+      <td width="20%">End Time</td>
+      <td width="10%">Minutes</td>
+      <td width="10%"></td>
+    </tr>    
+    
+    <apex:variable var="rowclassname" value="accs" />
+    <apex:repeat value="{!lab_times}" var="ltimes">
+    <tr class="{!rowclassname}">
+    <apex:variable var="rowclassname" value="{!if(rowclassname=='accs','accs_b','accs')}" />  
+      <td class="indent"><apex:outputfield value="{!ltimes.ltime.work_by__r.name}" /></td>      
+      <td class="indent"><apex:outputfield value="{!ltimes.ltime.Start_Time__c}" /></td>
+      <td align="center"><apex:outputfield value="{!ltimes.ltime.Stop_Time__c}" /></td>
+      <td align="center"><apex:outputtext value="{!ltimes.time_worked}" /></td>
+      <td align="center"><apex:commandbutton value="Stop Work" rendered="{!if((display_admin && ltimes.work_inprogress) || ltimes.stop_allowed,true,false)}" onclick="use_fancy_cursor(this);stop_time('{!ltimes.ltime.id}')" rerender="ticket_holder" /></td>                    
+    </tr> 
+    </apex:repeat>    
+    </table>
+
+   </p>
+  </apex:outputpanel>  
+  
+<apex:outputpanel id="notes_holder" layout="block" style="padding-bottom:2em">
+   <span class="section_header" style="margin-bottom:1em;"><span class="section_tag" style="padding-right:50px;">Notes</span>  <input type="button" value="New Note" onclick="use_fancy_cursor(this);note_modal(event);" /></span>  
+   <p style="padding-left:20px;">
+     <apex:repeat value="{!lab_notes}" var="lnotes">   
+       <span class="note_header"><apex:outputfield value="{!lnotes.createdby.name}" /> - <apex:outputfield value="{!lnotes.createddate}" /></span>   
+       <span class="note_detail"><apex:outputfield value="{!lnotes.Case_Notes__c}" /></span>
+     </apeX:repeat>
+   </p>
+  </apex:outputpanel>  
+  
+  
+
+    <apex:outputPanel id="modal_holder" style="z-index:3000;" >
+    <apex:actionRegion >
+      <apex:actionFunction oncomplete="default_cursor(this);" action="{!close_modal}" name="close_pop" rerender="modal_holder" />  
+    
+    
+       <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!modal_display}"/>
+        <apex:outputPanel styleClass="modalPopup_outer" layout="block" rendered="{!modal_display}" id="outerpop">
+        <span class="modalPopup_outerheader" onclick="use_fancy_cursor(this);close_pop();">Close X</span>
+    
+          <apex:outputPanel styleClass="modalPopup_inner" rendered="{!modal_display}" id="innerpop">    
+            <span style="display:block;padding-bottom:5px;padding-left:5px;padding-top:2px;"><span style="font-weight:bold;">Enter Note here:</span></span>
+            <span style="display:block;padding-left:5px;padding-bottom:1em;"><apex:inputfield value="{!new_note_holder.Case_Notes__c}" style="width:475px;padding-left:5px;"/></span>
+          <apex:outputtext escape="false" value="{!modal_out}" /><br />    
+          </apex:outputPanel>              
+                
+          <!---displaying action buttons----->                
+        <apex:outputPanel styleClass="modalPopup_action" rendered="{!modal_display}" id="modaction">
+          <p style="padding:2px;">  
+            <apex:commandButton onclick="use_fancy_cursor(this);" oncomplete="default_cursor(this);"  value="Add Note" rerender="ticket_holder" action="{!add_note}" /> </p>
+        </apex:outputPanel>      
+      </apex:outputPanel>
+    </apex:actionRegion>    
+    </apex:outputPanel>   
+  
+  </apex:outputpanel>  
+  
+</apex:form> 
+</apex:page>

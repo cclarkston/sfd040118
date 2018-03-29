@@ -1,0 +1,54 @@
+<apex:page controller="dp_clinical_common" sidebar="false" showHeader="false">
+
+
+<style>
+  .output_label {
+    font-weight:bold;
+    width:350px;
+    font-size:14pt;
+    display:inline-block;
+  }
+  
+  .output_val {
+    font-size:14pt;  
+    font-style:italic;
+  }
+  
+</style>
+<div style="padding-top:2em;padding-left:30px;">
+<span class="output_label">With Commas - no dec</span>
+<apex:outputText value="{0,number,##,##,##0}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+ 
+<span class="output_label">Without Commas - no dec</span>
+<apex:outputText value="{0,number,##0}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+
+<span class="output_label">With Commas and dec</span>
+<apex:outputText value="{0,number,##,##,##0.00}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+
+
+<span class="output_label">Without Commas w/dec</span>
+<apex:outputText value="{0,number,##0.00}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+
+<span class="output_label">$ comma dec</span>
+<apex:outputText value="{0,number,$##,##,##0.00}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+
+
+<span class="output_label">$ with space and dec</span>
+<apex:outputText value="{0,number,$ ##0.00}" styleclass="output_val">
+  <apex:param value="{!display_num}" />   
+</apex:outputtext><br /><br /><hr /><br />
+
+<chatter:feed entityId="{!$User.Id}"/>
+</div>
+
+</apex:page>

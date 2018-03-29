@@ -1,0 +1,6 @@
+<apex:component controller="vf_email_tmpl_helper" access="global"> 
+ <apex:attribute name="rid" assignTo="{!accId}" type="string" description="Id of the receipient"/>  
+
+<!-- <apex:outputtext value="{!thetimezone}"/>-->
+<apex:outputtext value="{!thetimezone1}"/>
+</apex:component>

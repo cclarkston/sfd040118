@@ -1,0 +1,3 @@
+<apex:page showHeader="true" sidebar="true">
+	This page is to verify sandbox environment --> okay to delete.
+</apex:page>

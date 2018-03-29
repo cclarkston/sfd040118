@@ -1,0 +1,28 @@
+<apex:page >
+<head>
+  <meta charset="UTF-8" />
+  <title>ClearCare</title>       
+</head>
+<script type="text/javascript">
+    function hideChatterFeed() {
+        for (var i = 0; i < document.getElementsByTagName('h2').length; i++) {
+            if (document.getElementsByTagName('h2')[i].innerHTML == 'Feed Auto Hide') {
+                document.getElementsByTagName('h2')[i].parentNode.parentNode.style.display = 'none';
+                break;
+            }
+        }
+      
+        var isFeedShown = document.getElementById('hideFeedLink').style.display == 'none' ? false : true;
+        if (isFeedShown && chatter && location.pathname == "/home/home.jsp") {
+            if (sfdcPage.entityId) {
+                chatter.getFeed().toggle('{"subjectId":"' + sfdcPage.entityId + '","feedType":"ENTITY"}');
+            } else {
+                chatter.getFeed().toggle('{"subjectId":"","feedType":"NEWS"}');
+            }
+        }      
+    }
+    document.onreadystatechange = hideChatterFeed;
+</script>
+<body>
+</body>
+</apex:page>

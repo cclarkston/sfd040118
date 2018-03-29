@@ -1,0 +1,138 @@
+<apex:page controller="ctrl_casetypemap" sidebar="false">
+<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" />
+<apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>
+<style>
+  span.blank {
+    font-style:italic;
+    font-weight:bold;    
+  }  
+  tr.control a {
+    text-decoration:none;
+  }
+</style>
+
+<script type="text/javascript">
+function use_fancy_cursor(t) {
+  document.body.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+  t.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+}
+
+function default_cursor(t) {
+  document.body.style.cursor = 'default';
+  t.style.cursor='default';
+}
+
+ 
+  var key_timeout;
+  var search_in_progress = false;
+   
+  function search_now() {
+    search_in_progress = false;  
+    search_apts(); 
+  } 
+    
+  function search_key() {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("search_now()",600);
+  }   
+</script>
+<apex:form style="padding-top:0;display:inline;margin-top:0;" >
+  <apex:actionFunction name="search_apts" action="{!case_search}" reRender="main_holder">
+  </apex:actionFunction>
+  <apex:actionFunction oncomplete="default_cursor(this);" name="change_lab_center" action="{!change_lab}" rerender="main_holder">
+  </apex:actionFunction>
+<div id="header" style="border-bottom:3px solid black;padding-top:0;margin-top:0;">
+<table style="width:100%;padding-top:0;">
+<tr>
+  <td width="400px;">
+    <span style="display:block;padding-bottom:.5em;">
+      <span style="display:inline-block;font-weight:bold;width:110px;">Apt Type : </span>
+      <apex:inputText value="{!search_apt_type}" onkeyup="search_key();"/>
+    </span>
+    <span style="display:block;padding-bottom:.5em;">
+      <span style="display:inline-block;font-weight:bold;width:110px;">Apt Description : </span>
+      <apex:inputText value="{!search_apt_name}" onkeyup="search_key();"/>
+    </span>
+  </td>
+  <td width="200px;" style="border-right:2px solid black;"><br />
+  <apex:commandButton value="Search Apt Codes" action="{!case_search}" reRender="main_holder"/>
+  </td>
+  <td><h1 class="report_header">Windent Apt Code Mapping</h1></td>  
+</tr>
+</table>
+</div>
+
+<br />
+<apex:outputPanel rendered="{!display_admin}" >
+  <span style="font-weight:bold;">Mapping for Center :  &nbsp;<apex:selectList value="{!selected_center}" onchange="use_fancy_cursor(this);change_lab_center();" size="1" >
+    <apex:selectOptions value="{!CenterOptions}"></apex:selectOptions>
+  </apex:selectList></span>
+</apex:outputPanel> 
+<apex:outputPanel rendered="{!if(display_lab_manager || display_lab_user,true,false)}">       
+   <span style="font-weight:bold;">Mapping for Center : &nbsp;<apex:outputText value="{!selected_center}" /></span>
+</apex:outputPanel> 
+<span style="padding-left:20px;">Displaying&nbsp;<apex:inputText value="{!records_per_page}" onkeyup="search_key();" style="text-align:right;width:20px;"/> records per page</span>
+
+<apex:outputPanel id="main_holder" rendered="true" layout="block" style="padding-top:2em;padding-left:20px;">     
+  <apex:outputPanel rendered="{!if(aptlist_size>0,true,false)}" layout="block">
+
+    <table class="accs_details" width="98%">
+    <tr>
+      <td colspan="7">&nbsp;</td>
+      <td colspan="3" style="font-weight:bold;border-bottom:2px dotted #5789AE;text-align:center;font-size:12pt;"># Apts in next</td>
+    </tr>
+    <tr class="control">
+      <td width="7%">Apt Type</td>
+      <td width="20%">Apt Description</td>
+      <td width="7%">Create<br />Ticket</td>
+      <td width="15%">Case Type</td>
+      <td width="10%">Sub Type</td>
+      <td width="10%">Procedure</td>
+      <td width="10%">Auto-Assign</td>
+      <td width="7%">7 days</td>        
+      <td width="7%">14 days</td>        
+      <td width="7%">21 days</td>        
+    </tr>
+    <apex:variable var="rowclassname" value="accs" />
+    <apex:repeat value="{!aptlist}" var="apts">
+    <tr class="{!rowclassname}">
+    <apex:variable var="rowclassname" value="{!if(rowclassname=='accs','accs_b','accs')}" />  
+      <td class="indent"><apex:outputfield value="{!apts.apt_code.Apt_Type_Id__c}" /></td>
+      <td class="indent"><apex:outputfield value="{!apts.apt_code.name}" /></td>
+      <td align="center"><apex:outputfield value="{!apts.apt_code.Generate_Case__c}" rendered="{!display_lab_user}" /><apex:inputfield value="{!apts.apt_code.Generate_Case__c}" rendered="{!if(display_lab_manager || display_admin,true,false)}" /></td>
+      <td align="center"><apex:outputfield value="{!apts.apt_code.Case_Type__c}" rendered="{!display_lab_user}" /><apex:inputfield value="{!apts.apt_code.Case_Type__c}" rendered="{!if(display_lab_manager || display_admin,true,false)}" />&nbsp;</td>
+      <td align="center"><apex:outputfield value="{!apts.apt_code.Case_Sub_Type__c}" rendered="{!display_lab_user}" /><apex:inputfield value="{!apts.apt_code.Case_Sub_Type__c}" rendered="{!if(display_lab_manager || display_admin,true,false)}" />&nbsp;</td>
+      <td align="center"><apex:outputfield value="{!apts.apt_code.Procedure_Type__c}" rendered="{!display_lab_user}" /><apex:inputfield value="{!apts.apt_code.Procedure_Type__c}" rendered="{!if(display_lab_manager || display_admin,true,false)}" />&nbsp;</td>                    
+      <td align="center"><apex:outputfield value="{!apts.apt_code.auto_assign_to__r.name}" rendered="{!display_lab_user}" />
+        <apex:selectList value="{!apts.apt_code.Auto_Assign_To__c}" size="1" rendered="{!if(display_lab_manager || display_admin,true,false)}" >
+          <apex:selectOptions value="{!assign_list}"></apex:selectOptions>
+        </apex:selectList>&nbsp;</td>                
+      <td align="center"><apex:outputtext value="{!apts.next_7}" /></td>
+      <td align="center"><apex:outputtext value="{!apts.next_14}" /></td>
+      <td align="center"><apex:outputtext value="{!apts.next_30}" /></td>
+    </tr>    
+    </apex:repeat>    
+    </table>
+  
+  <apex:outputPanel id="msg" layout="block" style="padding-top:1em;" >
+    <apex:commandButton action="{!save}" value="Save" reRender="msg" oncomplete="default_cursor(this);" onclick="use_fancy_cursor(this);" /><apex:outputtext id="msgholder" value="{!result_msg}" style="display:inline-block;padding-left:10px;font-size:12pt;" escape="false" />
+  </apex:outputPanel>
+
+  <span class="page_span">Page {!page} of {!num_pages} 
+    <apex:commandButton value="Prev" action="{!prev}" rendered="{!if(display_prev==true,true,false)}" style="margin-left:20px;" reRender="main_holder" />
+    <apex:commandButton value="Next" action="{!next}" rendered="{!if(display_next==true,true,false)}" style="margin-left:20px;" reRender="main_holder" />
+  </span>    
+  </apex:outputPanel>
+
+  <apex:outputPanel rendered="{!display_error_msg}" layout="block" >
+    <apex:outputtext value="{!error_msgs}" escape="false" style="padding-left:20px;"/>
+  </apex:outputPanel>
+
+
+
+</apex:outputpanel>
+</apex:form>
+</apex:page>

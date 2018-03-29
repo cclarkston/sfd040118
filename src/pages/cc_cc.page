@@ -1,0 +1,250 @@
+<apex:page sidebar="false" showheader="false" doctype="html">
+
+<head>
+  <meta charset="UTF-8"/>
+  <title>ClearCare - Clinical</title>
+  <!-- <script src="img-perio/https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <apex:stylesheet value="{!URLFOR($Resource.Clinical_Screens,'css/style.css')}" />
+  <apex:stylesheet value="{!URLFOR($Resource.Clinical_Screens,'css/cc-clinical-calendar.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Clinical_Screens,'css/cc-buttons.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Clinical_Screens,'css/cc.css')}"/>
+  
+  <link rel="icon" type="image/png" href="img-perio/favicon.png"/>
+</head>
+
+<body>
+  <div class="cc-wrapper">
+    <div class="cc-top-nav-container">
+      <div class="cc-top-nav-left">
+        <div class="cc-back-container">
+          <img src="img-cc/icons/left-arrow.svg" class="cc-icon-10px cc-arrow-left"/><a >Back</a>
+        </div>
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <a >Denver</a><img src="img-cc/icons/down-arrow.svg" class="cc-icon-10px cc-arrow-down"/>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <img src="./img-cc/icons/gear.svg" class="cc-icon-22px"/>
+      </div>
+    </div>
+    <div class="cc-sub-nav-container">
+      <div class="cc-sub-nav-cell" onclick="window.location='calendar.html'">
+        <button class="cc-sub-nav-top-button cc-color-calendar"><img src="img-cc/icons/calendar-white.svg"/></button>
+        <div class="cc-button-text">
+          Calendar
+        </div>
+        <div class="cc-button_bg cc-color-calendar">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-patient"><img src="img-cc/icons/patient.svg"/></button>
+        <div class="cc-button-text">
+          Patient
+        </div>
+        <div class="cc-button_bg cc-color-patient">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-messaging"><img src="img-cc/icons/messaging.svg"/></button>
+        <div class="cc-button-text">
+          Messaging
+        </div>
+        <div class="cc-button_bg cc-color-messaging">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell" onclick="window.location='charts.html'">
+        <button class="cc-sub-nav-top-button cc-color-charts"><apex:image url="{!URLFOR($Resource.Clinical_Screens,'img-cc/icons/charts.svg')}"/></button>
+        <div class="cc-button-text">
+          Charts
+        </div>
+        <div class="cc-button_bg cc-color-charts">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-clinical"><img src="img-cc/icons/clinical.svg"/></button>
+        <div class="cc-button-text">
+          Clinical
+        </div>
+        <div class="cc-button_bg cc-color-clinical">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-notes"><img src="img-cc/icons/notes.svg"/></button>
+        <div class="cc-button-text">
+          Notes
+        </div>
+        <div class="cc-button_bg cc-color-notes">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-images"><img src="img-cc/icons/images.svg"/></button>
+        <div class="cc-button-text">
+          Images
+        </div>
+        <div class="cc-button_bg cc-color-images">
+
+        </div>
+      </div>
+      <div class="cc-sub-nav-cell">
+        <button class="cc-sub-nav-top-button cc-color-notifications"><img src="img-cc/icons/notifications.svg"/></button>
+        <div class="cc-button-text">
+          Notifications
+        </div>
+        <div class="cc-button_bg cc-color-notifications">
+
+        </div>
+      </div>
+    </div>
+
+    <div class="cc-clinical-calendar-wrapper">
+      <div class="cc-clinical-calendar-container">
+        <div class="cc-clinical-calendar-nav">
+          <div>
+            <select class="cc-clinical-calendar-select">
+              <option selected="">
+                Prosth
+              </option>
+              <option>
+                Surgery
+              </option>
+              <option>
+                Misc
+              </option>
+            </select>
+          </div>
+          <div>
+            Day
+          </div>
+          <div>
+            <a class="cc-perio-link">Week</a>
+          </div>
+
+          <div class="cc_cc_cal_options-container">
+            <div class="cc-cc-labTimeTotal-container">
+              <span class="cc-cc-labTimeTotal-icon">
+                <i class="fa fa-flask"></i>
+              </span>
+              <span id="cc-cc-labTimeTotal">
+
+              </span>
+            </div>
+            <div class="cc_cc_cal-options-button-container">
+              <a class="cc_cc_cal-options-button"><span>&bull;</span><span>&bull;</span><span>&bull;</span></a>
+              <div class="cc_cc_cal-options-menu-container-hide" id="cc_cc_cal-options-menu-container-id">
+                <label for="cc_cc_default_cal_view" class="cc_cc_set_default_cal_view"><input type="checkbox"  id="cc_cc_default_cal_view" /> Default view</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-cc-notificationContainer">
+          <div class="cc-cc-notificationContent-hide" id="cc-cc-errorContent-id">
+            <div class="cc-cc-notificationHeader">
+              Error message goes here
+            </div>
+            <div>
+              - please <a href="notifications.html" class="">check notifications</a> for more info <a class="cc-cc-notificationContent-link-close" targetDiv="cc-cc-errorContent-id">close</a>
+            </div>
+          </div>
+          <div class="cc-cc-notificationContent-hide" id="cc-cc-warningContent-id">
+            <div class="cc-cc-notificationHeader">
+              Warning message goes here
+            </div>
+            <div>
+              - please <a href="notifications.html" class="">check notifications</a> for more info <a class="cc-cc-notificationContent-link-close" targetDiv="cc-cc-warningContent-id">close</a>
+            </div>
+          </div>
+          <div class="cc-cc-notificationContent-hide" id="cc-cc-goodStatusContent-id">
+            <div class="cc-cc-notificationHeader">
+              Good status message goes here
+            </div>
+            <div>
+              - please <a href="notifications.html" class="">check notifications</a> for more info <a class="cc-cc-notificationContent-link-close" targetDiv="cc-cc-goodStatusContent-id">close</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-clinical-calendar-schedule-container">
+          <div class="cc-clinical-calendar-schedule-cell">
+            <div class="cc-clinical-calendar-schedule-cell-header">
+              <input type="date" value="2016-01-17" class="cc-cc-datepicker"/>
+            </div>
+            <div class="cc-clinical-calendar-schedule-date-draw-container">
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:45px;">
+      &nbsp;
+    </div>
+
+
+  </div>
+  <div id="cc-cc-apptInfoHoverId" class="cc-cc-apptInfoHover-hide">
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img src="./img-cc/icons/clock-black.svg" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-time">
+
+      </div>
+    </div>
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img src="./img-cc/icons/status-black.svg" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-status">
+
+      </div>
+    </div>
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img src="./img-cc/icons/tooth-black.svg" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-apptLabel">
+
+      </div>
+    </div>
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img src="./img-cc/icons/clinical-black.svg" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-doc">
+
+      </div>
+    </div>
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img src="./img-cc/icons/staff-black.svg" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-staff">
+
+      </div>
+    </div>
+    <div class="cc-cc-apptInfoRow">
+      <div class="cc-cc-apptInfoRow-img">
+        <img id="cc-cc-apptInfoHoverId-patientCity-image" />
+      </div>
+      <div class="cc-cc-apptInfoRow-appointmentLabel" id="cc-cc-apptInfoHoverId-patientCity">
+
+      </div>
+    </div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"/>
+  <apex:includeScript value="{!URLFOR($Resource.Clinical_Screens,'js/cc_cc_objects.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Clinical_Screens,'js/cc-clinical-calendar.js')}"/>
+</body>
+
+
+</apex:page>

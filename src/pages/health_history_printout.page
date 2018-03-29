@@ -1,0 +1,1220 @@
+<apex:page controller="ctrl_health_history_print" showHeader="false" sidebar="false" >
+
+<apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}"  />
+<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" />
+
+<script>var $j = jQuery.noConflict();</script>
+<apex:stylesheet value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.JQuery)}"  />
+<apex:includeScript value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.js')}"/>
+<apex:includeScript value="/soap/ajax/28.0/connection.js"/>
+
+
+
+<style type="text/css" media="print">
+.page-break {
+    page-break-after: always;
+}
+
+input.btn {
+  display:none;
+}
+
+input#edit_btn {
+  display:none;
+}
+
+  td.right_border {
+    border:0px;
+    right-border:0px;
+  }
+
+  img.skiplink {
+    display:none;
+  }
+
+  div.bodyDiv {
+    border:0px;
+  }
+
+  div.bPageHeader {
+    display:none;
+  }
+
+  div.bPageFooter {
+    display:none;
+  }
+
+  div.no_print {
+    display:none;
+  }
+</style>
+
+<style>
+
+@media print {
+.page-break {
+    page-break-after: always;
+}
+}
+
+    hr.style-fade {
+    border: 0;
+    height: 2px;
+    width:1000px;
+    display:block;
+  background-image: -webkit-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+    background-image:    -moz-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+    background-image:     -ms-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+    background-image:      -o-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+  }
+
+  hr.style-one {
+    border: 0;
+    width:900px;
+    height: 1px;
+    background: #333;
+    background-image: linear-gradient(to right, #ccc, #333, #ccc);
+  }
+
+  span.form_line {
+    display:block;
+    padding-bottom:1em;
+    font-size:11pt;
+  }
+
+  span.field_header {
+    font-weight:bold;
+  }
+
+  span.field_spacer {
+    display:inline-block;
+    width:50px;
+  }
+
+  p.section_holder {
+    padding-left:20px;
+  }
+
+  span.section_header {
+    padding-left:-20px;
+    display:block;
+    font-size:12pt;
+    font-weight:bold;
+    font-style:italic;
+    color:#5789AE;
+    padding-bottom:5px;
+  }
+
+  .CSSTableGenerator {
+    margin:0px;padding:0px;
+    width:100%;
+    box-shadow: 10px 10px 5px #888888;
+    border:1px solid #000000;
+
+    -moz-border-radius-bottomleft:0px;
+    -webkit-border-bottom-left-radius:0px;
+    border-bottom-left-radius:0px;
+
+    -moz-border-radius-bottomright:0px;
+    -webkit-border-bottom-right-radius:0px;
+    border-bottom-right-radius:0px;
+
+    -moz-border-radius-topright:0px;
+    -webkit-border-top-right-radius:0px;
+    border-top-right-radius:0px;
+
+    -moz-border-radius-topleft:0px;
+    -webkit-border-top-left-radius:0px;
+    border-top-left-radius:0px;
+}.CSSTableGenerator table{
+    border-collapse: collapse;
+        border-spacing: 0;
+    width:100%;
+    height:100%;
+    margin:0px;padding:0px;
+}.CSSTableGenerator tr:last-child td:last-child {
+    -moz-border-radius-bottomright:0px;
+    -webkit-border-bottom-right-radius:0px;
+    border-bottom-right-radius:0px;
+}
+.CSSTableGenerator table tr:first-child td:first-child {
+    -moz-border-radius-topleft:0px;
+    -webkit-border-top-left-radius:0px;
+    border-top-left-radius:0px;
+}
+.CSSTableGenerator table tr:first-child td:last-child {
+    -moz-border-radius-topright:0px;
+    -webkit-border-top-right-radius:0px;
+    border-top-right-radius:0px;
+}.CSSTableGenerator tr:last-child td:first-child{
+    -moz-border-radius-bottomleft:0px;
+    -webkit-border-bottom-left-radius:0px;
+    border-bottom-left-radius:0px;
+}.CSSTableGenerator tr:hover td{
+
+}
+.CSSTableGenerator tr:nth-child(odd){ background-color:#aad4ff; }
+.CSSTableGenerator tr:nth-child(even)    { background-color:#ffffff; }.CSSTableGenerator td{
+    vertical-align:middle;
+
+
+    border:1px solid #000000;
+    border-width:0px 1px 1px 0px;
+    text-align:left;
+    padding:7px;
+    font-size:12px;
+    font-family:Arial;
+    font-weight:bold;
+    color:#000000;
+}.CSSTableGenerator tr:last-child td{
+    border-width:0px 1px 0px 0px;
+}.CSSTableGenerator tr td:last-child{
+    border-width:0px 0px 1px 0px;
+}.CSSTableGenerator tr:last-child td:last-child{
+    border-width:0px 0px 0px 0px;
+}
+.CSSTableGenerator tr:first-child td{
+        background:-o-linear-gradient(bottom, #005fbf 5%, #003f7f 100%);    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #005fbf), color-stop(1, #003f7f) );
+    background:-moz-linear-gradient( center top, #005fbf 5%, #003f7f 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#005fbf", endColorstr="#003f7f");  background: -o-linear-gradient(top,#005fbf,003f7f);
+
+    background-color:#005fbf;
+    border:0px solid #000000;
+    text-align:center;
+    border-width:0px 0px 1px 1px;
+    font-size:14px;
+    font-family:Arial;
+    font-weight:bold;
+    color:#ffffff;
+}
+.CSSTableGenerator tr:first-child:hover td{
+    background:-o-linear-gradient(bottom, #005fbf 5%, #003f7f 100%);    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #005fbf), color-stop(1, #003f7f) );
+    background:-moz-linear-gradient( center top, #005fbf 5%, #003f7f 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#005fbf", endColorstr="#003f7f");  background: -o-linear-gradient(top,#005fbf,003f7f);
+
+    background-color:#005fbf;
+}
+.CSSTableGenerator tr:first-child td:first-child{
+    border-width:0px 0px 1px 0px;
+}
+.CSSTableGenerator tr:first-child td:last-child{
+    border-width:0px 0px 1px 1px;
+}
+
+</style>
+
+<script>
+function use_fancy_cursor(t) {
+  document.body.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+  t.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+}
+
+function default_cursor(t) {
+  document.body.style.cursor = 'default';
+  t.style.cursor='default';
+}
+
+</script>
+
+<apex:form >
+<apex:messages style="color:red;font-weight:bold;" />
+<apex:outputpanel id="main_holder" layout="block" style="padding-left:5%;padding-right:5%;">
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Registration and Health History" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="registration_section_holder" style="padding-left:40px;">
+  <span class="form_line">
+    <span class="field_header">Legal Name : </span>&nbsp; <apex:outputfield value="{!phistory.Legal_Name__c}" style="width:150px;" />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Gender : </span>&nbsp; <apex:outputfield value="{!phistory.Gender__c}"  />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Referred By : </span> <apex:outputfield value="{!phistory.Referred_By__c}" style="width:150px;" />
+  </span>
+  <span class="form_line">
+    <span class="field_header">Date of Birth : </span>&nbsp; <apex:outputfield value="{!phistory.Date_of_Birth__c}"  />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Age : </span>&nbsp; <apex:outputpanel id="age_holder"><apex:outputtext value="{!calculated_age}"  /></apex:outputpanel>
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Marital Status : </span> <apex:outputfield value="{!phistory.Marital_Status__c}" />
+  </span>
+  <span class="form_line">
+    <span class="field_header">Mobile Phone : </span>&nbsp; <apex:outputfield value="{!phistory.Mobile_Phone__c}" />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Email Address : </span> <apex:outputfield value="{!phistory.Email_Address__c}" style="width:360px;"/>
+  </span>
+  <hr class="style-one" />
+  <span class="section_header">Residental Info</span>
+  <p class="section_holder">
+    <span class="form_line">
+      <span class="field_header">Street : </span>&nbsp; <apex:outputfield value="{!phistory.Home_Street_Address__c}" style="width:320px;"  />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">City : </span>&nbsp; <apex:outputfield value="{!phistory.Home_City__c}" style="width:320px;"  />
+    </span>
+    <span class="form_line">
+      <span class="field_header">State : </span>&nbsp; <apex:outputfield value="{!phistory.Home_State__c}"   />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Zip : </span>&nbsp; <apex:outputfield value="{!phistory.Home_Postal_Code__c}"   />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Phone # : </span>&nbsp; <apex:outputfield value="{!phistory.Home_Phone__c}"   />
+    </span>
+  </p>  <hr class="style-one" /><br />
+
+  <hr class="style-one" />
+  <span class="section_header">Employer Info</span>
+  <p class="section_holder">
+    <span class="form_line">
+      <span class="field_header">Name : </span>&nbsp; <apex:outputfield value="{!phistory.Employer_Name__c}" style="width:320px;"  />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">City : </span>&nbsp; <apex:outputfield value="{!phistory.Work_City__c}" style="width:320px;"  />
+    </span>
+    <span class="form_line">
+      <span class="field_header">State : </span>&nbsp; <apex:outputfield value="{!phistory.Work_State__c}"   />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Zip : </span>&nbsp; <apex:outputfield value="{!phistory.Work_Zip__c}"   />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Phone # : </span>&nbsp; <apex:outputfield value="{!phistory.Work_Phone__c}"   />
+    </span>
+  </p>  <hr class="style-one" /><br />
+
+  <hr class="style-one" />
+  <span class="section_header">Additional Contact Info</span>
+  <p class="section_holder">
+    <span class="form_line">
+      <span class="field_header">Emergency Contact - Name : </span>&nbsp; <apex:outputfield value="{!phistory.Emergency_Contact_Name__c}" style="width:240px;" />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Phone Number : </span> <apex:outputfield value="{!phistory.Emergency_Contact_Phone__c}" />
+    </span>
+    <span class="form_line">
+      <span class="field_header">Name of Spouse : </span>&nbsp; <apex:outputfield value="{!phistory.Spouse_Name__c}" style="width:210px;" />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Name of Parent/Guardian: </span> <apex:outputfield value="{!phistory.Parent_Guardian_Name__c}" style="width:210px;" />
+    </span>
+  </p>  <hr class="style-one" /><br />
+  <br /><br />
+  <span style="font-weight:bold;font-size:12pt;border-bottom:1px solid black;">TO OUR PATIENTS:</span><br /><br />
+  <p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+  We do not bill insurance companies nor accept insurance. We will provide you with proof of dental services to
+  submit to your private insurance carrier. When consenting to any treatment you would like to have done, a
+  ClearChoice staff member will explain our different payment plan options. This office does not accept
+  Medicare, Medicaid or any Federal Government sponsored or funded insurance plans. We ask that you pay or
+  obtain approved financing of your treatment costs prior to beginning treatment.
+  </p><br />
+</apex:outputpanel> <!--  registration_section_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Dental History" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="dental_history_holder" style="padding-left:40px;">
+  <hr class="style-one" />
+  <span class="section_header">General Dentist Info</span>
+  <p class="section_holder">
+    <span class="form_line">
+      <span class="field_header">Name : </span>&nbsp; <apex:outputfield value="{!phistory.General_Dentist__c}" style="width:250px;" />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Phone Number : </span> <apex:outputfield value="{!phistory.General_Dentist_Phone__c}" />
+    </span>
+    <span class="form_line">
+      <span class="field_header">Date of your last visit : </span>&nbsp; <apex:outputfield value="{!phistory.General_Dentist_Last_Visit__c}" />
+    </span>
+  </p>  <hr class="style-one" /><br />
+  <span class="form_line">
+    <table style="width:800px;">
+      <tr><td style="width:325px;">
+        <span class="field_header">What are your chief dental problems or complaints?</span>
+      </td><td><apex:outputfield value="{!phistory.Chief_Dental_Problems__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table style="width:800px;">
+      <tr><td style="width:325px;">
+        <span class="field_header">If you could improve your current dental condition, what would you like to be done?</span>
+      </td><td><apex:outputfield value="{!phistory.Dental_Improvements__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you grind your teeth?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Grind_Teeth__c}" style="width:125px;"/></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever been treated for periodontal gum disease?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Periodontal_Gum_Disease__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have dry mounth?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Dry_Mouth__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever had a reaction to dental injections?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Reaction_to_Dental_Injections__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Are you under the care of a dentist for any dental problems?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Under_Dentist_Care__c}" /></td></tr></table>
+  <apex:outputpanel rendered="{!if(phistory.Under_Dentist_Care__c=='Yes',true,false)}" layout="inline" >
+    <span class="field_header">If yes,  what problems are you being seen for?</span>&nbsp;<apex:outputfield value="{!phistory.Under_Dentist_Care_For__c}" style="width:300px;"/>
+  </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you wear dentures?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Wear_Dentures__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Wear_Dentures__c=='Yes',true,false)}" layout="inline"><table><tr><td><span class="field_header">Do you enjoy wearing dentures?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Enjoy_Wearing_Dentures__c}" /></td></tr></table></apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have any dental bridges or removable dental appliances?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Have_Bridges_or_appliances__c}" /></td></tr></table>
+  <apex:outputpanel rendered="{!if(phistory.Have_Bridges_or_appliances__c=='Yes',true,false)}" layout="inline" >
+    <span class="field_header">If yes,  What bridges or appliances do you have?</span>&nbsp;<apex:outputfield value="{!phistory.What_Bridges_and_appliances__c}" style="width:300px;"/>
+  </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have any swelling, bleeding, discoloration,  or lumps in your mouth?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Swelling_Bleeding_Discoloration_Lumps__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever worn, or been told to wear a dental splint?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Wear_or_advised_dental_splint__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Are your teeth sensitive or painful?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Sensitive_Teeth__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have pain in or near your ears?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Pain_in_or_near_ears__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have unusual sounds in your ears or jaws when opening or closing your mouth?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Unusual_sounds_in_ears_or_jaw__c}" /></td></tr></table>
+  </span>
+</apex:outputpanel> <!--  dental_history_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Medical History" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="medical_history_holder"  style="padding-left:40px;">
+  <p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+    It is important that we know about your dental and medical history. Many conditions may have a direct impact on your
+    dental treatment. We will review this questionnaire and discuss it with you in detail. Information provided is strictly
+    confidential and will not be released without your permission.
+  </p><br />
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Are you in generally good health?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.In_Good_Health__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have any major medical problems?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Any_major_medial_issues__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Any_major_medial_issues__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.Explain_Major_Medical_Issues__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <span class="field_header">Height : </span>&nbsp; <apex:outputfield value="{!phistory.Height_ft__c}" style="width:20px;" /> ft&nbsp;&nbsp;
+       <apex:outputfield value="{!phistory.Height_inches__c}" style="width:20px;" /> in
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Weight : </span>&nbsp; <apex:outputfield value="{!phistory.Weight__c}" style="width:50px;" /> lbs
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Are you under care of a physician now?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Under_Physician_Care__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Under_Physician_Care__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.Under_Physician_Care_for__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <hr class="style-one" />
+  <span class="section_header">Current Physician Info</span>
+  <p class="section_holder">
+    <span class="form_line">
+      <span class="field_header">Name : </span>&nbsp; <apex:outputfield value="{!phistory.Current_Physician_Name__c}" style="width:250px;" />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Phone Number : </span> <apex:outputfield value="{!phistory.Current_Physician_Phone_Number__c}" />
+    </span>
+    <span class="form_line">
+      <span class="field_header">Street : </span>&nbsp; <apex:outputfield value="{!phistory.Current_Physician_Street_Address__c}" style="width:320px;"  />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">City : </span>&nbsp; <apex:outputfield value="{!phistory.Current_Physician_City__c}" style="width:320px;"  />
+    </span>
+    <span class="form_line">
+      <span class="field_header">State : </span>&nbsp; <apex:outputfield value="{!phistory.Current_Physician_State__c}"   />
+      <span class="field_spacer">&nbsp;</span>
+      <span class="field_header">Zip : </span>&nbsp; <apex:outputfield value="{!phistory.Current_Physician_Zip__c}"   />
+    </span>
+  </p>  <hr class="style-one" /><br />
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever had any problems with anesthesia?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Problems_with_Anesthesia__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Problems_with_Anesthesia__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.What_Problems_with_Anesthesia__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have a pacemaker / defibrillator / heart stent?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Have_pacemaker_defibrillator_heart_stent__c}" /></td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Do you have the Implantable defibrillator card with you?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Implantable_defibrillator_card__c}" /></td><td>
+    <apex:outputpanel rendered="{!if(phistory.Implantable_defibrillator_card__c=='Yes',true,false)}" layout="inline" >
+      <span class="field_header">Make/Model?</span>&nbsp;&nbsp; <apex:outputfield value="{!phistory.Implantable_defibrillator_make__c}" />
+    </apex:outputpanel>    &nbsp;
+    </td></tr></table>
+  </span>
+  <span class="form_line">
+    <span class="field_header">Cardiologist Name : </span>&nbsp; <apex:outputfield value="{!phistory.Cardiologist_Name__c}" style="width:250px;" />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Phone Number : </span> <apex:outputfield value="{!phistory.Cardiologist_Phone__c}" />
+  </span>
+  <p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">Please indicate if you have ever been prescribed any of the following medications.  For any you have been prescribed,  please provide a breif explaination as well</p>
+  <div class="CSSTableGenerator" style="width:700px;" >
+    <table style="width:700px;">
+      <tr>
+        <td style="width:175px;">Medication Name</td>
+        <td style="width:150px;">Prescribed</td>
+        <td>Explain</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Aredia</td>
+        <td><apex:outputfield value="{!phistory.Aredia__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Aredia__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Aredia_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Zometa</td>
+        <td><apex:outputfield value="{!phistory.Zometa__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Zometa__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Zometa_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Didronel</td>
+        <td><apex:outputfield value="{!phistory.Didronel__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Didronel__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Didronel_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Actonel</td>
+        <td><apex:outputfield value="{!phistory.Actonel__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Actonel__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Actonel_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Skelid</td>
+        <td><apex:outputfield value="{!phistory.Skelid__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Skelid__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Skelid_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Fosamax</td>
+        <td><apex:outputfield value="{!phistory.Fosamax__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Fosamax__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Fosamax_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Boniva</td>
+        <td><apex:outputfield value="{!phistory.Boniva__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Boniva__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Boniva_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Vioxx</td>
+        <td><apex:outputfield value="{!phistory.Vioxx__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Vioxx__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Vioxx_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Reclast</td>
+        <td><apex:outputfield value="{!phistory.Reclast__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Reclast__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Reclast_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Celebrex</td>
+        <td><apex:outputfield value="{!phistory.Celebrex__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Celebrex__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Celebrex_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Prednisone</td>
+        <td><apex:outputfield value="{!phistory.Prednisone__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Prednisone__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Prednisone_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Bonefos</td>
+        <td><apex:outputfield value="{!phistory.Bonefos__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Bonefos__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Bonefos_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Xgeva</td>
+        <td><apex:outputfield value="{!phistory.Xgeva__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Xgeva__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Xgeva_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Methotrexate</td>
+        <td><apex:outputfield value="{!phistory.Methotrexate__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Methotrexate__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Methotrexate_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Rheumatrex</td>
+        <td><apex:outputfield value="{!phistory.Rheumatrex__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Rheumatrex__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Rheumatrex_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Trexall</td>
+        <td><apex:outputfield value="{!phistory.Trexall__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Trexall__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Trexall_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding-left:10px;">Chemotherapeutic Agents</td>
+        <td><apex:outputfield value="{!phistory.Chemotherapeutic_Agents__c}" /></td>
+        <td><apex:outputpanel rendered="{!if(phistory.Chemotherapeutic_Agents__c=='Yes',true,false)}" layout="inline" ><apex:outputfield value="{!phistory.Chemotherapeutic_Agents_Why__c}" style="width:300px;" /></apex:outputpanel>&nbsp;</td>
+      </tr>
+    </table>
+  </div><br />
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever had any of the above medications administered by IV?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Medications_by_IV__c}" /></td><td>
+    <apex:outputpanel rendered="{!if(phistory.Medications_by_IV__c=='Yes',true,false)}" layout="inline" >
+        <span class="field_header">Name of Doctor?&nbsp;&nbsp;</span>
+        <apex:outputfield value="{!phistory.Medications_by_IV_Doctor__c}" style="width:125px;" />
+    </apex:outputpanel>     </td></tr></table>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever been hospitalized, had any surgical procedures, or have had any serious illnesses within the past 5 years?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.hospitalized_last_5__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.hospitalized_last_5__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.Why_Hospitalized_last_5__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever made a complaint or had a bad outcome from any previous medical/dental care?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Bad_medical_outcome__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Bad_medical_outcome__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.Bad_Outcome_Detail__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Are you currently smoking?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Smoking__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Smoking__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">How often are you smoking daily?</span>
+        </td><td><apex:outputfield value="{!phistory.Smoking_Frequency__c}" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+
+  <br /><br />
+
+</apex:outputpanel> <!---  medical_history_holder -->
+
+<!--page break here-->
+<!--<p class="page-break">&nbsp;</p>-->
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Medical History (page 2)" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="medical_history_2_holder" style="padding-left:40px;">
+   <span class="form_line">
+    <table><tr><td><span class="field_header">Have you ever been advised by a medical doctor or dentist to have any special precautions taken when receiving<br /> any type of dental treatment?</span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Advised_to_take_special_precautions__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Advised_to_take_special_precautions__c=='Yes',true,false)}" layout="inline" >
+      <table style="width:800px;">
+        <tr><td style="width:325px;">
+          <span class="field_header">If yes,  please explain in detail?</span>
+        </td><td><apex:outputfield value="{!phistory.Advised_precautions_detail__c}" style="width:300px;height:40px;" /></td></tr></table>
+    </apex:outputpanel>
+  </span>
+  <apex:outputpanel rendered="{!if(phistory.Gender__c=='Female',true,false)}" layout="block">
+   <div class="CSSTableGenerator" style="width:700px;" >
+    <table style="width:700px;">
+      <tr><td>Women Only</td><td>&nbsp;</td></tr>
+      <tr><td><span class="field_header">Are you pregnant or is there any chance you may be pregnant?</span></td>
+      <td><apex:outputfield value="{!phistory.Are_you_pregnant__c}" /></td></tr>
+      <tr><td><span class="field_header">Do you have problems associated with your menstrual period?</span></td>
+      <td><apex:outputfield value="{!phistory.Menstrual_period_problems__c}" /></td></tr>
+      <tr><td><span class="field_header">Are you nursing?</span></td>
+      <td><apex:outputfield value="{!phistory.Are_you_nursing__c}" /></td></tr>
+      <tr><td><span class="field_header">Are you taking birth control pills?</span></td>
+      <td><apex:outputfield value="{!phistory.Are_you_taking_birth_control_pills__c}" /></td></tr>
+    </table>
+  </div><br /><br />
+  </apex:outputpanel>
+  <span class="form_line"><span class="field_header">Do you have or have you had any of the following conditions?</span></span>
+  <table style="width:830px;">
+    <tr >
+      <td style="width:390px;vertical-align:top;">
+        <div class="CSSTableGenerator" style="width:390px;" >
+        <table style="width:390px;">
+          <tr>
+            <td style="width:250px;">Condition</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>Allergy to Any Medication</td>
+            <td><apex:outputfield value="{!phistory.Allergy_to_Medication__c}" /></td>
+          </tr>
+          <tr>
+            <td>Anemia</td>
+            <td><apex:outputfield value="{!phistory.Anemia__c}" /></td>
+          </tr>
+          <tr>
+            <td>Anxiety</td>
+            <td><apex:outputfield value="{!phistory.Anxiety__c}" /></td>
+          </tr>
+          <tr>
+            <td>Any Immune Diseases</td>
+            <td><apex:outputfield value="{!phistory.Any_Immune_Disease__c}" /></td>
+          </tr>
+          <tr>
+            <td>Arthritis</td>
+            <td><apex:outputfield value="{!phistory.Arthritis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Asthma</td>
+            <td><apex:outputfield value="{!phistory.Asthma__c}" /></td>
+          </tr>
+          <tr>
+            <td>Breathing Problems</td>
+            <td><apex:outputfield value="{!phistory.Breathing_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Cancer</td>
+            <td><apex:outputfield value="{!phistory.Cancer__c}" /></td>
+          </tr>
+          <tr>
+            <td>Chemotherapy</td>
+            <td><apex:outputfield value="{!phistory.Chemotherapy__c}" /></td>
+          </tr>
+          <tr>
+            <td>Chest Pain on Exertion</td>
+            <td><apex:outputfield value="{!phistory.Chest_Pain_on_Exertion__c}" /></td>
+          </tr>
+          <tr>
+            <td>Chronic Fatigue</td>
+            <td><apex:outputfield value="{!phistory.Chronic_Fatigue__c}" /></td>
+          </tr>
+          <tr>
+            <td>Circulatory Problems</td>
+            <td><apex:outputfield value="{!phistory.Circulatory_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Congenital Heart Condition (Present from Birth)</td>
+            <td><apex:outputfield value="{!phistory.Congenital_Heart__c}" /></td>
+          </tr>
+          <tr>
+            <td>Damaged Heart</td>
+            <td><apex:outputfield value="{!phistory.Damaged_Heart__c}" /></td>
+          </tr>
+          <tr>
+            <td>Dental Splint</td>
+            <td><apex:outputfield value="{!phistory.Dental_Splint__c}" /></td>
+          </tr>
+          <tr>
+            <td>Diabetes</td>
+            <td><apex:outputfield value="{!phistory.Diabetes__c}" /></td>
+          </tr>
+          <tr>
+            <td>Drug Treatment</td>
+            <td><apex:outputfield value="{!phistory.Drug_Treatment__c}" /></td>
+          </tr>
+          <tr>
+            <td>Emphysema</td>
+            <td><apex:outputfield value="{!phistory.Empyhsema__c}" /></td>
+          </tr>
+          <tr>
+            <td>Epilepsy / Seizures</td>
+            <td><apex:outputfield value="{!phistory.Epilepsy_Seizures__c}" /></td>
+          </tr>
+          <tr>
+            <td>Excessive Bleeding</td>
+            <td><apex:outputfield value="{!phistory.Excessive_Bleeding__c}" /></td>
+          </tr>
+          <tr>
+            <td>Fainting</td>
+            <td><apex:outputfield value="{!phistory.Fainting__c}" /></td>
+          </tr>
+          <tr>
+            <td>Gall Bladder Problems</td>
+            <td><apex:outputfield value="{!phistory.Gall_Bladder_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Healing Problems</td>
+            <td><apex:outputfield value="{!phistory.Healing_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Heart Attack</td>
+            <td><apex:outputfield value="{!phistory.Heart_Attack__c}" /></td>
+          </tr>
+          <tr>
+            <td>Heart Murmur</td>
+            <td><apex:outputfield value="{!phistory.Heart_Murmur__c}" /></td>
+          </tr>
+          <tr>
+            <td>Heart Problems (any other)</td>
+            <td><apex:outputfield value="{!phistory.Other_Heart_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Heart Stent</td>
+            <td><apex:outputfield value="{!phistory.Heart_Stent__c}" /></td>
+          </tr>
+          <tr>
+            <td>Hepatitis</td>
+            <td><apex:outputfield value="{!phistory.Hepatitis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Herpes</td>
+            <td><apex:outputfield value="{!phistory.Herpes__c}" /></td>
+          </tr>
+          <tr>
+            <td>High or Low Blood Pressure</td>
+            <td><apex:outputfield value="{!phistory.High_or_Low_Blood_Pressure__c}" /></td>
+          </tr>
+          <tr>
+            <td>History of Alcohol</td>
+            <td><apex:outputfield value="{!phistory.History_of_Alcohol__c}" /></td>
+          </tr>
+          <tr>
+            <td>History of Tremors</td>
+            <td><apex:outputfield value="{!phistory.History_of_Tremors__c}" /></td>
+          </tr>
+          <tr>
+            <td>History of Tumors</td>
+            <td><apex:outputfield value="{!phistory.History_of_Tumors__c}" /></td>
+          </tr>
+          <tr>
+            <td>HIV-AIDS</td>
+            <td><apex:outputfield value="{!phistory.HIV_AIDS__c}" /></td>
+          </tr>
+          <tr>
+            <td>High Cholesterol</td>
+            <td><apex:outputfield value="{!phistory.High_Cholesterol__c}" /></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+      <td style="width:50px;">&nbsp;</td>
+      <td style="width:390px">
+        <div class="CSSTableGenerator" style="width:390px;vertical-align:top;" >
+        <table style="width:390px;">
+          <tr>
+            <td style="width:250px;">Condition</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>Infective Endocarditis</td>
+            <td><apex:outputfield value="{!phistory.Infective_Endocarditis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Jaundice</td>
+            <td><apex:outputfield value="{!phistory.Jaundice__c}" /></td>
+          </tr>
+          <tr>
+            <td>Joint Disease</td>
+            <td><apex:outputfield value="{!phistory.Joint_Disease__c}" /></td>
+          </tr>
+          <tr>
+            <td>Kidney Disease</td>
+            <td><apex:outputfield value="{!phistory.Kidney_Disease__c}" /></td>
+          </tr>
+          <tr>
+            <td>Latex Allergy</td>
+            <td><apex:outputfield value="{!phistory.Allergy_Latex__c}" /></td>
+          </tr>
+          <tr>
+            <td>Liver Disease</td>
+            <td><apex:outputfield value="{!phistory.Liver_Disease__c}" /></td>
+          </tr>
+          <tr>
+            <td>Low Blood Sugar</td>
+            <td><apex:outputfield value="{!phistory.Low_Blood_Sugar__c}" /></td>
+          </tr>
+          <tr>
+            <td>Lupus</td>
+            <td><apex:outputfield value="{!phistory.Lupus__c}" /></td>
+          </tr>
+          <tr>
+            <td>Neurological Problems</td>
+            <td><apex:outputfield value="{!phistory.Neurological_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Organ Transplant</td>
+            <td><apex:outputfield value="{!phistory.Organ_Transplant__c}" /></td>
+          </tr>
+          <tr>
+            <td>Osteoarthritis</td>
+            <td><apex:outputfield value="{!phistory.Osteoarthritis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Osteoporosis</td>
+            <td><apex:outputfield value="{!phistory.Osteoporosis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Painful or Replaced Joint(s)</td>
+            <td><apex:outputfield value="{!phistory.Painful_or_Replaced_Joint__c}" /></td>
+          </tr>
+          <tr>
+            <td>Panic Attacks</td>
+            <td><apex:outputfield value="{!phistory.Panic_Attacks__c}" /></td>
+          </tr>
+          <tr>
+            <td>Persistent Cough (which Produces Blood)</td>
+            <td><apex:outputfield value="{!phistory.Persistent_Cough__c}" /></td>
+          </tr>
+          <tr>
+            <td>Psychiatric Care</td>
+            <td><apex:outputfield value="{!phistory.Psychiatric_Care__c}" /></td>
+          </tr>
+          <tr>
+            <td>Radiation Treatment</td>
+            <td><apex:outputfield value="{!phistory.Radiation_Treatment__c}" /></td>
+          </tr>
+          <tr>
+            <td>Replaced Heart Valves</td>
+            <td><apex:outputfield value="{!phistory.Replaced_Heart_Valves__c}" /></td>
+          </tr>
+          <tr>
+            <td>Rheumatic Fever</td>
+            <td><apex:outputfield value="{!phistory.Rheumatic_Fever__c}" /></td>
+          </tr>
+          <tr>
+            <td>Rheumatoid Arthritis</td>
+            <td><apex:outputfield value="{!phistory.Rheumatoid_Arthritis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Shortness of Breath</td>
+            <td><apex:outputfield value="{!phistory.Shortness_of_Breath__c}" /></td>
+          </tr>
+          <tr>
+            <td>Sinus Problems</td>
+            <td><apex:outputfield value="{!phistory.Sinus_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Sleep Apnea / CPAP</td>
+            <td><apex:outputfield value="{!phistory.Sleep_Apnea__c}" /></td>
+          </tr>
+          <tr>
+            <td>Stroke</td>
+            <td><apex:outputfield value="{!phistory.Stroke__c}" /></td>
+          </tr>
+          <tr>
+            <td>Teeth Grinding</td>
+            <td><apex:outputfield value="{!phistory.Teeth_Grinding__c}" /></td>
+          </tr>
+          <tr>
+            <td>Thyroid Problems</td>
+            <td><apex:outputfield value="{!phistory.Thyroid_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Tobacco Use (Any Form)</td>
+            <td><apex:outputfield value="{!phistory.Tobacco_Use__c}" /></td>
+          </tr>
+          <tr>
+            <td>Tonsillitis</td>
+            <td><apex:outputfield value="{!phistory.Tonsillitis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Trauma to Head/Neck</td>
+            <td><apex:outputfield value="{!phistory.Trauma_to_Head_Neck__c}" /></td>
+          </tr>
+          <tr>
+            <td>Tuberculosis</td>
+            <td><apex:outputfield value="{!phistory.Tuberculosis__c}" /></td>
+          </tr>
+          <tr>
+            <td>Ulcers / Gastric Reflux</td>
+            <td><apex:outputfield value="{!phistory.Ulcers_Gastric_Reflux__c}" /></td>
+          </tr>
+          <tr>
+            <td>Use of Alcohol</td>
+            <td><apex:outputfield value="{!phistory.Use_of_Alcohol__c}" /></td>
+          </tr>
+          <tr>
+            <td>Use of Drugs</td>
+            <td><apex:outputfield value="{!phistory.Use_of_Drugs__c}" /></td>
+          </tr>
+          <tr>
+            <td>Valve Problems</td>
+            <td><apex:outputfield value="{!phistory.Valve_Problems__c}" /></td>
+          </tr>
+          <tr>
+            <td>Use of Alcohol</td>
+            <td><apex:outputfield value="{!phistory.Vascular_Graft__c}" /></td>
+          </tr>
+          <tr>
+            <td>Venereal Disease</td>
+            <td><apex:outputfield value="{!phistory.Venereal_Disease__c}" /></td>
+          </tr>
+          <tr>
+            <td>Any Other Condition(s) Not Listed</td>
+            <td><apex:outputfield value="{!phistory.Any_Other_Conditions__c}" /></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+    </tr>
+  </table><br /><br />
+
+  <!-- <apex:outputpanel rendered="{!if(phistory.Allergies__c=='Yes',true,false)}" >
+   <span class="form_line"><span class="field_header" style="padding-right:20px;">Select your allergies from the following list</span>
+   <apex:outputfield value="{!phistory.Allergy_Other__c}"  style="width:180px;" />
+   <br /></span>
+  <apex:outputpanel rendered="{!allergy_other}" >
+  <table style="width:800px;">
+    <tr><td style="width:325px;">
+          <span class="field_header">Please list other allergies</span>
+      </td><td><apex:outputfield value="{!phistory.Allergy_Other_Detail__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </apex:outputpanel>
+  </apex:outputpanel> -->
+
+  <apex:outputpanel rendered="{!if(phistory.Allergy_to_Medication__c=='Yes',true,false)}" >
+  <table style="width:800px;">
+    <tr><td style="width:325px;">
+          <span class="field_header">Please explain what type of reaction you have to medications</span>
+        </td><td><apex:outputfield value="{!phistory.Type_of_Allergic_Reaction__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </apex:outputpanel>
+
+  <apex:outputpanel rendered="{!if(phistory.Cancer__c=='Yes',true,false)}" >
+  <table style="width:800px;">
+    <tr><td style="width:325px;">
+          <span class="field_header">Please list type of cancer(s)</span>
+        </td><td><apex:outputfield value="{!phistory.Cancer_Details__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </apex:outputpanel>
+
+  <apex:outputpanel rendered="{!if(phistory.Any_Other_Conditions__c=='Yes',true,false)}" >
+    <table style="width:800px;">
+    <tr><td style="width:325px;">
+          <span class="field_header">Please list other condition(s)</span>
+        </td><td><apex:outputfield value="{!phistory.Other_Conditions_Not_Listed_Details__c}" style="width:300px;height:40px;" /></td></tr></table>
+  </apex:outputpanel>
+
+  <apex:outputpanel rendered="{!if(phistory.Diabetes__c=='Yes',true,false)}" >
+    <table style="width:800px;">
+    <tr><td style="width:325px;">
+          <span class="field_header">Diabetes Type?</span>
+        </td><td><apex:outputfield value="{!phistory.Diabete_Type__c}" /></td></tr>
+   <tr><td style="width:325px;">
+          <span class="field_header">Glycemic Control?</span>
+        </td><td><apex:outputfield value="{!phistory.Diabetes_Glycemic__c}" /></td></tr>
+    <tr><td style="width:325px;">
+          <span class="field_header">Current method of controlling diabetes?</span>
+        </td><td><apex:outputfield value="{!phistory.Diabetes_Control_Method__c}" /></td></tr>
+    </table>
+  </apex:outputpanel>
+
+  <span class="form_line">
+    <table><tr><td><span class="field_header">Does your physician recommend antibiotic coverage during dental treatment for your <br />1) heart murmur
+   or MVD or 2) for your replaced joint? </span></td><td style="width:25px;">&nbsp;</td>
+    <td><apex:outputfield value="{!phistory.Recommended_Antiboiotic_coverage__c}" /></td></tr></table>
+    <apex:outputpanel rendered="{!if(phistory.Recommended_Antiboiotic_coverage__c=='Yes',true,false)}" layout="inline" >
+      <br /><span class="form_line">
+        <span class="field_header">Physician Name : </span>&nbsp; <apex:outputfield value="{!phistory.Recommended_Antiboiotic_coverage_Doctor__c}" style="width:150px;" />
+        <span class="field_spacer">&nbsp;</span>
+        <span class="field_header">Telephone Number : </span>&nbsp; <apex:outputfield value="{!phistory.Recommended_Antiboiotic_coverage_Phone__c}"  />
+      </span>
+    </apex:outputpanel>
+  </span>
+  <br />
+
+</apex:outputpanel> <!---  medical_history_2_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Medical History (page 3)" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="medical_history_3_holder"  style="padding-left:40px;">
+
+<p style="text-align:center;width:800px;"><span style="display:inline-block;font-size:12pt;border-bottom:1px solid black;"> TREATMENT AUTHORIZATION AND ACKNOWLEDGEMENT</span></p><br />
+<p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+I acknowledge that I will discuss my accurate medical / dental history with my ClearChoice Dentist and have
+questions answered to my satisfaction. I consent to treatment as necessary or desirable for my care, diagnosis of
+dental disease, treatment, and dental emergencies. These procedures may include x-rays, models, removal of
+existing dental prostheses, and an intraoral examination. In case of an emergency, I consent to treatment for
+that emergency. I understand that my doctor will discuss alternative forms of treatment to dental implants as
+well as their risks and benefits. My doctor will develop and present a specific treatment plan based upon his/her
+findings. I have the right to decline this recommended treatment plan based upon the evaluation to which I am
+consenting and to seek a second opinion if I so choose. I understand that I am responsible to visit a dentist for
+regular cleanings to maintain dental implants if I choose that form of treatment
+</p>
+<br /><br />
+
+  <table><tr><td>
+  <apex:image value="data:image;base64,{!signature_image_medical_history}" /></td>
+  <td style="padding-left:20px;">{!signature_image_medical_history_date}</td></tr></table><br />
+
+
+</apex:outputpanel> <!---  medical_history_3_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Drug Monitoring Notification" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="drug_monitoring_holder" style="padding-left:40px;">
+<p style="text-align:center;width:800px;"><span style="display:inline-block;font-size:12pt;border-bottom:1px solid black;">PRESCRIPTION DRUG MONITORING NOTIFICATION</span></p><br />
+<p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+By signing this form, you confirm that you have been notified that if you receive a
+prescription for a controlled substance (narcotic drug) from our office and fill that
+prescription at a pharmacy in Colorado, certain identifying prescription information,
+including the name of the patient, will be entered into a secure database maintained by
+Colorado’s prescription drug monitoring program. State law requires pharmacies to
+report information about controlled substance prescriptions filled to the prescription drug
+monitoring database.<br />,br />
+This database is used to help prevent inappropriate uses of controlled substances – like
+fraud and diversion. The prescription drug monitoring program database contains only
+records related to controlled substances (narcotic drugs like painkillers, muscle relaxants
+and steroids). It does not contain records about other prescription drugs like antibiotics,
+antidepressants or any other category of prescription medication.<br /><br />
+Only authorized individuals, like healthcare personnel that prescribe controlled
+substances and law enforcement under very limited circumstances, can access the
+database and only for tightly defined uses. As long as you are using controlled drugs
+appropriately, there shouldn’t be reason for concern. If you do not want your information
+in the database, please ask your dentist to prescribe non-narcotic drug for you.<br /><br />
+More information about Colorado’s prescription drug monitoring program, including
+copies of individual prescription drug records stored in the database, can be obtained
+from the Colorado state Department of Regulatory Agencies by calling 303-894-5957 or
+by visiting http://www.dora.state.co.us/pharmacy/pdmp/consumers.htm.<br /><br />
+If this notification is signed by a personal representative on behalf of the patient,
+complete the following:<br /><br />
+<span class="form_line">
+    <span class="field_header">Personal Representative&apos;s Name : </span>&nbsp; <apex:outputfield value="{!phistory.Drug_Monitoring_Rep_Name__c}" style="width:150px;" />
+  </span>
+<span class="form_line">
+    <span class="field_header">Relationship to Patient : </span>&nbsp; <apex:outputfield value="{!phistory.Drug_Monitoring_Rep_Relationship__c}" style="width:150px;" />
+  </span>
+I have read and understand this notification
+</p>
+
+  <table><tr><td>
+  <apex:image value="data:image;base64,{!signature_image_drug_monitoring}" />
+  </td><td style="padding-left:20px;">{!signature_image_drug_monitoring_date}</td></tr></table><br />
+
+</apex:outputpanel> <!--  drug_monitoring_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Talent/Model Release and Confidentiality Agreement" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+
+<apex:outputpanel id="talent_release_holder" style="padding-left:40px;">
+<p style="text-align:center;width:800px;"><span style="display:inline-block;font-size:12pt;border-bottom:1px solid black;">Talent/Model Release and Confidentiality Agreement</span></p><br />
+<span class="form_line">
+    <span class="field_header">Name : </span>&nbsp; <apex:outputfield value="{!phistory.Talent_Name__c}" style="width:150px;" />
+    <span class="field_spacer">&nbsp;</span>
+    <span class="field_header">Phone : </span>&nbsp; <apex:outputfield value="{!phistory.Talent_Phone__c}"  />
+  </span>
+<span class="form_line">
+    <span class="field_header">Address : </span>&nbsp; <apex:outputfield value="{!phistory.Talent_Address__c}" style="width:250px;" />
+  </span>
+<p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+I hereby irrevocably give consent to Implant Dentistry Associates of Colorado, P.C., d/b/a
+ClearChoice Dental Implant Center and ClearChoice Management Services LLC (“CCMS”) and
+any other entity for which CCMS provides marketing services, and to their advertising agencies
+and contractors to use my name and/or one or more photos, video recordings and/or audio
+recordings of me, or reproductions of the same for purposes of advertising any ClearChoice
+Dental Implant Center. I understand that this release and confidentiality agreement will cause my
+face and name to be published in any media including any statements that I may make regarding
+my dental implant care and how it has impacted my life. I understand that photographs and video
+recordings will include before and after treatment presentations of my face and body.<br /><br />
+I agree that I have been provided with full and adequate financial consideration for this consent
+and that I will not be entitled to any additional payments of money or other consideration. This is
+a onetime all-inclusive Agreement. I agree that all such recordings and any reproductions
+connected therewith are and shall remain the property of ClearChoice Dental Implant Centers
+and CCMS or their successors. I agree not to disclose the amount of compensation that I may
+have received for this agreement or any other confidential information provided to me.<br /><br />
+I have read the HIPAA Privacy Policy Statement provided by my doctor. I understand that I have
+certain state and Federal privacy rights and in consideration of this agreement. I have agreed to
+waive those privacy rights for purposes of advertising, testimonials and other media events
+relating to the dental treatment provided and my condition and appearance before and after that
+treatment was provided.<br /><br />
+</p>
+
+
+  <table><tr><td>
+    <apex:image value="data:image;base64,{!signature_image_talent_release}" /></td>
+  <td style="padding-left:20px;">{!signature_image_talent_release_date}</td></tr></table><br />
+
+</apex:outputpanel> <!--  talent_release_holder -->
+
+<!--page break here-->
+<p class="page-break">&nbsp;</p>
+<table >
+  <tr><td><apex:image value="{!$Resource.CCLogo_Transparent}" /></td>
+  <td style="padding-left:40px;"><apex:outputtext value="Current Medications" style="font-size:18pt; font-weight:bold;vertical-align:top;vertical-align:middle;" /></td>
+</tr></table><hr class="style-fade" /><br /><br />
+
+<apex:outputpanel id="medication_list_holder" style="padding-left:40px;">
+<p style="text-align:center;width:800px;"><span style="display:inline-block;font-size:12pt;border-bottom:1px solid black;">PLEASE COMPLETE THE FOLLOWING FORM FOR YOUR INITIAL APPOINTMENT</span></p><br />
+<p style="font-size:11pt;text-align:justify;width:800px;line-height:20px;">
+Many medications have a profound effect on the tissues of your mouth and lips. So that we may understand any
+interactions that you may experience, please list all the medications that you are currently taking, including nonprescription
+items.
+We will be updating your medications on an annual basis. Should you have any changes, please notify us at
+your next appointment.
+</p>
+
+
+  <apex:outputpanel id="med_list_holder">
+    <apex:outputpanel rendered="{!if(num_medications>0,true,false)}" >
+    <div class="CSSTableGenerator" style="width:800px;" >
+    <table style="width:800px;">
+      <tr>
+        <td style="width:20%">Medication</td>
+        <td style="width:10%">How Often</td>
+        <td style="width:25%">For What?</td>
+        <td style="width:15%">Amount Taken</td>
+        <td style="width:20%">Doctor</td>
+      </tr>
+      <apex:repeat var="med" value="{!medication_list}" >
+        <tr>
+          <td><apex:outputfield value="{!med.name}" /></td>
+          <td><apex:outputfield value="{!med.How_Often__c}" /></td>
+          <td><apex:outputfield value="{!med.For_What__c}" /></td>
+          <td><apex:outputfield value="{!med.Amount_Taken__c}" /></td>
+          <td><apex:outputfield value="{!med.Doctor__c}" /></td>
+        </tr>
+      </apex:repeat>
+    </table>
+    </div>
+    </apex:outputpanel>
+
+    <apex:outputpanel rendered="{!if(num_medications==0,true,false)}" ><span style="font-style:italic;">Patient is not currently taking any medications</span></apex:outputpanel>
+  </apex:outputpanel> <!-- med_list_holder" -->
+
+</apex:outputpanel> <!--  medication_list_holder  -->
+
+
+
+
+
+</apex:outputpanel>
+
+</apex:form>
+
+</apex:page>

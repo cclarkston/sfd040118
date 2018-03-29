@@ -1,0 +1,17 @@
+<apex:page sidebar="false" standardController="Opportunity">
+    <apex:pageBlock title="Opportunity Summary">
+        <apex:pageBlockSection >
+            <apex:outputField value="{! Opportunity.Account.Name }" label="Name" title="Name" />
+            <apex:outputField value="{! Opportunity.Initial_Prosth_Owner__c }" label="Original Owner" title="Original Owner" />
+            <apex:outputField value="{! Opportunity.Current_Owner__c }" label="Current Owner" title="Current Owner" />
+            <apex:outputField value="{! Opportunity.Total_Net_Payments__c }" label="Total Net Payments" title="Total Net Payments" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection >
+            <apex:pageBlockTable value="{! Opportunity.Account }" var="account" >
+            <apex:column value="{! account.name }"/>
+            <apex:column value="{! account.billingstreet }"/>
+            <apex:column value="{! account.billingstate }"/>
+            </apex:pageBlockTable>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

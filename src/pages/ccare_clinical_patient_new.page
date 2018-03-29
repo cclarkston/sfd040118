@@ -1,0 +1,6 @@
+<apex:page sidebar="false" showHeader="false">
+  <!-- Begin Default Content REMOVE THIS -->
+  <h1>Congratulations</h1>
+  This is your new Page: ccare_clinical_patient_new
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

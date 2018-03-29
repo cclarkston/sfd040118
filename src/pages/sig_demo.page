@@ -1,0 +1,120 @@
+<apex:page controller="AnyObjectSignatureController" showheader="true" sidebar="false" standardStylesheets="false">
+<script>var $j = jQuery.noConflict();</script>
+<apex:stylesheet value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.JQuery)}"  />
+<apex:includeScript value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.js')}"/>
+
+<canvas id="signatureCanvas" width="315" height="400" style="border: 1px solid black;"/>  
+<apex:includeScript value="/soap/ajax/28.0/connection.js"/>
+
+<script>
+
+sforce.connection.sessionId = "{!$Api.Session_Id}";
+var canvas = document.getElementById("signatureCanvas");
+var context = canvas.getContext("2d");
+context.lineWidth=1;
+        var gradient=context.createLinearGradient(0,0,170,0);
+gradient.addColorStop("0","yellow");
+gradient.addColorStop("0.5","orange");
+gradient.addColorStop("1.0","red");
+context.strokeStyle=gradient;
+
+var mouseButton = 0;
+var lastX = lastY = null;
+var accountId = '{!parent_id}';
+
+function saveSignature() {
+var strDataURI = canvas.toDataURL();
+ alert(strDataURI);
+ alert(accountId);
+ strDataURI = strDataURI.replace(/^data:image\/(png|jpg);base64,/, "");
+ alert(strDataURI);
+  AnyObjectSignatureController.saveSignature(strDataURI,accountId,processResult);
+}
+
+/*function saveSignature() {
+  var strDataURI = canvas.toDataURL();
+  strDataURI = strDataURI.replace(/^data:image\/(png|jpg);base64,/, "");
+  AnyObjectSignatureController.saveSignature(ehsId,strDataURI,handleResult);
+}*/
+
+function processResult(result)  {
+  alert(JSON.stringify(result));
+}
+
+function handleResult(result,event) {
+    if(result.success) {
+       alert('Success ');
+    } else {
+        alert('Error: '+result.errorMessage);
+    }
+}
+
+function reset_sig() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function handleEvent(event) {
+    if(event.type==="mousedown"||event.type==="touchstart") {
+        mouseButton = event.which || 1;
+        lastX = lastY = null;
+    }
+    if(event.type==="touchcancel" || event.type==="touchcancel" || event.type==="mouseup") {
+        mouseButton = 0;
+        lastX = lastY = null;
+    }
+    if((event.type==="touchmove" || event.type==="mousemove") && mouseButton) {
+        var newX, newY;
+        var canvasX = 0, canvasY = 0, obj = event.srcElement || event.target;
+        do {
+            canvasX += obj.offsetLeft;
+            canvasY += obj.offsetTop;
+        } while(obj = obj.offsetParent);
+        if(event.targetTouches && event.targetTouches.length) {
+            newX = event.targetTouches[0].clientX - (canvasX/2);
+            newY = event.targetTouches[0].clientY - (canvasY/2);
+        } else {
+            newX = event.offsetX;
+            newY = event.offsetY;
+        }
+        if(!lastX && !lastY) {
+            lastX = newX;
+            lastY = newY;
+            context.beginPath();
+            context.moveTo(lastX,lastY);
+            context.lineTo(lastX,lastY,lastX,lastY);
+            context.stroke();
+        } else {
+            context.beginPath();
+            context.moveTo(lastX,lastY);
+            context.lineTo(newX,newY);
+            context.stroke();
+            lastX = newX;
+            lastY = newY;
+        }
+    }
+    if(event.type=="touchmove" || event.type==="mousedrag" || (event.type==="selectstart" && (event.srcElement||event.target)===canvas)) {
+        event.returnValue=false;
+        event.stopPropagation();
+        event.preventDefault();
+        return false;
+    }
+}
+
+canvas.addEventListener("mousedrag",handleEvent,true);
+canvas.addEventListener("mousemove",handleEvent,true);
+canvas.addEventListener("mousedown",handleEvent,true);
+window.addEventListener("mouseup",handleEvent,true);
+canvas.addEventListener("touchstart",handleEvent,true);
+canvas.addEventListener("touchmove",handleEvent,true);
+window.addEventListener("touchend",handleEvent,true);
+window.addEventListener("selectstart",handleEvent,true);
+</script>
+
+<input type="button" value="Clear Signature" name="Clear Sig" onclick="reset_sig();" /><br /><br />
+<button onclick="saveSignature()">Capture Signature</button><br /><br />
+<div>
+<apex:image value="data:image;base64,{!signature_image}" />
+</div>
+
+</apex:page>

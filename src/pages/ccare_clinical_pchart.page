@@ -1,0 +1,3730 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="dp_clinical_patient" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClearCare</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+  
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-perio.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>   
+  
+  <audio id="inputAlertSound" src="{!URLFOR($Resource.Dental_Practice_Resources, 'audio/inputAlertSound.mp3')}"  preload="auto"></audio>
+       
+</head>
+<style type="text/css" media="print">
+  .no-print {
+    display:none;
+  }
+</style>
+
+  
+
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0 auto;
+    padding: 0;
+  }  
+  
+  .pad-main-wrapper {
+    margin-top:145px;
+  }
+  
+  a.nav_anchor {
+    color:black;
+    font-weight:300;
+    font-size: 12pt;
+    letter-spacing: 1px;
+  }
+  
+  a.nav_anchor:hover {
+    color:white;
+    text-decoration:none;
+  }
+  
+  span.dateFormat {
+    display:none;
+  }
+  
+  .cc-field-label {
+    display:inline-block;
+    padding-right:5px;
+    font-weight:bold;
+  }
+  
+  .cc-field-input {
+    border:none;
+    outline:0;
+    font-szie:12pt;    
+  }
+  
+  .cc-email-attachment-item {
+    display:inline-block;
+    padding-right:20px;    
+  }
+  
+  .cc-email-attachment-remove {
+    padding-left:10px;
+    display:inline-block;
+  }
+  
+  .cc-section-header-right-button-container a:hover {
+    color:white;
+    text-decoration:none;
+  }
+</style>
+
+<script type="text/javascript">    
+  var key_timeout;
+  var search_in_progress = false;
+  var apt_search_timeout;
+  var apt_search_in_progress = false;
+  
+  function apt_search_delay() {    
+    if(apt_search_in_progress)
+      clearTimeout(apt_search_timeout);
+    apt_search_in_progress = true;  
+    apt_search_timeout = setTimeout("search_apts()",1200);
+  }   
+      
+  function qsearch_key(e) {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("search_patients()",600);
+  }   
+</script>    
+
+<body>
+<apex:form onsubmit="return true;">
+<apex:outputpanel styleclass="cc-wrapper" layout="block">
+<apex:actionFunction name="body_refresh" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="search_patients" action="{!search_consult_records}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="view_patient" action="{!select_search_patient}" rerender="calendar_nav,main_holder" status="ajaxstatus">
+  <apex:param name="ptid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="nav_to" action="{!navigate_to}" rerender="none" status="ajaxstatus">
+  <apex:param name="navid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="center_switch" action="{!change_center}" rerender="nav_content,calendar_nav,main_holder" status="ajaxstatus" >
+  <apex:param name="cid" value="" />
+</apex:actionFunction>
+
+<apex:outputpanel layout="block" styleclass="cc-nav-wrapper">
+  <apex:outputpanel styleclass="cc-nav-container">
+    <apex:outputpanel styleclass="cc-top-nav-container" id="nav_content" layout="block">
+      <div class="cc-top-nav-left">
+        <apex:outputpanel id="back_holder" styleclass="cc-back-container" layout="block" >
+          <apex:outputpanel ><a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a></apex:outputpanel>
+        </apex:outputpanel>  
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="center" value="{!center_list}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" styleClass="c-pointer"
+            onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+            onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+            onclick="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+             /></a>
+          <ul class="dropdown-menu gear-menu dropdown-menu-right">
+            <apex:repeat var="gitem" value="{!gear_menu}" >
+                <li class="dropdown-lineitem" style="display:inline-block;">
+                  <a href="{!gitem.Page_URL__c}" style="color:#189BEB;"  
+                      onmouseover="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name_Hover__c)}';this.style.color='black';" 
+                      onmouseout="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}';this.style.color='#189BEB';">
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}" width="{!if(gitem.name=='Salesforce','30','20')}" height="20" style="display:inline;{!if(gitem.name=='Salesforce','position:relative;left:-7px;margin-right:-6px;','margin-right:5px;')}" />&nbsp;&nbsp;{!gitem.name}
+                  </a>
+                </li>
+            </apex:repeat>
+          </ul>        
+          </span>
+      </div>
+    </apex:outputpanel>
+    <div class="cc-sub-nav-container" >
+      <apex:repeat var="mitem" value="{!clinical_header_items}">
+        <apex:outputpanel layout="block" styleclass="cc-sub-nav-cell" onclick="nav_to('{!mitem.id}')">
+          <button class="cc-sub-nav-top-button cc-color-{!mitem.css_class__c} cc-hover-tooltips-dark-anchor-nav">
+            <i class="ccf-{!mitem.image_name__c} cc-color-font-white"></i>
+            <div>{!mitem.name}</div>          
+          </button>
+          <div class="cc-button-text">
+            {!mitem.name}
+          </div>
+          <div class="cc-button_bg cc-color-{!mitem.css_class__c}">
+
+          </div>
+        </apex:outputpanel>
+      </apex:repeat>
+    </div>
+
+   <apex:outputPanel styleclass="cc-clinical-calendar-nav" layout="block" id="calendar_nav">
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-patient-link">Patient</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-history-link">History</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-schedule-link">Schedule</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-forms-link">Forms</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-notes-link">Notes</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-insurance-link">Insurance</a>
+     </apex:outputpanel>
+     <div class="cc_cc_cal_options-container">
+       <div class="cc-hover-tooltips-light cc-cursor-hover">
+         <a class="cc-section-header-add-button nav_anchor" id="cc-patient-add"><i class=" ccf-add-md    "></i></a>
+         <div class="cc-tooltip cc-center" style="top:20%">New patient</div>
+       </div>
+     </div>
+   </apex:outputpanel> <!--end cc-clinical-calendar-nav-->
+  </apex:outputpanel>
+</apex:outputpanel>
+
+<apex:outputpanel layout="block" styleclass="cc-perio-wrapper" id="main_holder">
+  <!--<apex:outputpanel layout="block" styleclass="cc-content-container">
+  <apex:outputpanel id="error_holder" ><apex:messages style="color:red;font-style:italics;padding-top:3px;" /></apex:outputpanel>
+  <apex:actionStatus id="ajaxstatus">
+    <apex:facet name="start">
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 1110; background-color: #f2f2f2;">
+        &nbsp;
+      </div>
+      <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1111; margin: 20% 50%">
+        <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+      </div>
+    </apex:facet>
+  </apex:actionStatus> 
+  </apex:outputpanel>--> <!--end cc-content-container-->
+  
+  <div id="cc-perio-wrapper"><div class="cc-perio-container cc-perio-UID-0" id="cc-perio-container-active">
+      <!-- start section header -->
+      <div class="cc-section-header cc-font-light-16" id="cc-patient-patient">
+        <div class="cc_cc-notes-section-header-left">
+          {!todays_string}
+        </div>
+        <div class="cc_cc-notes-section-header-right">
+          <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark  cc-perio-measure-leftSide-buttonContainer-legend">
+              <i class="ccf-compass"></i>
+            <div class="cc-tooltip cc-center cc-gone" style="top:5%; left:50%; width:180px">
+              View legend
+            </div>
+          </div>
+          <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark  cc-perio-measure-leftSide-buttonContainer-prosth">
+              <i class="ccf-prosth"></i>
+            <div class="cc-tooltip cc-center cc-gone" style="top:5%; left:50%; width:180px">
+              Add prosth exam info
+            </div>
+          </div>
+          <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark cc-patient-cancel-addChart">
+            <a class="" id="">
+              <i class="ccf-cancel-thin"></i>
+            </a>
+            <div class="cc-tooltip cc-center">
+              Reset chart
+            </div>
+          </div>
+          <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark cc-perio-saveChart-button-container">
+            <a class="" id="">
+              <i class="ccf-save"></i>
+            </a>
+            <div class="cc-tooltip cc-center">
+              Save chart
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end section header -->
+      <!-- start upper container -->
+      <div class="cc-perio-teeth-row-container-upper">
+        <div class="cc-perio-teeth-bl-container cc-perio-teeth-bl-container-left">
+          <div class="cc-perio-buccal-top-left buccal-top buccal-top-selected">
+            <a class="">B</a>
+          </div>
+          <div class="lingual-top cc-perio-lingual-top-left">
+            <a>L</a>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t1 cc-perio-selected">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-1 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/1.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-1">
+            <div class="cc-perio-teeth-number-label">
+              1
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb1-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container  cc-perio-t2">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-2 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/2.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-2">
+            <div class="cc-perio-teeth-number-label">
+              2
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb2-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container  cc-perio-t3">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-3 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/3.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-3">
+            <div class="cc-perio-teeth-number-label">
+              3
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb3-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t4">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-4 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/4.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-4">
+            <div class="cc-perio-teeth-number-label">
+              4
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb4-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t5">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-5 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/5.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-5">
+            <div class="cc-perio-teeth-number-label">
+              5
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb5-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t6">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-6 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/6.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-6">
+            <div class="cc-perio-teeth-number-label">
+              6
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb6-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t7">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-7 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/7.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-7">
+            <div class="cc-perio-teeth-number-label">
+              7
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb7-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t8">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-8 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/8.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-8">
+            <div class="cc-perio-teeth-number-label">
+              8
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb8-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t9">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-9 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/9.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-9">
+            <div class="cc-perio-teeth-number-label">
+              9
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb9-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t10">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-10 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/10.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-10">
+            <div class="cc-perio-teeth-number-label">
+              10
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb10-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t11">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-11 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/11.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-11">
+            <div class="cc-perio-teeth-number-label">
+              11
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb11-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t12">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-12 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/12.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-12">
+            <div class="cc-perio-teeth-number-label">
+              12
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb12-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t13">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-13 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/13.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-13">
+            <div class="cc-perio-teeth-number-label">
+              13
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb13-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t14">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-14 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/14.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-14">
+            <div class="cc-perio-teeth-number-label">
+              14
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb14-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t15">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-15 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/15.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-15">
+            <div class="cc-perio-teeth-number-label">
+              15
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb15-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t16">
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-16 cc-perio-thumbToothImg-upper" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/16.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-number-upper cc-perio-thumbToothLabel-16">
+            <div class="cc-perio-teeth-number-label">
+              16
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-top-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb16-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-perio-teeth-bl-container cc-perio-teeth-bl-container-right">
+          <div class="cc-perio-buccal-top-right buccal-top buccal-top-selected">
+            <a class="">B</a>
+          </div>
+          <div class="lingual-top cc-perio-lingual-top-right">
+            <a>L</a>
+          </div>
+        </div>
+      </div>
+      <!-- end upper container -->
+      <div class="cc-perio-row-divider">
+        <div>
+          &nbsp;
+        </div>
+      </div>
+      <!-- start lower container -->
+      <div class="cc-perio-teeth-row-container-lower">
+        <div class="cc-perio-teeth-bl-container cc-perio-teeth-bl-container-left">
+          <div class="buccal-bottom cc-perio-buccal-bottom-left">
+            <a class="">B</a>
+          </div>
+          <div class="lingual-bottom cc-perio-lingual-bottom-left">
+            <a>L</a>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t32">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-32 ">
+            <div class="cc-perio-teeth-number-label">
+              32
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-32 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/32.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb32-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container  cc-perio-t31">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-31">
+            <div class="cc-perio-teeth-number-label">
+              31
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-31 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/31.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb31-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container  cc-perio-t30">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-30">
+            <div class="cc-perio-teeth-number-label">
+              30
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-30 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/30.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb30-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t29">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-29">
+            <div class="cc-perio-teeth-number-label">
+              29
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-29 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/29.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb29-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t28">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-28">
+            <div class="cc-perio-teeth-number-label">
+              28
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-28 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/28.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb28-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t27">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-27">
+            <div class="cc-perio-teeth-number-label">
+              27
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-27 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/27.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb27-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t26">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-26">
+            <div class="cc-perio-teeth-number-label">
+              26
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-26 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/26.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb26-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t25">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-25">
+            <div class="cc-perio-teeth-number-label">
+              25
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-25 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/25.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb25-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t24">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-24">
+            <div class="cc-perio-teeth-number-label">
+              24
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-24 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/24.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb24-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t23">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-23">
+            <div class="cc-perio-teeth-number-label">
+              23
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-23 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/23.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb23-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t22">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-22">
+            <div class="cc-perio-teeth-number-label">
+              22
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-22 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/22.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb22-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t21">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-21">
+            <div class="cc-perio-teeth-number-label">
+              21
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-21 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/21.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb21-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t20">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-20">
+            <div class="cc-perio-teeth-number-label">
+              20
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-20 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/20.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb20-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t19">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-19">
+            <div class="cc-perio-teeth-number-label">
+              19
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-19 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/19.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb19-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t18">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-18">
+            <div class="cc-perio-teeth-number-label">
+              18
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-18 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/18.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb18-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-cell-container cc-perio-t17">
+          <div class="cc-perio-teeth-cell-number-lower cc-perio-thumbToothLabel-17">
+            <div class="cc-perio-teeth-number-label">
+              17
+            </div>
+          </div>
+          <div class="cc-perio-teeth-cell-tooth">
+            <div class="cc-perio-teeth-cell-img-container">
+              <img class="cc-perio-thumbToothImg-17 cc-perio-thumbToothImg-lower" src="{!URLFOR($Resource.Dental_Practice_Resources, 'img-perio/17.png')}" />
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-buccal">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-1">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-2">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-3">
+
+              </div>
+            </div>
+          </div>
+          <div class="cc-perio-thumbMeasure-bottom-lingual">
+            <div class="cc-perio-thumbMeasureFocus">
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-4">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-5">
+
+              </div>
+              <div class="cc-perio-thumb-measure-blank cc-perio-thumb17-6">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cc-perio-teeth-bl-container cc-perio-teeth-bl-container-right">
+          <div class="buccal-bottom cc-perio-buccal-bottom-right">
+            <a class="">B</a>
+          </div>
+          <div class="lingual-bottom cc-perio-lingual-bottom-right">
+            <a>L</a>
+          </div>
+        </div>
+      </div>
+      <!-- end lower container -->
+      <!-- start user input container -->
+      <div class="cc-perio-measure-container" >
+          <div class="cc-perio-measure-leftSide">
+            <!-- start notes container -->
+            <div class="cc-perio-notes-container">
+              <div class="cc-perio-comments-header-container">
+                <div class="cc-perio-comments-header">
+                  Comments:
+                </div>
+              </div>
+
+              <div>
+                <textarea class="cc-perio-comments"></textarea>
+              </div>
+            </div>
+            <!-- end notes container -->
+          </div>
+          <div class="cc-perio-measure" style="width: 33%;">
+            <div class="cc-perio-measure-header-container">
+              <div class="cc-perio-measure-header">
+                <span style="font-weight:normal; font-size:14pt; color:#666666;padding-right:15px;">Tooth <span class="cc-perio-toothNumInputLabel">1</span> <span class="cc-perio-hPosition">buccal</span> <span class="cc-perio-vPosition">top</span></span>
+              </div>
+            </div>
+            <div style="padding-top: 10px; visibility: visible;" class="center cc-perio-measure-input-container cc-perio-inputs">
+              <input class="cc-perio-measure-input cc-perio-first" maxlength="1" autocomplete="off" />
+              <input class="cc-perio-measure-input cc-perio-second" maxlength="1" autocomplete="off" />
+              <input class="cc-perio-measure-input cc-perio-third" maxlength="1" autocomplete="off" />
+            </div>
+          </div>
+          <div class="cc-perio-attr">
+            <div class="cc-perio-legend-header">
+              Attributes
+            </div>
+            <div class="cc-perio-legend-attributes-list">
+              <div class="cc-perio-attribute-list-container">
+                <div class="cc-perio-attribute-list-cell " attribute="Natural">
+                  <div class="cc-perio-attribute-letter">N</div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    atural
+                  </div>
+                </div>
+                <div class="cc-perio-attribute-list-cell" attribute="Implant">
+                  <div class="cc-perio-attribute-letter">I</div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    mplant
+                  </div>
+                </div>
+                <div class="cc-perio-attribute-list-cell" attribute="Missing">
+                  <div class="cc-perio-attribute-letter">M</div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    issing
+                  </div>
+                </div>
+                <div class="cc-perio-attribute-list-cell" attribute="Pontic">
+                  <div class="cc-perio-attribute-letter">P</div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    ontic
+                  </div>
+                </div>
+                <div class="cc-perio-attribute-list-cell" attribute="Crown">
+                  <div class="cc-perio-attribute-letter">C</div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    rown
+                  </div>
+                </div>
+              </div>
+              <div class="cc-perio-attribute-list-container">
+                <div class="cc-perio-attribute-list-cell" attribute="Decay">
+                  <div class="cc-perio-attribute-letter">D</div> <!-- cc-perio-thumbToothDecay marks active -->
+                  <div class="cc-perio-thumb-attribute-label">
+                    ecay
+                  </div>
+                </div>
+                <div class="cc-perio-attribute-list-cell cc-perio-attr-Endodontic " attribute="Endodontic">
+                  <div class="cc-perio-attribute-letter">
+                    E
+                  </div>
+                  <div class="cc-perio-thumb-attribute-label">
+                    ndodontic
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+      <!-- end user input container -->
+      <!-- start bottom container -->
+      <div class="cc-perio-bottomContainer">
+        <!-- start legend container -->
+        <div class="cc-perio-legend-container" state="closed" style="display: none;">
+          <div class="cc-form-header-container">
+            <div class="cc-form-header">
+              Legend
+            </div>
+          </div>
+          <div class="cc-perio-legend">
+            <div class="cc-perio-legend-contents">
+              <div class="cc-perio-legend-colors">
+                <div class="cc-perio-legend-color-cell">
+                  <div style="" class="cc-perio-legend-box tooth-legend-1">
+                  </div>
+                  <div class="cc-perio-legend-text">
+                    1-3
+                  </div>
+                </div>
+                <div class="cc-perio-legend-color-cell">
+                  <div style="" class="cc-perio-legend-box tooth-legend-3">
+                  </div>
+                  <div class="cc-perio-legend-text">
+                    4-5
+                  </div>
+                </div>
+                <div class="cc-perio-legend-color-cell">
+                  <div style="" class="cc-perio-legend-box tooth-legend-5">
+                  </div>
+                  <div class="cc-perio-legend-text">
+                    6+
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="cc-perio-legend-bl">
+                  <div class="cc-perio-legend-bl-label">
+                    <div class="bl-ex">
+                      <a class="">B</a>
+                    </div>
+                    <div style="margin-left:2px; display:flex; align-items:center">
+                      uccal
+                    </div>
+                  </div>
+                  <div class="cc-perio-legend-bl-label">
+                    <div class="bl-ex">
+                      <a class="">L</a>
+                    </div>
+                    <div style="margin-left:2px; display:flex; align-items:center">
+                      ingual
+                    </div>
+                  </div>
+                  <div class="cc-perio-legend-bl-label">
+                    <div class="thumbToothDecay cc-perio-thumbToothDecay">
+                      D
+                    </div>
+                    <div style="margin-left:2px; display:flex; align-items:center">
+                      ecay
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end legend container -->
+        <!-- start prosth container -->
+        <div class="cc-form-container" state="closed" style="display: none;">
+          <div class="cc-form-header-container">
+            <div class="cc-form-header">
+              Prosth Exam
+            </div>
+          </div>
+          <div class="cc-form-content-container">
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Condition:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Doctor Name:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="Dr. Adams" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Doctor Specialty:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="General Practitioner" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Doctor Phone Number:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="303-988-1112" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Doctor Fax Number:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="303-988-1111" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Date Clearance Requested:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <input value="" class="cc-patientProfile-input" />
+                  <div class="cc-inputBottomBorder">
+
+                  </div>
+                  <div class="cc-inputBottomBorder-off">
+
+                  </div>
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <select class="cc-form-select">
+                    <option>
+                      Select
+                    </option>
+                    <option>
+                      Email
+                    </option>
+                    <option>
+                      Fax
+                    </option>
+                    <option>
+                      Mail
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row">
+                <div class="cc-perio-prosth-label">
+                  Status:
+                </div>
+                <div class="cc-patientProfile-input-container">
+                  <select class="cc-form-select">
+                    <option>
+                      Pending
+                    </option>
+                    <option>
+                      Declined
+                    </option>
+                    <option>
+                      Approved
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="cc-perio-row">
+              <div class="cc-perio-prosth-row-top">
+                <div class="cc-perio-prosth-label">
+                  Note:
+                </div>
+                <!-- start notes container -->
+                <div class="cc-form-textarea-container">
+                  <textarea class="cc-form-textarea"></textarea>
+                </div>
+                <!-- end notes container -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end prosth container -->
+      </div>
+      <div class="cc-perio-whiteSpacer">
+
+      </div>
+      <!-- end bottom container -->
+
+    </div>
+
+    </div>
+  
+  
+</apex:outputpanel> <!--end cc-perio-wrapper-->
+</apex:outputpanel>
+
+</apex:form>
+
+<script>
+var $j = jQuery.noConflict();
+// $j is now an alias to the jQuery function; creating the new alias is optional. 
+
+
+var globalStaticResourcePath = '{!URLFOR($Resource.Dental_Practice_Resources)}';
+
+
+$j(document).ready(function() {
+var cc_perio_inputs;
+  var cc_perio_inputPosition;
+
+  var cc_perio_vPosition; //lingual or buccal
+  var cc_perio_hPosition; //top or bottom
+
+  var cc_perio_listenOn = true; //whether the input event listener should be on, timeout can interfere
+  var cc_perio_input1HasValue;
+  var cc_perio_input2HasValue;
+  var cc_perio_input3HasValue;
+
+  //current tooth num
+  var cc_perio_toothNum = 1;
+  var cc_perio_teeth = []; //an array containing tooth arrays
+
+
+  $j('.cc-perio-chart-select-date').on('change', function (e) {
+      var date = $j(this).val();
+      var id; //not a true id, a classname, but unique
+      if (date == '01/19/15') {
+        id = '0';
+      }
+      else if (date == '03/12/15') {
+        id='1';
+      }
+      else if (date == '06/14/15') {
+        id='2';
+      }
+      $j('html, body').animate({
+          scrollTop: $j('.cc-perio-UID-'+id).offset().top - 165
+      }, 'slow');
+  });
+
+
+  function cc_perio_getToothNum() {
+    //console.log("getToothNum()");
+    return cc_perio_toothNum;
+  }
+
+  $j('#cc-perio-wrapper').on('click', '.cc-patient-cancel-addChart',function() {
+    var parent = $j(this).closest('.cc-perio-container');
+
+    parent.slideUp();
+  });
+
+
+  function cc_perio_deactivateOldChart() {
+    var active = $j('#cc-perio-container-active');
+    active.find('.cc-perio-selected').removeClass('cc-perio-selected');
+    active.find('.buccal-top-selected').removeClass('buccal-top-selected').addClass('buccal-top');
+    active.find('.lingual-top-selected').removeClass('lingual-top-selected').addClass('lingual-top');
+    active.find('.lingual-bottom-selected').removeClass('lingual-bottom-selected').addClass('lingual-bottom');
+    active.find('.buccal-bottom-selected').removeClass('buccal-bottom-selected').addClass('buccal-bottom');
+    var note = active.find('.cc-perio-comments').val();
+    active.find('.cc-patient-cancel-addChart').remove();
+    active.find('.cc-perio-saveChart-button-container').remove();
+    active.find('.cc-perio-measure-leftSide-buttonContainer-prosth').remove();
+    active.find('.cc-perio-measure-leftSide-buttonContainer-legend').remove();
+    var noteContainer = active.find('.cc-perio-notes-container');
+    noteContainer.empty();
+    noteContainer.css('width', '50%');
+    noteContainer.prepend('Comments: '+note);
+
+    // for (i=1; i<=32; i++) {
+    //   var id = '#cc-perio-container-active .cc-perio-t'+i;
+    //   $j(id).off();
+    // }
+    active.find('.cc-perio-measure-container').hide();
+    active.attr('id', '');//remove as active
+  }
+
+
+
+
+
+  var perioUID_i=0;
+
+  function cc_perio_initNewChart() {
+
+
+    var chart = $j('#cc-perio-container-template').clone();
+    chart.attr('id', 'cc-perio-container-active');
+    chart.addClass('cc-perio-UID-'+(perioUID_i++)); //get from server, for scrolling
+    chart.prependTo('#cc-perio-wrapper');
+    chart.find('.cc-perio-legend-container').hide();
+    chart.find('.cc-form-container').hide();
+    chart.slideDown();
+    chart.find('.cc-perio-first').focus();
+    cc_perio_initTeeth();
+    cc_perio_initListeners();
+    cc_perio_initVandHPosition();
+    cc_perio_toothMoved(cc_perio_getToothAt(1), 'buccal', 'top');
+    cc_perio_updateMeasurementLabel(1, 'buccal', 'top');
+  }
+
+  $j('#cc-perio-add-chart-button').on('click', function() {
+
+    cc_perio_deactivateOldChart();
+    cc_perio_initNewChart();
+  })
+
+  $j('#cc-perio-wrapper').on('keyup', '#cc-perio-container-active .cc-perio-comments',function() {
+    console.log('comments');
+    var elem = $j(this);
+    var currentHeight = elem.prop('scrollHeight');
+    var parent = elem.closest('.cc-perio-notes-container');
+
+
+    if (currentHeight < 66) {
+      elem.css('height', ('1px'));
+      elem.css('height', (elem.prop('scrollHeight')+'px'));
+      parent.css('height', ('1px'));
+      parent.css('height', (elem.prop('scrollHeight')+'px'));
+    }
+    else if (currentHeight > 66) {
+      elem.css('height', ('1px'));
+      elem.css('height', (elem.prop('scrollHeight')+'px'));
+    }
+  });
+
+  $j('#cc-perio-wrapper').on('keyup', '#cc-perio-container-active .cc-form-textarea',function() {
+    console.log('comments');
+    var elem = $j(this);
+    var currentHeight = elem.prop('scrollHeight');
+    var parent = elem.closest('.cc-form-container');
+    var spacer = $j('#cc-perio-wrapper').find('.cc-perio-whiteSpacer');
+    var height = spacer.height();
+    console.log('init heigh: '+height);
+
+    if (currentHeight > 66) {
+
+
+      $j('html, body').animate({
+          scrollTop: $j(document).height()-$j(window).height()
+      }, 'fast');
+
+
+
+      elem.css('height', (elem.prop('scrollHeight')+'px'));
+    }
+  });
+
+/**
+* @param {string} hpos - either buccal or lingual
+* @param {string} vpos - either upper or lower
+*/
+function cc_perio_setHandVPosition(hpos, vpos) {
+  console.error("setVandHPosition() vpos: "+vpos+' hpos:'+hpos);
+
+  var curV = cc_perio_getVPosition();
+  var curH = cc_perio_getHPosition();
+
+  if (curV != vpos) { //go to first tooth, buccal on different row
+    cc_perio_blDifferentRow(hpos, vpos);
+  }
+  else {
+    cc_perio_moveHandVPosition(hpos, vpos);
+  }
+
+}
+
+/**
+* Updates the label above the measurement inputs to show the current tooth number and position
+*/
+function cc_perio_updateMeasurementLabel(toothN, hpos, vpos) {
+  var toothNumLabel = $j('#cc-perio-container-active .cc-perio-toothNumInputLabel');
+  var hLabel = $j('#cc-perio-container-active .cc-perio-hPosition');
+  var vLabel = $j('#cc-perio-container-active .cc-perio-vPosition');
+
+  toothNumLabel.text(toothN);
+  hLabel.text(hpos);
+  vLabel.text(vpos);
+
+}
+
+//called if a user clicks b or l on a different row
+function cc_perio_blDifferentRow(hpos, vpos) {
+  var num;
+  if (vpos == "bottom") {
+    num = 17;
+  }
+  else if (vpos == "top") {
+    num=1;
+  }
+  cc_perio_toothMoved(cc_perio_getToothAt(num), hpos, vpos);
+
+}
+
+
+
+  window.onload = function() {
+    // console.log('onLoad');
+
+    cc_perio_inputs = "#cc-perio-container-active .cc-perio-inputs";
+    cc_perio_initNewChart();
+
+
+  };
+
+
+
+function cc_perio_initVandHPosition() {
+  cc_perio_moveHandVPosition('buccal', 'top');
+}
+
+/**
+* inits teeth with natural and no attributes
+* called when creating a new perio chart
+**/
+function cc_perio_initTeeth() {
+  // console.log('initTeeth()');
+  for (i=1; i<33; i++) {
+    var cc_perio_aTooth = new cc_perio_createTooth(i, "Natural", [null, null, null, null, null, null], false, false);
+    cc_perio_teeth.push(cc_perio_aTooth);
+  }
+}
+
+function cc_perio_createTooth (number, typeOf, measure, endo, decay) {
+  //console.log("createTooth");
+  this.number = number;
+  this.typeOf = typeOf;
+  this.measure = measure;
+  this.endo = Boolean(endo);
+  this.decay = Boolean(decay);
+
+  this.toString = function() {
+    return "aTooth \nnumber: "+this.number+"\ntypeOf: "+this.typeOf+"\nmeasure: "+this.measure[0]+","+this.measure[1]+","+this.measure[2]+","+this.measure[3]+","+this.measure[4]+","+this.measure[5]+'\nendo: '+this.endo+"\ndecay: "+this.decay;
+  };
+}
+
+
+
+
+//returns the associated path for the image with a tooth number
+function cc_perio_getImagesAt(toothN) {
+  //console.log(getToothAt(toothN));
+  var aTooth = cc_perio_getToothAt(toothN);
+  var num = aTooth.number;
+  var type = aTooth.typeOf;
+  var direction = cc_perio_getDirection(aTooth.number);
+  var endo = aTooth.endo;
+
+  var src;
+  if (type == 'Natural' && endo === false) {
+    src = globalStaticResourcePath + 'img/'+toothN+'.png';
+  }
+  else if (type == 'Crown' && endo === true) {
+    src = globalStaticResourcePath + 'img/'+toothN+'-Crown-Endodontic.png';
+  }
+  else if (type == 'Natural' && endo === true) {
+    src = globalStaticResourcePath + 'img/'+toothN+'-Endodontic.png';
+  }
+  else if (type == 'Crown' && endo === false) {
+    src = globalStaticResourcePath + 'img/'+toothN+'-Crown.png';
+  }
+  else {
+    src = globalStaticResourcePath + 'img/'+typeOf+'-'+direction+'.png';
+  }
+  return src;
+
+}
+
+/** sets the input name
+* @param {string} typeOf - the input
+**/
+function cc_perio_typeOfChanged(typeOf) {
+  //console.log("typeOfChanged(): "+typeOf);
+  var aTooth = cc_perio_getCurrentTooth();
+  aTooth.typeOf=typeOf;
+  cc_perio_updateToothTypeOf(typeOf);
+  cc_perio_currentToothTypeOfSelected(typeOf);
+  cc_perio_resetCurrentToothShadow();
+  cc_perio_currentToothTypeOfSelected(typeOf);
+}
+
+  //sets the label for the thumb to decay
+  function cc_perio_updateDecayLabel(toggle) {
+    // console.error('updateThumbToothNumLabel()');
+    var label = $j('#cc-perio-container-active .cc-perio-thumbToothLabel-'+cc_perio_getToothNum());
+    var ctl = $j('#cc-perio-container-active .cc-perio-focused-label-current');
+    if (toggle) { //was off turn on
+      ctl.attr('class','cc-perio-focusedToothDecay');
+      label.attr('class','cc-perio-thumbToothDecay');
+    }
+    else {
+      ctl.attr('class','cc-perio-focusedToothLabel');
+      label.attr('class','cc-perio-thumbToothLabel');
+    }
+  }
+
+
+
+/**
+* @param {number} position - input 1, 2, or 3
+* @param {number} value - the measurement
+* This function updates the teeth array with new values
+**/
+function cc_perio_setInputNumberValue(position, value) {
+  //console.log('setInputNumberValue() | position: '+position+' value: '+value);
+  var aTooth = cc_perio_getToothAt(cc_perio_getToothNum());
+  var index = (position-1);
+  var hpos = cc_perio_getHPosition();
+  if (hpos == "buccal") {
+    //console.log('setInputNumberValue() | buccal');
+    aTooth.measure[index]=value;
+    cc_perio_setToothAt(cc_perio_getToothNum(), aTooth);
+  }
+  else if (hpos == "lingual") {
+    //console.log('setInputNumberValue() | lingual');
+    aTooth.measure[index+3]=value;
+    cc_perio_setToothAt(cc_perio_getToothNum(), aTooth);
+  }
+  else {
+    alert ("an error has occurred in setInputNumberValue()");
+    //console.log(aTooth.toString());
+  }
+  //console.log(aTooth.toString());
+}
+
+/**
+* This function returns a tooth object
+* @param {number} num - a tooth number between 1-32
+**/
+function cc_perio_getToothAt(num) {
+  //console.log("cc_perio_getToothAt()");
+  if (num >=1 && num <=32) {
+    return cc_perio_teeth[num-1];
+  }
+  else {
+    alert ("sorry, an error has occurred at cc_perio_getToothAt("+num+").");
+  }
+}
+
+// start listeners
+
+$j('#cc-perio-wrapper').on('mouseover', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-legend', function() {
+  $j(this).find('.cc-tooltip').removeClass('cc-gone');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-legend', function() {
+  var legend = $j('#cc-perio-container-active .cc-perio-legend-container');
+  if (legend.attr('state') == 'open') {
+    legend.slideUp();
+    legend.attr('state', 'closed');
+  }
+  else {
+    legend.slideDown();
+    legend.attr('state', 'open');
+  }
+
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-prosth', function() {
+  var prosth = $j('#cc-perio-container-active .cc-form-container');
+  if (prosth.attr('state') == 'open') {
+    prosth.slideUp();
+    prosth.attr('state', 'closed');
+  }
+  else {
+    prosth.slideDown();
+    prosth.attr('state', 'open');
+    $j('html, body').animate({
+        scrollTop: $j('#cc-perio-container-active .cc-form-container').offset().top - 165
+    }, 'slow');
+  }
+
+});
+
+$j('#cc-perio-wrapper').on('mouseleave', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-legend', function() {
+  $j(this).find('.cc-tooltip').addClass('cc-gone');
+});
+
+$j('#cc-perio-wrapper').on('mouseover', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-prosth', function() {
+  $j(this).find('.cc-tooltip').removeClass('cc-gone');
+});
+
+$j('#cc-perio-wrapper').on('mouseleave', '#cc-perio-container-active .cc-perio-measure-leftSide-buttonContainer-prosth', function() {
+  $j(this).find('.cc-tooltip').addClass('cc-gone');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-buccal-top-right', function() {
+    console.log("buccal top right");
+    cc_perio_setHandVPosition('buccal','top');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-buccal-top-left', function() {
+    console.error("buccal top left");
+    cc_perio_setHandVPosition('buccal','top');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-lingual-top-right', function() {
+    console.log("lingual top right");
+    cc_perio_setHandVPosition('lingual','top');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-lingual-top-left', function() {
+    console.log("lingual top left");
+    cc_perio_setHandVPosition('lingual','top');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-buccal-bottom-right', function() {
+    console.log("buccal bottom right");
+    cc_perio_setHandVPosition('buccal','bottom');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-buccal-bottom-left', function() {
+    console.log("buccal bottom left");
+    cc_perio_setHandVPosition('buccal','bottom');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-lingual-bottom-right', function() {
+    console.log("lingual bottom right");
+    cc_perio_setHandVPosition('lingual','bottom');
+});
+
+$j('#cc-perio-wrapper').on('click', '#cc-perio-container-active .cc-perio-lingual-bottom-left', function() {
+    console.log("lingual bottom left");
+    cc_perio_setHandVPosition('lingual','bottom');
+});
+
+
+
+
+var textAreaFocus;
+
+$j('#cc-perio-wrapper').on('focus', '#cc-perio-container-active .cc-perio-comments', function(e) {
+  textAreaFocus = true;
+
+});
+
+$j('#cc-perio-wrapper').on('blur', '#cc-perio-container-active .cc-perio-comments', function(e) {
+  textAreaFocus = false;
+
+});
+
+$j('#cc-perio-wrapper').on('focus', '#cc-perio-container-active .cc-form-container', function(e) {
+  textAreaFocus = true;
+
+});
+
+$j('#cc-perio-wrapper').on('blur', '#cc-perio-container-active .cc-form-container', function(e) {
+  textAreaFocus = false;
+
+});
+
+function cc_perio_isTextAreaFocus() {
+  return textAreaFocus;
+}
+
+//watches for an arrow key
+document.addEventListener("keydown", function(e){
+  // console.log('document.addEventListener-keydown');
+  if (!cc_perio_isTextAreaFocus()) {
+    var key = e.which || e.keyCode;
+    switch (e.keyCode) {
+      case 37: //left
+          cc_perio_arrowMoveToTooth('left');
+          break;
+      case 13:
+          // cc_perio_closeAlert();
+          break;
+      case 38: //up arrow
+          cc_perio_arrowMoveToTooth('up');
+          break;
+      case 39: //right arrow
+          cc_perio_arrowMoveToTooth('right');
+          break;
+      case 40://down
+          cc_perio_arrowMoveToTooth('down');
+          break;
+      case 73:
+          // cc_perio_updateToothFromHotKey('Implant', null, null);
+          cc_perio_attributeClicked('Implant');
+          break;
+      case 78:
+          cc_perio_attributeClicked('Natural');
+          break;
+      case 77:
+          // updateInput('m');
+          cc_perio_attributeClicked('Missing');
+          break;
+      case 80:
+          // updateInput('p');
+          cc_perio_attributeClicked('Pontic');
+          break;
+      case 67:
+          // updateInput('c');
+          cc_perio_attributeClicked('Crown');
+          break;
+      case 69:
+          // updateInput('e');
+          cc_perio_attributeClicked('Endodontic');
+          break;
+      case 68:
+          // updateInput('d');
+          cc_perio_attributeClicked('Decay');
+          break;
+    }
+  }
+});
+
+
+function cc_perio_isHotKeyCodeValid(key) {
+  switch (key) {
+    case 37: //left
+        return true;
+    case 9:
+        return true;
+    case 13:
+        return true;
+    case 38: //up arrow
+        return true;
+    case 39: //right arrow
+        return true;
+    case 40://down
+        return true;
+    case 73:
+        return true;
+    case 78:
+        return true;
+    case 77:
+        return true;
+    case 80:
+        return true;
+    case 67:
+        // updateInput('c');
+        return true;
+    case 69:
+        // updateInput('e');
+        return true;
+    case 68:
+        // updateInput('d');
+        return true;
+  }
+  return false;
+}
+
+
+
+function cc_perio_initListeners() {
+  // console.log("cc_perio_initListeners()");
+  for (i=1; i<=32; i++) {
+    cc_perio_addToothListener(i);
+  }
+}
+
+//end listeners
+
+  //returns the previous tooth num
+  function cc_perio_prevToothNum() {
+    if (cc_perio_toothNum == 1) {
+      return 32;
+    }
+    else return cc_perio_getToothNum()-1;
+  }
+
+  //returns the next tooth num
+  function cc_perio_nextToothNum() {
+    if (cc_perio_toothNum == 32) {
+      return 1;
+    }
+    else return cc_perio_getToothNum()+1;
+  }
+
+
+
+
+var cc_perio_addToothListener = function(num) {
+  var id = '#cc-perio-container-active .cc-perio-t'+num;
+  $j(id).on('click', function() {
+    cc_perio_clickedTooth(id);
+  });
+};
+
+//called on mouse clicks
+function cc_perio_clickedTooth(id) {
+  console.log('cc_perio_clickedTooth | id: '+id);
+  var vpos = cc_perio_getVPosition(); //previous vpos
+  cc_perio_setToothNum(cc_perio_getToothNumFromId(id));
+  var aTooth = cc_perio_getToothAt(cc_perio_getToothNum());
+  //we don't know v or h pos so reset to buccal if changing rows
+  vpos = cc_perio_calcVPos(id);
+  if (vpos != cc_perio_getVPosition()) {
+    cc_perio_toothMoved(aTooth, 'buccal', vpos);
+  }
+  else {
+    cc_perio_toothMoved(aTooth, cc_perio_getHPosition(), vpos);
+  }
+
+}
+
+//functions shared by clicking or arrow navigation
+//switchBL is a flag saying whether the tooth was moved cause it was at the end of the row and user inputted
+function cc_perio_toothMoved(aTooth, hpos, vpos) {
+  console.log("toothMoved: "+aTooth.toString()+'\nhpos: '+hpos+'\nvpos: '+vpos);
+  cc_perio_setToothNum(aTooth.number);
+  cc_perio_moveHandVPosition(hpos,vpos);
+  cc_perio_refreshInputs(aTooth.typeOf);
+  cc_perio_updateInputs(aTooth, cc_perio_getHPosition());
+  cc_perio_setSelectedThumb(aTooth.number); //changes background to blue on selected tooth
+  cc_perio_checkOldVal(aTooth);
+  cc_perio_selectedInputFocusUpdate(); //determines if there are any open inputs, and if so, puts the focus there
+  // cc_perio_resetCurrentToothShadow();
+  cc_perio_updateAttributeLabels(aTooth); //sets all the labels for attributes to on/off
+  cc_perio_updateMeasurementLabel(aTooth.number, hpos, vpos);
+}
+
+/**
+* goes through the tooth's attributes and then toggles the attribute labels
+* called by cc_perio_toothMoved when user clicks or keys to tooth
+* @param {tooth Object} aTooth - the tooth object from the teeth array which will trigger labels to be changed
+**/
+var cc_perio_updateAttributeLabels = function(aTooth) {
+  // console.log('cc_perio_updateAttributeLabels()' +aTooth.toString());
+  var typeOf = aTooth.typeOf;
+  var endo = aTooth.endo;
+  var decay = aTooth.decay;
+
+  var endoId = $j('#Endodontic');
+  var decayId = $j('#Decay');
+
+  if(endo) {
+    endoId.addClass('cc-perio-typeOfSelected');
+  }
+  else {
+    endoId.removeClass('cc-perio-typeOfSelected');
+  }
+
+  if(decay) {
+    decayId.addClass('cc-perio-typeOfSelected');
+  }
+  else {
+    decayId.removeClass('cc-perio-typeOfSelected');
+  }
+
+  cc_perio_toggleAttributeCellSelected(typeOf);
+
+};
+
+// ?????
+function cc_perio_endoDecayChanged(aTooth) {
+  cc_perio_updateDecayLabel(false);
+  cc_perio_currentToothDecayLabel(false);
+  cc_perio_currentToothEndoLabel(false);
+}
+
+
+
+
+
+
+
+// //when a user moves to a tooth, it sets
+// function cc_perio_currentToothTypeOfSelected(typeOf) {
+//   //console.log("currentToothTypeOfSelected:");
+//   var typeOfSelected = $j('.cc-perio-typeOfSelected');
+//   var typeOfId = $j('#'+typeOf);
+//
+//   if (typeOfSelected !== null) {
+//     typeOfSelected.attr('class',''); //reset any currently selected tooth
+//   }
+//   else {
+//     alert ("currentToothTypeOfSelected(typeOf): unable to find a class with typeOfSelected");
+//   }
+//   if (typeOfId !== null) {
+//     // set the new selected tooth
+//     typeOfId.attr('class', 'cc-perio-typeOfSelected');
+//   }
+//   else {
+//     alert ("currentToothTypeOfSelected(typeOf): unable to find #typeOf: "+typeOf);
+//   }
+// }
+
+
+function cc_perio_setInput1HasValue(bool) {
+  cc_perio_input1HasValue = bool;
+}
+
+function cc_perio_getInput1HasValue() {
+  return cc_perio_input1HasValue;
+}
+
+function cc_perio_setInput2HasValue(bool) {
+  cc_perio_input2HasValue = bool;
+}
+
+function cc_perio_getInput2HasValue() {
+  return cc_perio_input2HasValue;
+}
+
+function cc_perio_setInput3HasValue(bool) {
+  cc_perio_input3HasValue = bool;
+}
+
+function cc_perio_getInput3HasValue() {
+  return cc_perio_input3HasValue;
+}
+
+function cc_perio_isKeyCodeNum(key) {
+  if (key >= 48 && key <=57 ) {
+    return true;
+  }
+  return false;
+}
+
+
+//if the user enters a value while the inputs have a value - checkOldVal
+//1. need to make sure any new entered value erases previous input
+//2. update tooth info
+//3. clears the stats
+//4. can be triggered by mouse, keyboard, or input focus javascript
+function cc_perio_checkOldVal(aTooth) {
+  //console.log("checkOldVal()");
+
+  var m1 = aTooth.measure[0];
+  var m2 = aTooth.measure[1];
+  var m3 = aTooth.measure[2];
+
+  if (m1 !== null && m1 !== '') {
+    cc_perio_setInput1HasValue(true);
+    //console.log("checkOldVal():1 true");
+  }
+  else {
+    cc_perio_setInput1HasValue(false);
+    //console.log("checkOldVal():1 false");
+  }
+  if (m2 !== null && m2 !== '') {
+    cc_perio_setInput2HasValue(true);
+    //console.log("checkOldVal():2 true");
+  }
+  else {
+    cc_perio_setInput2HasValue(false);
+    //console.log("checkOldVal():2 false");
+  }
+  if (m3 !== null && m3 !== '') {
+    cc_perio_setInput3HasValue(true);
+    //console.log("checkOldVal():3 true");
+  }
+  else {
+    cc_perio_setInput3HasValue(false);
+    //console.log("checkOldVal():3 false");
+  }
+}
+
+
+
+//param next, prev, or current
+//returns the toothNum
+function cc_perio_getFocusedNumPosition(position) {
+  if (position == 'next') {
+    return cc_perio_nextToothNum();
+  }
+  else if (position == 'prev') {
+    return cc_perio_prevToothNum();
+  }
+  else if (position == 'current') {
+    return cc_perio_getToothNum();
+  }
+}
+
+
+
+
+
+
+function cc_perio_getPrevTooth() {
+  var num = cc_perio_getToothNum();
+  if (num == 1) {
+    num = 32;
+  }
+  else {
+    num += -1;
+  }
+  return cc_perio_getToothAt(num);
+}
+
+function cc_perio_getNextTooth() {
+  var num = cc_perio_getToothNum();
+  if (num == 32) {
+    num = 1;
+  }
+  else {
+    num += 1;
+  }
+  return cc_perio_getToothAt(num);
+}
+
+function cc_perio_getCurrentTooth() {
+  return cc_perio_getToothAt(cc_perio_getToothNum());
+}
+
+
+
+
+
+function cc_perio_setCurrentTooth(aTooth) {
+  return cc_perio_setToothAt(cc_perio_getToothNum(), aTooth);
+}
+
+
+
+function cc_perio_decayChanged(aTooth, decay) {
+  if (aTooth.decay) {
+    aTooth.decay = !decay; //was already set to true, so now we remove toothDecay
+    cc_perio_updateDecayLabel(!decay);
+    cc_perio_currentToothDecayLabel(!decay);
+  }
+  else {
+    aTooth.decay = decay;
+    cc_perio_updateDecayLabel(decay);
+    cc_perio_currentToothDecayLabel(decay);
+  }
+}
+
+
+
+
+function cc_perio_updateFocusedToothValues(measure, eid) {
+  //console.log("updateFocusedToothValues():"+measure+' '+eid);
+  if (eid === null) {
+    // console.error('cc_perio_updateFocusedToothValues() - null value passed');
+  }
+  else {
+    if (measure !== null) {
+      eid.innerHTML=measure;
+    }
+    else {
+      eid.innerHTML='';
+    }
+  }
+}
+
+
+
+
+//updates the label of the tooth number under each tooth and above measurements
+
+
+
+
+
+function cc_perio_setSelectedThumb(num) {
+  // console.log("cc_perio_setSelectedThumb()");
+  var selected = $j('#cc-perio-container-active .cc-perio-selected');
+  var cell = $j('#cc-perio-container-active .cc-perio-t'+num);
+  if (selected !== null && cell !== null) {
+      selected.removeClass('cc-perio-selected');
+      cell.addClass('cc-perio-selected');
+  }
+  else {
+    alert('Error! invalid moveToTooth | num: ' + num + ' toothNum: '+toothNum);
+  }
+}
+
+//sets the inputs with tooth value passed
+function cc_perio_updateInputs(aTooth, hposition) {
+  // console.log('cc_perio_updateInputs()');
+  if (hposition == "buccal") {
+    $j('#cc-perio-container-active .cc-perio-first').value=aTooth.measure[0];
+    $j('#cc-perio-container-active .cc-perio-second').value=aTooth.measure[1];
+    $j('#cc-perio-container-active .cc-perio-third').value=aTooth.measure[2];
+  }
+  else if (hposition == "lingual") {
+    $j('#cc-perio-container-active .cc-perio-first').value=aTooth.measure[3];
+    $j('#cc-perio-container-active .cc-perio-second').value=aTooth.measure[4];
+    $j('#cc-perio-container-active .cc-perio-third').value=aTooth.measure[5];
+  }
+
+}
+
+function cc_perio_refreshInputs(typeOf) {
+  // console.error("cc_perio_refreshInputs() typeOf: "+typeOf);
+  //if missing hide inputs
+  if(typeOf=='Missing' || typeOf =='Pontic') {
+    cc_perio_hideInputs();
+  }
+  else {
+    cc_perio_showInputs();
+    cc_perio_clearInputs();
+    cc_perio_selectedInputFocusUpdate();
+  }
+}
+
+
+function cc_perio_hideInputs() {
+  console.log("hideInputs");
+  var parent = $j("#cc-perio-container-active");
+  console.log('class: '+parent.attr('class'));
+  var inputs = parent.find('.cc-perio-inputs');
+  inputs.css('visibility','hidden');
+
+}
+
+function cc_perio_showInputs() {
+  // console.error("showInputs");
+  $j("#cc-perio-container-active .cc-perio-inputs").css('visibility','visible');
+
+  var parent = $j("#cc-perio-container-active");
+  var inputs = parent.find('.cc-perio-inputs');
+  inputs.css('visibility','visible');
+}
+
+/**
+*
+**/
+function cc_perio_moveHandVPosition(hpos, vpos) {
+  console.log("cc_perio_moveHandVPosition()");
+  cc_perio_setVPosition(vpos);
+  cc_perio_setHPosition(hpos);
+  // cc_perio_setHPositionLabel(hpos); //change the Tooth # [lingual | buccal] pocket depth
+  cc_perio_updateBLLinks(vpos, hpos); //change link colors to selected or normal
+  // cc_perio_selectedInputFocusUpdate();
+}
+
+$j('.cc-toolbar-button-icon, .cc-toolbar-button-patient').hover(function() {
+  var parent = $j(this).closest('.cc-toolbar-button-icon-container');
+  var tooltip = parent.find('.cc-toolbar-button-icon-tooltip');
+  tooltip.css('display', 'block');
+  tooltip.animate({opacity: '1'}, 150);
+}, function() {
+  var parent = $j(this).closest('.cc-toolbar-button-icon-container');
+  var tooltip = parent.find('.cc-toolbar-button-icon-tooltip');
+  tooltip.css('opacity', '0');
+  tooltip.css('display', 'none');
+});
+
+//called on a clicked tooth or a key stroke
+//determines if there are any open inputs, and if so, puts the focus there
+//otherwise puts focus on first input
+function cc_perio_selectedInputFocusUpdate() {
+  // console.error("selectedInputFocusUpdate() ");
+  if (!cc_perio_getInput1HasValue()) {
+    $j('#cc-perio-container-active .cc-perio-first').focus();
+    //console.log("selectedInputFocusUpdate() 1");
+  }
+  else if (!cc_perio_getInput2HasValue()) {
+    $j('#cc-perio-container-active .cc-perio-second').focus();
+    //console.log("selectedInputFocusUpdate() 2");
+  }
+  else if (!cc_perio_getInput3HasValue()) {
+    $j('#cc-perio-container-active .cc-perio-third').focus();
+    //console.log("selectedInputFocusUpdate() 3");
+  }
+  else {
+    $j('#cc-perio-container-active .cc-perio-first').focus();
+  }
+}
+
+
+
+//changes links from selected to normal & vice-versa
+function cc_perio_updateBLLinks(vposition, hposition) {
+  var elems;
+  var el;
+  if (vposition == 'top' && hposition == 'lingual') {
+    cc_perio_resetVandHPosition();
+    elems = $j('#cc-perio-container-active .lingual-top');
+
+    elems.addClass('lingual-top-selected');
+  }
+  else if (vposition == 'top' && hposition == 'buccal') {
+    cc_perio_resetVandHPosition();
+    elems = $j('#cc-perio-container-active .buccal-top');
+    elems.addClass('buccal-top-selected');
+
+  }
+  else if (vposition == 'bottom' && hposition == 'buccal') {
+    cc_perio_resetVandHPosition();
+    elems = $j('.buccal-bottom');
+    elems.addClass('buccal-bottom-selected');
+  }
+  else if (vposition == 'bottom' && hposition == 'lingual') {
+    cc_perio_resetVandHPosition();
+    elems = $j('.lingual-bottom');
+    elems.addClass('lingual-bottom-selected');
+  }
+}
+
+
+function cc_perio_resetVandHPosition() {
+  var bt = $j('#cc-perio-container-active .buccal-top-selected');
+  var bb = $j('#cc-perio-container-active .buccal-bottom-selected');
+  var lt = $j('#cc-perio-container-active .lingual-top-selected');
+  var lb = $j('#cc-perio-container-active .lingual-bottom-selected');
+
+  bt.removeClass('buccal-top-selected').addClass('buccal-top');
+  bb.removeClass('buccal-bottom-selected').addClass('buccal-bottom');
+  lt.removeClass('lingual-top-selected').addClass('lingual-top');
+  lb.removeClass('lingual-bottom-selected').addClass('lingual-bottom');
+
+}
+
+
+
+function cc_perio_calcVPos(id) {
+  var num = parseInt(id.match(/\d+/));
+  //console.log("calcVPos() id: "+id+' num: '+num);
+  if (num > 16) {
+    return "bottom";
+  }
+  else return "top";
+}
+
+function cc_perio_setToothNum(num) {
+  //console.log("cc_perio_setToothNum: "+num);
+  cc_perio_toothNum = num;
+}
+
+
+
+function cc_perio_getToothNumFromId(id) {
+  // console.log('cc_perio_getToothNumFromId: '+id);
+  var re = /\d+/g;
+  return parseInt(id.match(re)[0]);
+}
+
+  function cc_perio_setVPosition (v) {
+    //console.log("setVPosition(): "+v);
+    cc_perio_vPosition = v;
+  }
+
+  function cc_perio_setHPosition (h) {
+    //console.log("setHPosition(): "+h);
+    cc_perio_hPosition = h;
+  }
+
+  function cc_perio_getVPosition () {
+    // console.log("cc_perio_getVPosition(): "+cc_perio_vPosition);
+    return cc_perio_vPosition;
+  }
+
+  function cc_perio_getHPosition () {
+    // console.log("getHPosition(): "+cc_perio_hPosition);
+    return cc_perio_hPosition;
+  }
+
+  //if a tooth is missing
+  function cc_perio_clearInputs() {
+    $j('#cc-perio-container-active .cc-perio-first').val('');
+    $j('#cc-perio-container-active .cc-perio-second').val('');
+    $j('#cc-perio-container-active .cc-perio-third').val('');
+  }
+
+  /**
+  * stores the input value keydown, so that keyup can restore the value to previous
+  * @param {string} position, the 1st, second, or 3rd input (1,2, or 3)
+  * @param {string} value, the id.value entered
+  **/
+  function cc_perio_setPrevInput(position, value) {
+    console.log("setPrevInput| position: "+position+ ' value: '+value);
+    prevInputVal=value;
+    prevInputPosition=position;
+  }
+
+/**
+* a letter or character has polluted the inputs with a non-numerical char, resets it to old value
+* @param {number} position - input 1, 2, or 3
+**/
+function cc_perio_restoreInputValue(position) {
+  console.log("restoreInputValue | position: "+position);
+  var input;
+  if (position === 1) {
+    input = $j('#cc-perio-container-active .cc-perio-first');
+  }
+  else if (position === 2) {
+    input = $j('#cc-perio-container-active .cc-perio-second');
+  }
+  else if (position === 3) {
+    input = $j('#cc-perio-container-active .cc-perio-third');
+  }
+  else {
+    alert("restoreInputValue error");
+  }
+  var restVal = getPrevInputVal();
+  if (!isNaN(restVal)) {
+    input.value = restVal;
+  }
+  else {
+    input.val('');
+  }
+}
+
+/**
+* Called when number has been entered in the input
+* manages changing of colors, focused teeth, entering number
+* @param {number} val the measurement
+* @param {number} position - input 1,2, or 3 digit
+**/
+function cc_perio_setToothInputValue(val, position) {
+  var toothN = cc_perio_getToothNum();
+  // console.error('setToothInputValue()'+'\nposition: '+position+'\nval: '+val+'\ntoothN: '+toothN);
+  cc_perio_setInputNumberValue(position, val); //determines if index = 0 or 3 by buccal or lingual position
+  cc_perio_refreshInputFocus(position); //moves input focus to next, at position 3 clears them and arrowMovesToTooh right
+  cc_perio_updateThumbToothColors(position, toothN);
+  cc_perio_insertMeasure(toothN, position, val);
+}
+
+/**
+* This function updates the thumbs with the color matching the measurement
+* @param {number} position - the 1st, 2nd, or 3rd input
+* @param {number} toothNum - the tooth number to update measurement colors
+**/
+function cc_perio_updateThumbToothColors(position, toothNum) {
+  console.error('updateThumbToothColors | position: '+position+' '+' toothNum:'+toothNum);
+
+  var classN;
+  var aTooth = cc_perio_getToothAt(toothNum);
+
+  var index = position-1;
+  var hpos = cc_perio_getHPosition();
+
+  if (hpos == 'lingual') {
+    index += 3;
+    position +=3;
+  }
+  else if (hpos == 'buccal') {
+    //do nothing position is good;
+  }
+  else {
+    alert("sorry an error has occurred in updateThumbToothColors()");
+  }
+
+  classN = '.cc-perio-thumb'+toothNum+'-'+position;
+  var measure = aTooth.measure[index];
+  var elem = $j('#cc-perio-container-active '+classN);
+  console.log("classN: "+classN+" measure: "+measure);
+  elem.removeClass('cc-perio-thumb-measure-blank');
+
+  cc_perio_clearPositionColor(toothNum, position);
+
+  if (position === '' || measure === null) {
+    elem.addClass("cc-perio-thumb-measure-blank");
+  }
+  else if (measure >= 1 && measure <= 3) {
+    elem.addClass("cc-perio-thumb-measure-1");
+  }
+  else if (measure > 3 && measure < 6) {
+    elem.addClass("cc-perio-thumb-measure-3");
+  }
+  else if (measure > 5 ) {
+    elem.addClass("cc-perio-thumb-measure-5");
+  }
+}
+
+/**
+* Clears the element's color in the position, restoring it to blank
+**/
+function cc_perio_clearPositionColor(toothNum, position) {
+  var elem = $j('#cc-perio-container-active .cc-perio-thumb'+toothNum+'-'+position);
+
+  elem.removeClass("cc-perio-thumb-measure-1");
+
+  elem.removeClass("cc-perio-thumb-measure-3");
+
+  elem.removeClass("cc-perio-thumb-measure-5");
+
+  elem.addClass('cc-perio-thumb-measure-blank');
+}
+/**
+* Clears the element's color in the position, restoring it to blank
+**/
+function cc_perio_clearPositionMeasurement(toothNum, position) {
+  var elem = $j('#cc-perio-container-active .cc-perio-thumb'+toothNum+'-'+position);
+
+  elem.empty();
+}
+
+/**
+* Clears the ui measurements for a tooth, for example, if Missing is assigned to a tooth and in the teeth array
+*/
+function cc_perio_clearMeasurements(toothN) {
+  var elem;
+  for (i=1; i<=6; i++) {
+      elem = $j('#cc-perio-container-active .cc-perio-thumb'+toothN+'-'+i);
+      elem.empty();
+  }
+
+  var aTooth = cc_perio_getToothAt(toothN);
+  aTooth.measure[0]=null;
+  aTooth.measure[1]=null;
+  aTooth.measure[2]=null;
+  aTooth.measure[3]=null;
+  aTooth.measure[4]=null;
+  aTooth.measure[5]=null;
+  cc_perio_setToothAt(toothN, aTooth);
+}
+
+
+
+
+/**
+* This function inserts the measurement into the colored circle
+* @param {number} num - the tooth number
+* @param {number} position - the input number (1,2, 3)
+* @param {number} value - the measurement value
+**/
+function cc_perio_insertMeasure(num, position, value) {
+  console.error('cc_perio_insertMeasure()\nnum: '+num+'\nposition: '+position+'\nvalue: '+value);
+    var hpos = cc_perio_getHPosition();
+    if (hpos == 'lingual') {
+      position +=3;
+    }
+    else if (hpos == 'buccal') {
+      //do nothing position is good;
+    }
+    else {
+      alert("sorry an error has occurred in updateThumbToothColors()");
+    }
+
+  var circle = $j('#cc-perio-container-active .cc-perio-thumb'+num+'-'+position);
+  circle.text(value);
+
+}
+
+/**
+*  This function moves the focus from one input to the next, for example, from input 3 the user returns to input 1, moves to the next tooth, and clears values
+* @param {number} position - the current input entry
+**/
+function cc_perio_refreshInputFocus(position) {
+  //console.log("refreshInputFocus()");
+  if (position == 1 ) {
+    //console.log("refreshInputFocus position == 1");
+    $j('#cc-perio-container-active .cc-perio-second').focus();
+  }
+  else if (position == 2) {
+    $j('#cc-perio-container-active .cc-perio-third').focus();
+  }
+  else if (position == 3) {
+
+    cc_perio_listenOn = false;
+    cc_perio_hideInputs();
+    setTimeout(function(){
+
+      cc_perio_clearInputs();
+      $j('#cc-perio-container-active .cc-perio-first').focus();
+      cc_perio_arrowMoveToTooth('right');
+      cc_perio_listenOn=true;
+      cc_perio_showInputs();
+    },150);
+
+  }
+}
+
+
+
+
+function cc_perio_arrowMoveToTooth(direction) {
+
+  var hpos = cc_perio_getHPosition();
+  var vpos = cc_perio_getVPosition();
+  var toothN = cc_perio_getToothNum();
+  var aTooth;
+
+  // console.error('hpos: '+hpos+' vpos: '+vpos+' direction: '+direction+' toothN: '+toothN);
+
+  var goToToothNum;
+  var goToHpos = hpos;
+  var goToVpos = vpos;
+
+  if (toothN == 16 && direction == 'right' && hpos == 'buccal') {
+    goToToothNum = 1;
+    goToHpos = 'lingual';
+    goToVpos = 'top';
+  }
+  else if (toothN == 16 && direction == 'right' && hpos == 'lingual') {
+    goToToothNum = 17;
+    goToHpos = 'buccal';
+    goToVpos = 'bottom';
+  }
+  else if (toothN == 17 && direction == 'left' && hpos == 'buccal') {
+    goToToothNum = 16;
+    goToHpos = 'lingual';
+    goToVpos = 'top';
+  }
+  else if (toothN == 17 && direction == 'left' && hpos == 'lingual') {
+    goToToothNum = 32;
+    goToHpos = 'buccal';
+    goToVpos = 'bottom';
+  }
+  else if (toothN === 1 && direction == 'left' && hpos == 'buccal') {
+    goToToothNum = 32;
+    goToHpos = 'lingual';
+    goToVpos = 'bottom';
+  }
+  else if (toothN === 1 && direction == 'left' && hpos == 'lingual') {
+    goToToothNum = 16;
+    goToHpos = 'buccal';
+    goToVpos = 'top';
+  }
+  else if (toothN === 32 && direction == "right" && hpos == 'buccal') {
+    goToToothNum = 17;
+    goToHpos = 'lingual';
+    goToVpos = 'bottom';
+  }
+  else if (toothN === 32 && direction == "right" && hpos == 'lingual') {
+    goToToothNum = 1;
+    goToHpos = 'buccal';
+    goToVpos = 'top';
+  }
+  else if (vpos == 'top' && direction == 'up' && hpos == 'buccal') {
+
+    goToToothNum = 16 + cc_perio_getToothNum();
+    goToHpos = 'lingual';
+    goToVpos = 'bottom';
+  }
+  else if (vpos == 'top' && direction == 'up' && hpos == 'lingual') {
+    goToToothNum = cc_perio_getToothNum();
+    goToHpos = 'buccal';
+    goToVpos = vpos;
+  }
+  else if (vpos == 'top' && direction == 'down' && hpos == 'buccal') {
+    goToToothNum = cc_perio_getToothNum();
+    goToHpos = 'lingual';
+    goToVpos = vpos;
+  }
+  else if (vpos == 'top' && direction == 'down' && hpos == 'lingual') {
+    goToToothNum = cc_perio_getToothNum()+16;
+    goToHpos = 'buccal';
+    goToVpos = 'bottom';
+  }
+  else if (vpos == 'bottom' && direction == 'up' && hpos == 'lingual') {
+    goToToothNum = cc_perio_getToothNum();
+    goToHpos = 'buccal';
+    goToVpos = 'bottom';
+  }
+  else if (vpos == 'bottom' && direction == 'up' && hpos == 'buccal') {
+    goToToothNum = cc_perio_getToothNum()-16;
+    goToHpos = 'lingual';
+    goToVpos = 'top';
+  }
+  else if (vpos == 'bottom' && direction == 'down' && hpos == 'lingual') {
+    goToToothNum = cc_perio_getToothNum()-16;
+    goToHpos = 'buccal';
+    goToVpos = 'top';
+  }
+  else if (vpos == 'bottom' && direction == 'down' && hpos == 'buccal') {
+    goToToothNum = cc_perio_getToothNum();
+    goToHpos = 'lingual';
+    goToVpos = 'bottom';
+  }
+  else if (direction == 'right') {
+    goToToothNum = cc_perio_getToothNum()+1;
+    //console.log('arrowMoveToTooth() | right\n'+goToToothNum);
+  }
+  else if (direction == 'left') {
+    goToToothNum = cc_perio_getToothNum()-1;
+    //console.log('arrowMoveToTooth() | left');
+  }
+
+  aTooth = cc_perio_getToothAt(goToToothNum);
+
+  cc_perio_toothMoved(aTooth, goToHpos, goToVpos);
+}
+
+
+
+/**
+* This function assigns a value to an input, overridding the previous value
+* ex: if '4' exists in input and user enters '5', in order to override '45', the value is set to '5'
+*/
+function cc_perio_newInputValue(num, position) {
+  console.log("newInputValue()\nposition: "+position+'\nnum: '+num);
+  var input;
+  if (position === 1) {
+    input = $j('#cc-perio-container-active .cc-perio-first');
+  }
+  else if (position === 2) {
+    input = $j('#cc-perio-container-active .cc-perio-second');
+  }
+  else if (position === 3) {
+    input = $j('#cc-perio-container-active .cc-perio-third');
+  }
+  else {
+    alert("newInputValue error");
+  }
+  input.val(num);
+}
+
+/**
+* Called when a user hits a key and the focus is on one of the three inputs
+* verifies if input is a digit, and if so, sets the value
+* otherwise, it ignores the input
+* @param {string} key - the keycode entered
+* @param {string} input class, i.e. .cc-perio-first
+* @param {number} input 1, 2, or 3
+**/
+function cc_perio_keyUpManager(key, input, position) {
+  var val = String.fromCharCode(key);
+  var num = parseInt(val);
+  // console.error('cc_perio_keyUpManager():\n'+'val: '+val+'\nnum: '+num+'\nkey: '+key+'\ninput: '+input+'\nposition: '+position);
+
+  if(isLetter(key)) { //is a letter check for hotkeys
+    // console.log('keyUpManager() - is letter');
+    if (validateHotKeyInput(val)) { //do nothing, hotkey function takes care of it
+      console.log('keyUpManager - validateHotKeyInput()');
+    }
+    else {
+      //console.log('keyUpManager() - not hotkey');
+      // keyAlertOn(input);
+      alert ('Sorry '+val+' is not a valid input character');
+    }
+    cc_perio_restoreInputValue(position);
+  }
+  else if(!isNaN(num)) {
+    console.log('keyUpManager()\nvalid number: '+num);
+    cc_perio_newInputValue(num,position);
+    cc_perio_setToothInputValue(num, position);
+  }
+  else if (cc_perio_isHotKeyCodeValid(key)) {
+    //do nothing goToNextInputField handles it
+  }
+  else {
+    console.log('keyupManager() - invalid');
+    cc_perio_restoreInputValue(position);
+    keyAlertOn(input);
+  }
+}
+
+/**
+* a user can type a hotkey while the focus is in an input field.
+* anything other than 0-9 is removed, and the previous numerical value (if there is one) is restored
+**/
+  $j('#cc-perio-wrapper').on('keyup', '#cc-perio-container-active .cc-perio-first', function(e) {
+    console.log('$j(\'#cc-perio-container-active .cc-perio-first\').on(\'keyup\'');
+    cc_perio_keyUpManager(e.keyCode, $j('#cc-perio-container-active .cc-perio-first'), 1);
+  });
+
+  $j('#cc-perio-wrapper').on('keydown', '#cc-perio-container-active .cc-perio-first', function(e) {
+    // console.log('on: keydowninput1 set previous value');
+    cc_perio_setPrevInput(1, $j('#cc-perio-container-active .cc-perio-first').value);
+  });
+
+  //keydown for hotkeys and overwritting previous values
+  $j('#cc-perio-wrapper').on('keyup', '#cc-perio-container-active .cc-perio-second', function(e) {
+    // console.log('on: keyupinput2');
+    cc_perio_keyUpManager(e.keyCode, $j('#cc-perio-container-active .cc-perio-second'), 2);
+  });
+
+  $j('#cc-perio-wrapper').on('keydown', '#cc-perio-container-active .cc-perio-second', function(e) {
+    // console.log('on: keydowninput2');
+    cc_perio_setPrevInput(2, $j('#cc-perio-container-active .cc-perio-second').value);
+  });
+
+  //keydown for hotkeys and overwritting previous values
+  $j('#cc-perio-wrapper').on('keyup', '#cc-perio-container-active .cc-perio-third', function(e) {
+    //console.log('on: keyupinput3');
+    cc_perio_keyUpManager(e.keyCode, $j('#cc-perio-container-active .cc-perio-third'), 3);
+  });
+
+  $j('#cc-perio-wrapper').on('keydown', '#cc-perio-container-active .cc-perio-third', function(e) {
+    //console.log('addEventListener: keydowninput3');
+    cc_perio_setPrevInput(3, $j('#cc-perio-container-active .cc-perio-third').value);
+    if (e.keyCode == 9) {
+      e.preventDefault();
+      $j('#cc-perio-container-active .cc-perio-first').focus();
+    }
+  });
+
+
+
+
+  //sets a tooth in the teeth array between 1-32 with a tooth Object
+  function cc_perio_setToothAt(num, aTooth) {
+    console.log("setToothAt | num: "+num+' aTooth: '+aTooth.toString());
+    if (num >=1 && num <=32) {
+      cc_perio_teeth[num-1]=aTooth;
+      return true;
+    }
+    else {
+      alert ("sorry, an error has occurred at setToothAt("+num+"). "+aTooth.toString());
+      return false;
+    }
+  }
+
+var fooArray=['bar'];
+var bar = fooArray[0];
+
+/**
+* @param {string} id - the id of the attribute element cell clicked without the hash tag (ex: Endodontic, not #Endodontic)
+* calls functions like cc_perio_setAttributeValue as needed to handle an Implant click if the Decay attribute is set, etc.
+**/
+var cc_perio_attributeClicked = function(attr) {
+
+  // console.error('cc_perio_attributeClicked() | attr: '+attr);
+
+  var toothN = cc_perio_getToothNum();
+  var aTooth = cc_perio_getToothAt(toothN);
+
+  aTooth = cc_perio_setAttributeValue(aTooth, attr); //manages which attributes can go with which typeOf
+  cc_perio_setToothAt(cc_perio_getToothNum(), aTooth); //changes the value of the tooth in the array
+  cc_perio_updateAttributeLabels(aTooth);
+  cc_perio_selectedInputFocusUpdate();//sets the focus of the inputs to the first empty one ??????
+  cc_perio_updateToothImage(aTooth);
+  cc_perio_updateDecayImage(toothN, aTooth.decay); //makes the tooth number a black circle to indicate decay
+  cc_perio_updateMeasurements(toothN);
+  cc_perio_refreshInputs(aTooth.typeOf); //checks if tooth is missing and if so removes inputs
+};
+
+/**
+* checks if the tooth is a typeOf that would require wiping the measurements (like Missing or Pontic)
+* @param toothN {number} - the tooth number where changes were made
+*/
+function cc_perio_updateMeasurements(toothN) {
+  var tooth = cc_perio_getToothAt(toothN);
+  var clear = false;
+  var type = tooth.typeOf;
+
+  if (type == 'Missing' || type == 'Pontic') {
+    clear = true;
+  }
+
+  if (clear) {
+    cc_perio_clearMeasurements(toothN);
+    for (i=1; i<=6; i++) {
+      cc_perio_clearPositionColor(toothN, i);
+    }
+  }
+}
+
+//makes the tooth number a black circle to indicate decay
+var cc_perio_updateDecayImage = function(toothN, toggle) {
+  // console.error('cc_perio_updateDecayImage()');
+  var elem = $j('#cc-perio-container-active .cc-perio-thumbToothLabel-'+toothN).find('.cc-perio-teeth-number-label');
+  var classN = 'cc-perio-thumbToothDecay';
+
+  if(toggle) {
+    elem.addClass(classN);
+  }
+  else {
+    elem.removeClass(classN);
+  }
+};
+
+//sets the value of the tooth's attributes
+//@param aTooth - the tooth to change
+//@param id - the attribute to change of the tooth, endo, decay, Natural, etc
+var cc_perio_setAttributeValue = function(aTooth, id) {
+  // console.error('cc_perio_setAttributeValue()'+'\naTooth.toString: \n\n'+aTooth.toString()+'\n\nid: '+id);
+  var typeOf = aTooth.typeOf;
+
+  if (id == 'Endodontic') {
+    if (typeOf != "Implant") {
+      if (aTooth.endo) {
+        aTooth.endo=false;
+      }
+      else {
+        aTooth.endo=true;
+      }
+    }
+    else {
+      alert("Sorry, Endodontic cannot be applied to "+typeOf);
+    }
+
+    console.log('cc_perio_setAttributeValue()'+'\naTooth.toString: '+aTooth.toString()+'\nid: '+id);
+    return aTooth;
+  }
+  else if (id == 'Decay') {
+    if (typeOf != 'Crown' && typeOf != 'Missing' && typeOf != 'Pontic' && typeOf != 'Implant') {
+      if (aTooth.decay) {
+        aTooth.decay=false;
+      }
+      else {
+        aTooth.decay=true;
+      }
+      console.log('cc_perio_setAttributeValue()'+'\naTooth.toString: '+aTooth.toString()+'\nid: '+id);
+    }
+    else {
+      alert('Sorry Decay cannot be applied to '+typeOf);
+    }
+    return aTooth;
+  }
+  else if (id == 'Implant' && typeOf != 'Implant') { //reset any endo or decay values
+    if (aTooth.decay) {
+      aTooth.decay=false;
+    }
+    if (aTooth.endo) {
+      aTooth.endo=false;
+    }
+    aTooth.typeOf = id;
+    return aTooth;
+  }
+  else if (id == 'Implant' && typeOf == 'Implant') { //reset to Natural
+    aTooth.typeOf = 'Natural';
+    return aTooth;
+  }
+  else if (id == 'Missing' && typeOf != 'Missing') { //reset any endo or decay values
+    if (aTooth.decay) {
+      aTooth.decay=false;
+    }
+    if (aTooth.endo) {
+      aTooth.endo=false;
+    }
+    aTooth.typeOf = id;
+    return aTooth;
+  }
+  else if (id == 'Missing' && typeOf == 'Missing') { //reset to Natural
+    aTooth.typeOf = 'Natural';
+    return aTooth;
+  }
+  else if (id == 'Natural') { //reset any endo or decay values
+    aTooth.typeOf = id;
+    return aTooth;
+  }
+  else if (id == 'Crown' && typeOf != 'Crown') {
+    if (aTooth.decay) {
+      aTooth.decay=false;
+    }
+    aTooth.typeOf = id;
+    return aTooth;
+  }
+  else if (id == 'Crown' && typeOf == 'Crown') {
+    aTooth.typeOf = 'Natural';
+    return aTooth;
+  }
+  else if (id == 'Pontic' && typeOf != 'Pontic') {
+    if (aTooth.decay) {
+      aTooth.decay=false;
+    }
+    aTooth.typeOf = id;
+    return aTooth;
+  }
+  else if (id == 'Pontic' && typeOf == 'Pontic') {
+    aTooth.typeOf = 'Natural';
+    return aTooth;
+  }
+  else {
+    return null;
+  }
+
+};
+
+/**
+* Clears out the Natural, Implant, Missing, Pontic, Crown attributes but NOT the Decay or Endodontic attributes
+**/
+function cc_perio_clearTypeOfAttributes() {
+  $j('#cc-perio-container-active[attribute="Natural"]').removeClass('cc-perio-typeOfSelected');
+  $j('#cc-perio-container-active[attribute="Missing"]').removeClass('cc-perio-typeOfSelected');
+  $j('#cc-perio-container-active[attribute="Pontic"]').removeClass('cc-perio-typeOfSelected');
+  $j('#cc-perio-container-active[attribute="Crown"]').removeClass('cc-perio-typeOfSelected');
+  $j('#cc-perio-container-active[attribute="Decay"]').removeClass('cc-perio-typeOfSelected');
+  $j('#cc-perio-container-active[attribute="Endodontic"]').removeClass('cc-perio-typeOfSelected');
+}
+
+/**
+* @param {string} id - the id without the # hash tag
+* toggles the class to selected or not when clicked on
+* removes the selected tag from other attributes if they cannot have multiple values, i.e. Missing and Implant can't both be true.
+**/
+function cc_perio_toggleAttributeCellSelected(id) {
+
+  // console.error('cc_perio_toggleAttributeCellSelected()\nid: '+id);
+  if (id !== null) {
+      //clear out other values before assinging new one for Natural, Implant, Missing, Pontic, Crown
+      cc_perio_clearTypeOfAttributes();
+      var typeOf = cc_perio_getToothAt(cc_perio_getToothNum()).typeOf;
+      if (typeOf != id)
+      {
+          $j('#cc-perio-container-active[attribute="'+typeOf+'"]').toggleClass('cc-perio-typeOfSelected');
+      }
+      $j('#cc-perio-container-active[attribute="'+typeOf+'"]').toggleClass('cc-perio-typeOfSelected');
+  }
+  else {
+    alert ("unable to find id, null value passed");
+  }
+}
+
+
+  //only one hotkey at time, so 1 of three values is not null
+  //if all three are null will reset endo and decay to null
+  // function cc_perio_updateToothFromHotKey(typeOf, endo, decay) {
+  //   console.log('cc_perio_updateToothFromHotKey | typeOf: '+typeOf+' endo: '+endo+' decay: '+decay);
+  //   var aTooth = cc_perio_getToothAt(cc_perio_getToothNum());
+  //   if (typeOf !== null) {
+  //     cc_perio_typeOfChanged(typeOf);
+  //   }
+  //   if (endo !== null && aTooth.typeOf != "Implant") {
+  //     cc_perio_endoChanged(aTooth, endo);
+  //   }
+  //   else if (decay !==null && aTooth.typeOf != "Implant") {
+  //     cc_perio_decayChanged(aTooth, decay);
+  //   }
+  //   if (decay === null && endo === null && typeOf === null){ //reset tooth
+  //     cc_perio_endoDecayChanged(aTooth);
+  //   }
+  //     cc_perio_setToothAt(cc_perio_getToothNum(), aTooth); //updates the tooth array with the newest info
+  //     cc_perio_selectedInputFocusUpdate();//sets the focus of the inputs to the first empty one
+  //     cc_perio_updateToothImage(aTooth);
+  // }
+
+  //manages updating the focused tooth and the thumb tooth images
+  function cc_perio_updateToothImage(aTooth) {
+    console.error("updateToothImage");
+    cc_perio_updateThumbImage(aTooth);
+
+  }
+
+
+  //called to see if a tooth is lingual or facial
+  //returns an 'l' or 'f'
+  function cc_perio_getDirection(toothN) {
+    if (toothN > 16 && toothN < 33) { //need to move the measurements
+      return 'l';//lingual
+    }
+    else if (toothN > 0 && toothN < 17) {
+      return 'f';//facial
+    }
+  }
+
+  function cc_perio_updateThumbImage(aTooth) {
+    // console.error("updateThumbImage(): aTooth: "+aTooth.toString());
+
+    var name='#cc-perio-container-active .cc-perio-thumbToothImg-'+aTooth.number;
+    var node = $j(name);
+    var typeOf = aTooth.typeOf;
+    var endo = aTooth.endo;
+    var decay = aTooth.decay;
+    var img;
+    var direction = cc_perio_getDirection(aTooth.number);
+
+    //console.log('num: '+ aTooth.number +' direction: '+direction);
+    if (node === null) {
+      alert("sorry an error has occured in updateThumbImage()");
+      //console.log("updateThumbImage() | node: "+node);
+      return false;
+    }
+
+    if (typeOf == 'Implant') {
+      img = globalStaticResourcePath + '/img-perio/Implant-'+direction+'.png';
+      //console.log('img-perio: '+img +" node: "+node);
+      node.className="cc-perio-implant";
+    }
+    else if (typeOf == 'Natural' && endo === false) {
+      img = globalStaticResourcePath + '/img-perio/'+cc_perio_getToothNum()+'.png';
+
+      node.className="cc-perio-natural";
+    }
+    else if (typeOf == 'Natural' && endo === true) {
+      img = globalStaticResourcePath +'/img-perio/'+cc_perio_getToothNum()+'-Endodontic.png';
+
+      node.className="cc-perio-natural";
+    }
+    else if (typeOf == 'Missing') {
+      node.className="cc-perio-missing";
+      img=globalStaticResourcePath +"/img-perio/Missing-l.png";
+    }
+    else if (typeOf == 'Pontic') {
+      img = globalStaticResourcePath +'/img-perio/Pontic-'+direction+'.png';
+
+      node.className="cc-perio-pontic";
+    }
+    else if (typeOf == 'Crown' && endo === false) {
+      img = globalStaticResourcePath +'/img-perio/'+cc_perio_getToothNum()+'-Crown.png';
+
+      node.className="cc-perio-crown";
+    }
+    else if (typeOf == 'Crown' && endo === true) {
+      img = globalStaticResourcePath +'/img-perio/'+cc_perio_getToothNum()+'-Crown-Endodontic.png';
+
+      node.className="cc-perio-crown";
+    }
+    else {
+      return false;
+    }
+    node.attr('src', img);
+  }
+
+
+
+//usees the id without the hash tag
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Endodontic']", function() {
+  cc_perio_attributeClicked('Endodontic');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Decay']", function() {
+  cc_perio_attributeClicked('Decay');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Implant']", function() {
+  cc_perio_attributeClicked('Implant');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Pontic']", function() {
+  cc_perio_attributeClicked('Pontic');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Crown']", function() {
+  cc_perio_attributeClicked('Crown');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Missing']", function() {
+  cc_perio_attributeClicked('Missing');
+});
+
+/**
+ * uses the id without the hash tag when calling cc_perio_attributeClicked
+**/
+$j('#cc-perio-wrapper').on('click', "#cc-perio-container-active .cc-perio-attribute-list-cell[attribute='Natural']", function() {
+  cc_perio_attributeClicked('Natural');
+});
+
+
+
+// $j('.cc-perio-legend-attributes-list').on('click', function(e) {
+//   if (e.target.parentElement.id === null || e.target.parentElement.id === '') {
+//     cc_perio_updateToothFromHotKey(e.target.id, null, null);
+//   }
+//   else {
+//     cc_perio_updateToothFromHotKey(e.target.parentElement.id, null, null);
+//   }
+// });
+
+  function cc_perio_updateToothTypeOf() {
+    console.log('updateToothTypeOf');
+
+    var aTooth = cc_perio_getToothAt(cc_perio_getToothNum());
+    var typeOf = aTooth.typeOf;
+
+    if (typeOf == 'Implant') {
+      cc_perio_showInputs();
+
+      cc_perio_updateToothFromHotKey(null, null, null); //reset endo and decay
+    }
+    else if (typeOf == 'Missing') {
+      console.error('\n\nMissing');
+      cc_perio_hideInputs();
+      cc_perio_clearInputs();
+
+      cc_perio_clearColorThumbs();
+      cc_perio_clearFocusedCircles('current');
+
+    }
+    else if (typeOf == 'Natural') {
+      cc_perio_showInputs();
+
+    }
+    else if (typeOf == 'Pontic') {
+      cc_perio_showInputs();
+
+    }
+    else if (typeOf == 'Crown') {
+      cc_perio_showInputs();
+
+    }
+
+  }
+}); //close document ready
+ 
+</script> 
+<!--  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-perio.js')}"/>-->
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-perio-app.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-perio-userInput.js')}"/>
+</body>
+</apex:page>

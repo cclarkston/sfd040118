@@ -1,0 +1,1244 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="dp_clinical_messaging" docType="html-5.0"> 
+<head>
+  <meta charset="UTF-8" />
+  <title>HopeRx</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+  
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-hrxfont.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>       
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-printClinicalNotes.css')}"/>     
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-notes.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/forms.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-perio.css')}"/>        
+
+<script>
+var $j = jQuery.noConflict();
+// $j is now an alias to the jQuery function; creating the new alias is optional.  
+</script>  
+
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-notes.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-fonts.js')}"/>
+  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/generic-print.css')}" html-media="print"/>        
+       
+</head>
+<style type="text/css" media="print">
+  * {transition: none !important}
+
+  .no-print {
+    display:none;
+  }
+  
+  .narrative_label {
+  font-weight:bold;
+}
+
+.narrative_section {
+  padding-bottom:1em;
+}
+</style>
+
+<style>
+.cc-sub-nav-cell [class^="ccf-"], [class*=" ccf-"] {
+  line-height:1.2;
+}
+
+.cc-flex {
+  display:flex;
+}
+
+.icon_tooltip {
+  position: relative;
+}
+
+.form_locked .cc-form-notation-button-selected:hover {
+  cursor:not-allowed;  
+}
+
+.form_locked .cc-form-notation-button:hover {
+  cursor:not-allowed;
+}
+
+.form_locked {
+  cursor: not-allowed;
+}
+
+.cc-patientProfile-input {
+  cursor:inherit;
+}
+
+.cc-patientProfile-input-mm {
+  cursor:inherit;
+}
+
+.cc-form-textAreaContainer textarea {
+  cursor:inherit;
+}
+
+.cc-section-header-add:hover .cc-tooltip {
+  visibility: visible;
+  opactity:1;
+}
+
+.icon_tooltip .icon_tiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: white;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  border:1px solid black;
+  color: black;
+  box-shadow: -1px 9px 31px -4px rgba(0,0,0,0.75);
+  position: absolute;
+  z-index: 1;  
+  top: 100%;
+  left: 50%; 
+  margin-left: -75px;
+  font-size:12pt;
+}
+
+.icon_tooltip:hover .icon_tiptext {
+  visibility: visible;
+}
+
+.cc-back-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.no-print {
+    display:visible;
+  }
+
+  .print-only {
+    display:none;
+  }
+
+.patient_label {
+color:#0000FF;
+font-weight:bold;
+}
+
+.cc-implant_information_template {
+  display:flex;
+  width:95%;
+}
+
+.cc-section-link-black:hover {
+  color:white;
+}
+
+.cc-modal-searchResults-lab-button-ok {
+  background-color:rgb(15, 167, 7);
+}
+
+.cc-modal-searchResults-lab-button-med {
+  background-color:rgb(207, 158, 11);
+}
+
+.cc-modal-searchResults-lab-button-full {
+  background-color:rgb(214, 42, 42);
+
+}
+
+.cc-modal-searchResults-lab-button {
+
+  color:white;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:3px;
+  padding-bottom:3px;
+  border-radius:4px;
+  transform:translateY(-15%);
+}
+
+.cc-modal-searchResults-lab-icon {
+    margin-right:4px;
+}
+
+.cc-modal-searchResults-lab-container {
+  display:flex;
+  align-items: flex-end;
+  flex-grow:1;
+  justify-content: flex-end;
+}
+
+
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0 auto;
+    padding: 0;
+  }  
+  
+  .pad-main-wrapper {
+    margin-top:145px;
+  }
+  
+  a.nav_anchor {
+    color:black;
+    font-weight:300;
+    font-size: 12pt;
+    letter-spacing: 1px;
+  }
+  
+  a.nav_anchor:hover {
+    color:white;
+    text-decoration:none;
+  }
+  
+  span.dateFormat {
+    display:none;
+  }
+  
+  .cc-field-label {
+    display:inline-block;
+    padding-right:5px;
+    font-weight:bold;
+  }
+  
+  .cc-field-input {
+    border:none;
+    outline:0;
+    font-szie:12pt;    
+  }
+  
+  .cc-email-attachment-item {
+    display:inline-block;
+    padding-right:20px;    
+  }
+  
+  .cc-email-attachment-remove {
+    padding-left:10px;
+    display:inline-block;
+  }
+  
+  .cc-section-header-right-button-container a:hover {
+    color:white;
+    text-decoration:none;
+  }
+
+.cc-toolbar-button-icon-container:hover .cc-toolbar-button-icon-tooltip {
+  display:block;
+  opacity:1;
+}
+
+.narrative_label {
+  font-weight:bold;
+}
+
+.narrative_section {
+  padding-bottom:1em;
+}
+
+.cc-form-header-action-container i[action="view_change"] {
+  border-color: rgb(241, 120, 52);
+  color: rgb(241, 120, 52);
+  background-color : rgba(241, 120, 52, 0.07);
+}
+
+.cc-form-header-action-container i[action="view_change"]:hover {
+  color: white;
+  background-color : rgba(241, 120, 52, 1);
+}
+
+.cc-form-container {
+  min-height:400px;
+}
+
+hr.style-fade {
+  border: 0;
+  height: 2px;
+  width:1000px;
+  display:block;
+  background-image: -webkit-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+  background-image:    -moz-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+  background-image:     -ms-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+  background-image:      -o-linear-gradient(left, rgba(80,180,230,0), rgba(80,180,230,0.75), rgba(80,180,230,0));
+}
+
+.cc-form-narrative-container {
+  padding-bottom:2em;
+}
+
+.cc-form-header-container {
+  border-bottom: 2px solid rgba(57, 104, 177, 0.54);
+  background-color: white;
+  margin-bottom: 1em;
+  padding:0;  
+}
+
+.cc-clinicalNote-header {
+  margin-bottom:0;
+  margin-left:10px;
+}
+
+.cc-narrative-body {
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-shadow: 3px 3px 5px #999999;
+    border-radius: 10px;
+    margin-left: 15px;
+    background: #eee;
+}
+
+.message_to_recipient {
+    text-decoration: none;
+    white-space: nowrap;
+    border: 1px solid #d4dadc;
+    background: #eff7fa;
+    color: #222;
+    padding: 2px 5px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size:9pt;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    flex-wrap:nowrap;
+}
+
+
+</style>
+
+<script type="text/javascript">    
+  var key_timeout;
+  var search_in_progress = false;
+  
+  function qsearch_key(e,flength,fvalue) {
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    if(flength>=2) {
+      search_in_progress = true;
+      key_timeout = setTimeout("search_recipients('" + fvalue + "')",400);
+    } else {
+      hide_suggestions();
+    }    
+  }
+       
+  function resize_textarea() {
+    $j("textarea").each(function(){
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight+'px';
+    });
+  }
+  
+  
+
+  $j(function(){
+    /*
+     * this swallows backspace keys on any non-input element.
+     * stops backspace -> back
+     */
+    var rx = /INPUT|SELECT|TEXTAREA/i;
+
+    $j(document).bind("keydown", function(e){
+        //alert('Alert Pressed : ' + e.which);
+        if( e.which == 8 ){ // 8 == backspace
+            if(!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly ){
+                e.preventDefault();
+            }
+        }
+        if(e.which== 116) {
+          e.preventDefault();
+        }
+    });
+}); 
+
+  function display_suggestions() {
+    if($j('#recipient_possible_matches .find_me div').length>0) {   
+      $j("#recipient_possible_matches").css("display","block");
+    }
+    else {
+      hide_suggestions();
+    } 
+    
+  }
+  
+  function display_search_cancel(flength) {
+    if(flength>0) {
+      $j('#messageSearchCancel').css('cursor','pointer');
+      $j('#messageSearchCancel').css('opacity','1');
+    } else {
+      $j('#messageSearchCancel').css('cursor','none');
+      $j('#messageSearchCancel').css('opacity','0');
+    }
+  }
+  
+  function hide_suggestions() {
+    $j('#recipient_possible_matches').css('display','none');
+  }
+  
+  function check_send_button(flength) {
+    if(flength>=2) {
+      $j('#sendMessageButton').removeAttr('disabled');
+    } else {
+      $j('#sendMessageButton').attr('disabled', true);
+    }    
+  }
+  
+  function check_reply_button(flength) {
+    if(flength>=2) {
+      $j('#replyMessageButton').removeAttr('disabled');
+    } else {
+      $j('#replyMessageButton').attr('disabled', true);
+    }    
+  }
+    
+</script>  
+
+<style>
+  #recipient_possible_matches {
+    border: 1px solid #cccccc;
+    padding: 5px;
+    height: 130px;
+    overflow: auto;
+    z-index: 5;
+    position: absolute;
+    padding-top: 0px;
+    width: 400px;
+    background: white;
+    margin-left:2px;
+  }
+
+  .spacer {
+    display:inline-block;
+    width:40px;
+  }
+  
+  .chat_message_container {
+    cursor: pointer;
+    border: 1px solid #d4dadc;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    margin-bottom: 6px;
+    height: 64px;
+    display: block;
+    overflow: hidden;
+  }
+  
+  .chat_message_container:hover {
+    
+  }
+  
+  .chat_message_avatar {
+    display: inline;
+    margin: 8px 0;
+    float: left;
+  }
+  
+  .chat_message_photo {
+    width: 45px;
+    height: 45px;
+    border:none !important;
+  }
+  
+  .chat_message_timestamp {
+    float: right;
+    padding-top: 4px;
+    padding-right: 10px;
+    font-size: 92%;
+    color: #7d7d84;
+  }
+  
+  .chat_message_content {
+    padding: 0;
+    margin-left: 82px;
+    line-height: 18px;
+    margin-top: 18px;
+  }
+  
+  .chat_message_members {
+    font-weight: bold;
+    color: #015ba7;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  
+  .chat_message_body {
+    color: #7d7d84;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 410px;
+  }
+  
+  .new_message_to_row {
+    margin-bottom: 8px;
+  }
+  
+  .new_message_field_label {
+    vertical-align: middle;
+    line-height: 30px;
+    float: left;
+    text-align: right;
+    width: 52px;
+    font-weight: bold;
+    color: #4a4a56;
+    font-size: .92em;
+  }
+  
+  .suggestion_row {
+    width: 100%;
+    display: flex;
+    padding-left:8px;
+  }
+  
+  .suggestion_row:hover {
+    background: rgba(181, 232, 245, 0.27);
+    border-bottom:1px solid #a1aab7;
+    border-top:1px solid #a1aab7;
+  }
+  
+  .suggestion_avatar {
+  
+  }
+  
+  .suggestion_photo_holder {
+    display: inline;
+    margin: 5px 0;
+    float: left;
+  }
+  
+  .suggestion_photo {
+    width: 30px;
+    height: 30px;
+    border:none !important;
+  }
+  
+  .suggestion_id_content {
+    padding-left: 10px;
+    padding-top: 2px;
+    font-size:10pt;
+  }
+
+  .suggestion_name {
+  
+  }
+
+  .suggestion_title {
+    color:#bbb;
+  }
+  
+  .new_message_body_row {
+    margin-bottom: 8px;
+  }
+  
+  .message_to_remove {
+    color:#d5dbdd;
+    font-size:7pt;
+    padding-left:3px;
+    font-weight:900;
+  }
+  
+  .message_to_remove:hover {
+    color:#3968b1;
+  }
+  
+  .errorBody {
+    color:red;
+    font-style:italics;
+  }
+  
+  .overall_tab_holder {
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid #cccccc;
+    padding-right:20px;
+  }
+  
+  .selected_otab {
+    background-color: #c4e7f2;
+    border-radius: 5px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 150px;
+    padding-left: 15px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    font-weight:bold;
+  }
+  
+  .unselected_otab {
+    width: 150px;
+    padding-left: 15px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+  }
+  
+  .unselected_otab:hover {    
+    color:#3968b1;
+    cursor:pointer;
+  }
+  
+  .quicksearch_messages {
+    max-width: 200px;
+    border: 0;
+    outline:0;
+    color:black;
+  }
+  
+  .quicksearch_messages:focus {
+    outline:0;
+  }
+  
+  .new_chat {
+    background:aliceblue;
+    border: 1px solid #3968b1;
+  }
+  
+  .new_conversation_image {
+    width: 60px;
+    z-index: 50;
+    position: relative;
+    top: -22px;
+    left:-5px;
+  }
+  
+  .message_search_bar {
+    margin-bottom:10px;
+    display:flex;	
+  }
+  
+  .search_input_container {
+    max-width: 300px;
+    display: inline-block;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .search_image {
+    color: #ccc;
+    padding-left: 5px;
+    position: relative;
+    top: 1px;
+  }
+  
+  .quicksearch_messages {
+    padding-left:5px;
+  }
+  
+  .cancel_hover:hover {
+   color:red;
+   font-weight:bold;
+  }
+  
+  .cancel_hover {
+    font-size: 8pt;
+    padding-right: 5px;
+    color: #ccc;
+  }
+  
+  .chat_search_results {
+    float: right;
+    position: relative;
+    left: 130px;    
+    font-size: 92%;
+    font-weight: bold;
+    background-color: white;
+  }
+  
+  .search_text_highlight {
+    background:yellow;
+    font-weight:bold;
+  }
+    
+  .detail_message_container {
+    padding-top: 5px;
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    width: 500px;
+    flex-direction: column;
+  }
+  
+  .detail_time_container {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    font-size: 9pt;
+  }
+
+  .detail_content_holder {
+    display: flex;
+    padding-bottom: 10px;
+  }
+  
+  .detail_message_avatar {}
+  .detail_message_photo {}
+
+  .detail_message_body {
+    padding-left: 10px;
+  }
+  
+  .detail_message_members {
+    font-weight: bold;
+    color: #015ba7;
+  }
+  
+  .detail_message_body_text {
+    font-size: 10pt;
+    color: #7d7d84;
+    padding-right: 20px;
+  }  
+  
+  .reply_holder {
+    background: #c4e7f2;
+    margin-top: 10px;
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-bottom: 5px
+  }
+  
+  .reply_textarea {
+    width: 100%;
+    resize: none;
+    border-radius: 5px;
+    line-height: 15px;
+    outline:0;
+    overflow:hidden;
+  }
+  
+  .reply_button_holder {
+    display:flex;
+    justify-content:flex-end;
+  }
+  
+  .styled_button {
+    border : solid 1px #e6e6e6;
+	border-radius : 3px;
+	moz-border-radius : 3px;
+	-webkit-box-shadow : 0px 0px 2px rgba(0,0,0,1.0);
+	-moz-box-shadow : 0px 0px 2px rgba(0,0,0,1.0);
+	box-shadow : 0px 0px 2px rgba(0,0,0,1.0);
+	color : #696869;
+	padding : 0px 13px;
+	margin-left: 5px;
+	background : #ffffff;
+	background : -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(49%,#f1f1f1), color-stop(51%,#e1e1e1), color-stop(100%,#f6f6f6));
+	background : -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f6f6f6 100%);
+	background : -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f6f6f6 100%);
+	background : -o-linear-gradient(top, #ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f6f6f6 100%);
+	background : -ms-linear-gradient(top, #ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f6f6f6 100%);
+	background : linear-gradient(top, #ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f6f6f6 100%);
+	filter : progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0 );    
+  }
+  
+  .styled_button:hover {
+    background: #e4f5ff;
+    background: -moz-linear-gradient(#fff,#e4f5ff 60%);
+    background: -webkit-linear-gradient(#fff,#e4f5ff 60%);
+    background: -ms-linear-gradient(#fff,#e4f5ff 60%);
+  }
+  
+  .page_navigation_holder {
+    display:inline-flex;
+    justify-content: flex-end;
+    flex-grow:1;
+    align-self: flex-end;
+  }
+  
+  .previous_holder {
+    margin-right:10px;    
+  }
+  
+  .previous_holder .styled_button {
+    padding : 0px 5px;
+  } 
+  
+  .next_holder .styled_button {
+    padding : 0px 5px;
+  } 
+  
+  .next_holder {
+    margin-right:10px;    
+  }
+</style>  
+
+<body>
+<apex:form onsubmit="return true;">
+<apex:outputpanel styleclass="cc-wrapper" layout="block">
+
+<apex:actionFunction name="body_refresh" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="nav_bar_refresh" rerender="nav_content" />
+<apex:actionFunction name="nav_to_recent" action="{!navigate_to_recent_patient}" rerender="none" >
+  <apex:param name="recentid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="nav_to" action="{!navigate_to}" rerender="main_holder" status="ajaxstatus">
+  <apex:param name="navid" value=""  />
+</apex:actionFunction>
+
+<apex:actionFunction name="search_recipients" rerender="rmatch_holder" oncomplete="display_suggestions();">
+  <apex:param name="message_to" value="" assignto="{!message_to}"  />
+</apex:actionFunction>
+
+<apex:actionFunction name="change_tab_view" action="{!switch_tabs}" rerender="main_holder" status="ajaxstatus">
+  <apex:param name="tname" value=""  />
+</apex:actionFunction>
+
+<apex:actionFunction name="center_switch" action="{!change_center}" rerender="nav_content,calendar_nav,main_holder" status="ajaxstatus" >
+  <apex:param name="cid" value="" />
+</apex:actionFunction>
+
+<apex:actionFunction name="clear_search" action="{!clear_message_search}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="search_all" action="{!search_all_conversations}" rerender="main_holder" status="ajaxstatus" />
+
+<apex:actionFunction name="view_conversation" action="{!view_conversation_detail}" rerender="nav_content,main_holder" status="ajaxstatus">
+  <apex:param name="conid" value="" />
+</apex:actionFunction>
+
+<apex:actionFunction name="new_message_form" action="{!display_new_message_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="close_message_form" action="{!hide_new_message_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="add_to_message" action="{!add_message_recipient}" rerender="recipientsList,recipientsFullMessage" status="ajaxstatus" oncomplete="$j('#recipientInputBox').focus();">
+  <apex:param name="srid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="remove_from_message" action="{!remove_message_recipient}" rerender="recipientsList,recipientsFullMessage" status="ajaxstatus" >
+  <apex:param name="srid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="send_msg" action="{!send_new_message}" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="reply_to_msg" action="{!send_message_reply}" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+
+<apex:actionFunction name="summary_prev" action="{!previous_summary_page}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="summary_next" action="{!next_summary_page}" rerender="main_holder" status="ajaxstatus" />
+
+<apex:actionFunction name="detail_prev" action="{!previous_detail_page}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="detail_next" action="{!next_detail_page}" rerender="main_holder" status="ajaxstatus" />
+
+
+<apex:outputpanel layout="block" styleclass="cc-nav-wrapper">
+  <apex:outputpanel styleclass="cc-nav-container">
+    <apex:outputpanel styleclass="cc-top-nav-container" id="nav_content" layout="block">
+      <div class="cc-top-nav-left">
+        <apex:outputpanel id="back_holder" styleclass="cc-back-container" layout="block" >
+          <apex:outputpanel ><a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a></apex:outputpanel>
+        </apex:outputpanel> 
+        <span class="spacer">&nbsp;</span>
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="Recent Patients"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="rpatient" value="{!recent_records}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:nav_to_recent('{!rpatient.id}');" style="color:#189BEB"><apex:outputtext value="{!rpatient.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div> 
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="center" value="{!center_list}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" styleClass="c-pointer"
+            onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+            onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+            onclick="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+             /></a>
+          <ul class="dropdown-menu gear-menu dropdown-menu-right">
+            <apex:repeat var="gitem" value="{!gear_menu}" >
+                <li class="dropdown-lineitem" style="display:inline-block;">
+                  <a href="{!gitem.Page_URL__c}" style="color:#189BEB;"  target="{!gitem.hyperlink_target__c}"
+                      onmouseover="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name_Hover__c)}';this.style.color='black';" 
+                      onmouseout="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}';this.style.color='#189BEB';">
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}" width="{!if(gitem.name=='Salesforce','30','20')}" height="20" style="display:inline;{!if(gitem.name=='Salesforce','position:relative;left:-7px;margin-right:-6px;','margin-right:5px;')}" />&nbsp;&nbsp;{!gitem.name}
+                  </a>
+                </li>
+            </apex:repeat>
+          </ul>        
+          </span>
+      </div>
+    </apex:outputpanel>
+    <div class="cc-sub-nav-container" >
+      <apex:repeat var="mitem" value="{!clinical_header_items}">
+        <apex:outputpanel layout="block" styleclass="cc-sub-nav-cell {!if(mitem.name=='Notes','cc-color-topNav-selected','')}" onclick="nav_to('{!mitem.id}')">
+          <button class="cc-sub-nav-top-button cc-color-{!mitem.css_class__c} cc-hover-tooltips-dark-anchor-nav">
+            <i class="{!if(mitem.image_name__c=='home','hrxicon','ccf')}-{!mitem.image_name__c} cc-color-font-white"></i>
+            <div>{!mitem.name}</div>          
+          </button>
+          <div class="cc-button-text">
+            {!mitem.name}
+          </div>
+          <apex:outputpanel rendered="{!if(mitem.name=='Notifications',true,false)}" layout="block"  styleclass="cc-calBadge-badge" style="right:60%;">{!dosespot_notification_count}</apex:outputpanel>
+          <apex:outputpanel rendered="{!if(mitem.name=='Messaging',true,false)}" layout="block"  styleclass="cc-calBadge-badge" style="right:60%;">{!unread_message_count}</apex:outputpanel>
+          <div class="cc-button_bg cc-color-{!mitem.css_class__c}">
+            <!-- <apex:outputpanel rendered="{!if(mitem.name=='Notifications',true,false)}" layout="block"  styleclass="cc-calBadge-badge">{!dosespot_notification_count}</apex:outputpanel>-->
+          </div>
+        </apex:outputpanel>
+      </apex:repeat>
+    </div>    
+  </apex:outputpanel>
+</apex:outputpanel>
+
+<apex:outputpanel layout="block" styleclass="cc-content-wrapper" id="main_holder">
+  <apex:outputpanel layout="block" styleclass="cc-content-container">
+    <apex:outputpanel id="error_holder" ><apex:messages style="color:red;font-style:italics;padding-top:3px;" /></apex:outputpanel>
+    <apex:actionStatus id="ajaxstatus">
+      <apex:facet name="start">
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10110; background-color: #f2f2f2;">&nbsp;</div>
+        <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10111; margin: 20% 50%">
+          <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+        </div>
+      </apex:facet>
+    </apex:actionStatus>           
+    
+    <apex:outputpanel layout="block" id="report_holder" style="padding-top:1em;">
+      <div style="display:flex;flex-direction:row;">
+        <div class="overall_tab_holder">
+          <apex:repeat var="otab" value="{!overview_tab_list}">
+            <apex:outputpanel layout="block" styleclass="{!if(current_tab = otab,'selected_otab','unselected_otab')}" onclick="change_tab_view('{!otab}');">
+              {!otab}
+            </apex:outputpanel>
+          </apex:repeat>
+        </div>
+        <div style="padding-left:40px;">
+          <!-- START Conversation Summary Overview -->
+          <apex:outputpanel layout="block" rendered="{!if(detail_view=='conversation_summary',true,false)}" >
+            <div class="cc-section-header cc-font-light-16" style="font-size:12pt;overflow:hidden;margin-bottom:7px;">
+              <div class="cc_cc-notes-section-header-left">My Messages</div> 
+              <span class="cc_cc-notes-section-header-right">
+                <div class="cc-section-header-add cc-hover-tooltips-dark" onclick="new_message_form();">     
+                  <i class="ccf-add-md"></i>
+                  <div class="cc-center cc-tooltip">Add note</div>
+                </div> 
+              </span>    
+            </div>
+            <!-- start search box -->
+            <div class="message_search_bar">
+              <span class="search_input_container">
+              <i class="ccf-search-md search_image"></i>
+                <apex:input value="{!conversation_search}" styleclass="quicksearch_messages" size="80" onkeyup="display_search_cancel(this.value.length);" onfocus="if(this.value=='Search all messages') {this.value='';}" />              
+                <span id="messageSearchCancel" style="{!if(currently_searching,'opacity:1;pointer:cursor','opacity:0;pointer:none;')}" onclick="clear_search();" >
+                  <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover cancel_hover" ></i> 
+                </span>
+              </span>
+              <input type="button" class="zen-btn styled_button" value="Search" id="messageSearchButton" onclick="search_all();"/>
+              <span class="page_navigation_holder">
+                <apex:outputpanel styleclass="previous_holder" rendered="{!display_summary_previous}">
+                  <input type="button" class="zen-btn styled_button" value="< Newer" onclick="summary_prev();"/>
+                </apex:outputpanel>
+                <apex:outputpanel styleclass="next_holder" rendered="{!display_summary_next}">
+                  <input type="button" class="zen-btn styled_button" value="Older >" onclick="summary_next();"/>
+                </apex:outputpanel>
+              </span>
+              
+            </div>
+            <!-- end search box -->
+            
+            
+            <apex:repeat var="chat_conversation" value="{!chatter_conversations}">             
+              <div class="chat_message_container {!if(chat_conversation.conversation_summary.read,'','new_chat')}" style="width:550px;" onclick="view_conversation('{!chat_conversation.conversation_summary.id}');">                
+              
+                <div style="width: 74px;padding-left: 6px;float: left;">
+                  <span style="width: 20px;height: 12px;float: left;margin: 24px 0;">
+                    <!-- {!chat_conversation.conversation_summary.read} --> 
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/new_banner_magenta.png')}" styleClass="new_conversation_image" rendered="{!if(chat_conversation.conversation_summary.read,false,true)}" />
+                    &nbsp;
+                  </span>
+                  <span class="chat_message_avatar">
+                    <apex:image url="{!chat_conversation.conversation_photo}" styleclass="chat_message_photo" />
+                  </span>
+                </div>
+                <apex:outputtext value="{!chat_conversation.formatted_message_time}" styleclass="chat_message_timestamp"/>
+                <div class="chat_message_content">
+                  <apex:outputpanel styleclass="chat_search_results" rendered="{!currently_searching}">
+                    <apex:outputtext value="{!chat_conversation.search_match_text}" />
+                  </apex:outputpanel>                  
+                  <div class="chat_message_members">
+                    <apex:outputtext value="{!chat_conversation.conversation_name}" />                    
+                  </div>                  
+                  <div class="chat_message_body">
+                    <apex:outputtext value="{!chat_conversation.conversation_summary.latestmessage.body.text}" />
+                  </div>
+                </div>                                          
+              </div>
+            </apex:repeat>
+             
+             <!-- to-do : check for previous and next page buttons down here -->
+          </apex:outputpanel>
+          <!-- END Conversation Summary Overview -->
+          
+          
+          
+          <!-- Start Conversation Detail -->
+          <apex:outputpanel layout="block" rendered="{!if(detail_view=='conversation_detail',true,false)}" >
+            <div class="cc-section-header cc-font-light-16" style="font-size:12pt;overflow:hidden;margin-bottom:7px;">
+              <div class="cc_cc-notes-section-header-left">My Messages > with {!detail_header}</div> 
+              <span class="cc_cc-notes-section-header-right">
+                <div class="cc-section-header-add cc-hover-tooltips-dark" onclick="new_message_form();">     
+                  <i class="ccf-add-md"></i>
+                  <div class="cc-center cc-tooltip">Add note</div>
+                </div> 
+              </span>    
+            </div>
+            <!-- start search box -->
+            <div class="message_search_bar">
+              <span class="search_input_container">
+              <i class="ccf-search-md search_image"></i>
+                <apex:input value="{!conversation_search}" styleclass="quicksearch_messages" size="80" onkeyup="display_search_cancel(this.value.length);" onfocus="if(this.value=='Search all messages') {this.value='';}" />              
+                <span id="messageSearchCancel" style="{!if(currently_searching,'opacity:1;pointer:cursor','opacity:0;pointer:none;')}" onclick="clear_search();" >
+                  <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover cancel_hover" ></i> 
+                </span>
+              </span>
+              <input type="button" class="zen-btn styled_button" value="Search" id="messageSearchButton" onclick="search_all();"/>
+               <span class="page_navigation_holder">
+                <apex:outputpanel styleclass="previous_holder" rendered="{!display_detail_previous}">
+                  <input type="button" class="zen-btn styled_button" value="< Newer" onclick="detail_prev();"/>
+                </apex:outputpanel>
+                <apex:outputpanel styleclass="next_holder" rendered="{!display_detail_next}">
+                  <input type="button" class="zen-btn styled_button" value="Older >" onclick="detail_next();"/>
+                </apex:outputpanel>
+              </span>
+            </div>
+            <!-- end search box -->
+            <apex:repeat var="chat_message" value="{!chatter_conversation_details}">             
+              <div class="detail_message_container">                
+                <div class="detail_time_container">
+                  <apex:outputtext value="{!chat_message.formatted_message_time}" styleclass="chat_message_timestamp"/>
+                </div>
+                <div class="detail_content_holder">
+                  <span class="detail_message_avatar">
+                    <apex:image url="{!chat_message.conversation_photo}" styleclass="detail_message_photo" />
+                  </span>
+                
+                  <div class="detail_message_body">                                   
+                    <div class="detail_message_members">
+                      <apex:outputtext value="{!chat_message.message_name}" />                    
+                    </div>                  
+                    <div class="detail_message_body_text">
+                      <apex:outputtext value="{!chat_message.body_text_html}" escape="false" />
+                    </div>
+                  </div>
+                </div>                                          
+              </div>
+            </apex:repeat>
+             
+            <!-- to-do : check for previous and next page buttons down here -->
+             
+            <div class="reply_holder">
+              <apex:inputtextarea value="{!message_body}" styleclass="reply_textarea"  onkeyup="check_reply_button(this.value.length);this.style.height = 'auto';this.style.height = this.scrollHeight+'px';" />
+              <div class="reply_button_holder">
+                <input type="button" class="styled_button" id="replyMessageButton" value="Reply" title="Reply" disabled="true" onclick="reply_to_msg();" />
+              </div>
+            </div> 
+          </apex:outputpanel>
+          
+          <!-- End Conversation Detail -->
+          
+        </div>
+      </div>
+    </apex:outputpanel>
+    
+    
+    <!---Start Message Form---->
+  <apex:outputpanel layout="block" rendered="{!display_new_message_modal}" id="message_holder">
+    <apex:outputpanel layout="block" styleclass="cc-patient-message-wrapper" style="z-index: 1100; opacity: 1;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+        <apex:outputpanel layout="block" styleclass="cc-patient-message-close">        
+          <div id="cc-patient-message-close-button" onclick="close_message_form();">
+            <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+          </div>
+        </apex:outputpanel>
+           
+      <div style="display:flex;flex-direction:column;" onclick="hide_suggestions();">
+	    <div class="new_message_to_row">
+	      <div class="new_message_field_label">To</div>
+	      <div class="composeValue" style="width: 400px;margin-left: 6px;float: left;">
+	        <div class="composeInput" id="recipientsContainer" style="padding: 2px 4px;width: 402px;cursor: text;border: 1px solid #959595;" onclick="$j('#recipientInputBox').focus();">
+	          <apex:outputpanel layout="block" id="recipientsList" style="overflow: hidden; line-height: 22px; display: flex; flex-wrap: wrap;">
+	            <apex:repeat var="recipient" value="{!message_recepients}">
+	              <span class="message_to_recipient">
+	                <apex:outputtext value="{!recipient.firstname}" />&nbsp;<apex:outputtext value="{!recipient.lastname}" />
+	                <span class="message_to_remove" onclick="remove_from_message('{!recipient.id}');">X</span>
+	              </span>
+	            </apex:repeat>
+	            <span><input type="text" autocomplete="off" id="recipientInputBox" style="outline:0; border: 0;padding: 0;margin: 0;height: 21px;" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key(event,this.value.length,this.value);" />&nbsp;</span>
+	          </apex:outputpanel>
+	        </div>
+	        <div id="recipient_possible_matches" style="display:none;">
+	          <apex:outputpanel layout="block" id="rmatch_holder" styleclass="find_me">
+	            <apex:repeat var="chatter_user" value="{!recipient_search_results}">
+	              <div class="suggestion_row" onclick="add_to_message('{!chatter_user.id}');">
+	                <div class="suggestion_avatar">
+	                  <span class="suggestion_photo_holder">
+	                    <apex:image url="{!chatter_user.photo.smallPhotoUrl}" styleclass="suggestion_photo" />
+	                  </span>
+	                </div>
+	                <div class="suggestion_id_content">
+	                  <div class="suggestion_name">
+	                    <apex:outputtext value="{!chatter_user.firstname}" />&nbsp;<apex:outputtext value="{!chatter_user.lastname}" />
+	                  </div>
+	                  <div class="suggestion_title">
+	                    <apex:outputtext value="{!chatter_user.title}" />
+	                  </div>
+	                </div>
+	              </div>
+	            </apex:repeat>
+	          </apex:outputpanel>
+	        </div>
+	        <apex:outputpanel layout="block" id="recipientsFullMessage" >
+	          <apex:outputpanel layout="block" rendered="{!display_to_error}">
+	            <div class="errorBody">Error: You can't select more than 9 recipients.</div>
+	            <div>
+	              <span class="tipTitle">Tip:</span>
+	              <span class="tipBody">To have conversations with more than a few people, try using a group.</span>
+	            </div>
+	          </apex:outputpanel>
+	        </apex:outputpanel>
+	      </div>
+	      <div class="clearingBox"></div>
+	    </div>
+	    
+	    <div class="new_message_body_row" style="padding-top:15px;">
+	        <div class="new_message_field_label">Message</div>
+	        <div class="composeValue" style="width: 400px;margin-left: 6px;float: left;">
+	          <apex:inputtextarea value="{!message_body}" id="messageBody" styleclass="composeInput" style="resize: none;width: 402px;line-height: 15px;height: 150px;outline: none;padding: 4px;" onfocus="hide_suggestions();" onkeyup="check_send_button(this.value.length);" />          
+	          <div id="messageMaxErrorMessage" class="errorBody" style="display:none;">Error: Your message can't have more than 10,000 characters.</div>
+	        </div>
+	        <div class="clearingBox"></div>
+	    </div> 
+	    
+	    <div align="center" class="composeDirectMessageButtons">
+	      <input type="button" class="styled_button" id="sendMessageButton" value="Send" title="Send" disabled="true" onclick="send_msg();" />
+	      <input type="button" class="zen-btn styled_button" id="closeDialogButton" value="Cancel" title="Cancel" onclick="close_message_form();" />
+	    </div>
+	  </div>
+            
+      <!-- <apex:outputpanel layout="block" styleclass="cc-patient-message-buttons">
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="cemail_form();">
+          <i class="ccf-trash"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Discard</apex:outputpanel>
+        </apex:outputpanel>          
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="send_mail();">
+          <i class="ccf-send"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Send</apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>-->
+      </apex:outputpanel> 
+    </apex:outputpanel>
+  </apex:outputpanel>
+  <!-------END Message FORM-->
+    
+    
+  <!-- <div style="display:flex;flex-direction:column;" onclick="hide_suggestions();">
+    <div class="new_message_to_row">
+      <div class="new_message_field_label">To</div>
+      <div class="composeValue" style="width: 400px;margin-left: 6px;float: left;">
+        <div class="composeInput" id="recipientsContainer" style="padding: 2px 4px;width: 402px;cursor: text;border: 1px solid #959595;" onclick="$j('#recipientInputBox').focus();">
+          <apex:outputpanel layout="block" id="recipientsList" style="overflow: hidden; line-height: 22px; display: flex; flex-wrap: wrap;">
+            <apex:repeat var="recipient" value="{!message_recepients}">
+              <span class="message_to_recipient">
+                <apex:outputtext value="{!recipient.firstname}" />&nbsp;<apex:outputtext value="{!recipient.lastname}" />
+                <span class="message_to_remove" onclick="remove_from_message('{!recipient.id}');">X</span>
+              </span>
+            </apex:repeat>
+            <span><input type="text" autocomplete="off" id="recipientInputBox" style="outline:0; border: 0;padding: 0;margin: 0;height: 21px;" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key(event,this.value.length,this.value);" />&nbsp;</span>
+          </apex:outputpanel>
+        </div>
+        <div id="recipient_possible_matches" style="display:none;">
+          <apex:outputpanel layout="block" id="rmatch_holder" styleclass="find_me">
+            <apex:repeat var="chatter_user" value="{!recipient_search_results}">
+              <div class="suggestion_row" onclick="add_to_message('{!chatter_user.id}');">
+                <div class="suggestion_avatar">
+                  <span class="suggestion_photo_holder">
+                    <apex:image url="{!chatter_user.photo.smallPhotoUrl}" styleclass="suggestion_photo" />
+                  </span>
+                </div>
+                <div class="suggestion_id_content">
+                  <div class="suggestion_name">
+                    <apex:outputtext value="{!chatter_user.firstname}" />&nbsp;<apex:outputtext value="{!chatter_user.lastname}" />
+                  </div>
+                  <div class="suggestion_title">
+                    <apex:outputtext value="{!chatter_user.title}" />
+                  </div>
+                </div>
+              </div>
+            </apex:repeat>
+          </apex:outputpanel>
+        </div>
+        <apex:outputpanel layout="block" id="recipientsFullMessage" >
+          <apex:outputpanel layout="block" rendered="{!display_to_error}">
+            <div class="errorBody">Error: You can't select more than 9 recipients.</div>
+            <div>
+              <span class="tipTitle">Tip:</span>
+              <span class="tipBody">To have conversations with more than a few people, try using a group.</span>
+            </div>
+          </apex:outputpanel>
+        </apex:outputpanel>
+      </div>
+      <div class="clearingBox"></div>
+    </div>
+    
+    <div class="new_message_body_row" style="padding-top:15px;">
+        <div class="new_message_field_label">Message</div>
+        <div class="composeValue" style="width: 400px;margin-left: 6px;float: left;">
+          <apex:inputtextarea value="{!message_body}" id="messageBody" styleclass="composeInput" style="resize: none;width: 402px;line-height: 15px;height: 150px;outline: none;padding: 4px;" onfocus="hide_suggestions();" onkeyup="check_send_button(this.value.length);" />          
+          <div id="messageMaxErrorMessage" class="errorBody" style="display:none;">Error: Your message can't have more than 10,000 characters.</div>
+        </div>
+        <div class="clearingBox"></div>
+    </div> 
+    
+    <div align="center" class="composeDirectMessageButtons">
+      <input type="button" id="sendMessageButton" value="Send" title="Send" disabled="true" onclick="send_msg();" />
+      <input type="button" class="zen-btn" id="closeDialogButton" value="Cancel" title="Cancel" />
+    </div>
+  </div> -->
+    
+   
+    
+  </apex:outputpanel> <!--end cc-content-container-->
+</apex:outputpanel> <!--end cc-content-wrapper-->
+</apex:outputpanel>
+
+<script>  
+  function refresh_top_nav() { 
+    nav_bar_refresh();  
+    setTimeout("refresh_top_nav()",600000); 
+  }  
+
+  window.onload = function() { 
+    setTimeout("refresh_top_nav();",600000);  
+    try {focus_to_upload();} catch (err) {}
+  }
+</script>
+
+</apex:form>
+</body>
+</apex:page>

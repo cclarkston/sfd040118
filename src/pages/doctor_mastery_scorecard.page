@@ -1,0 +1,320 @@
+<apex:page controller="dr_mastery_scorecard" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>Doctor Mastery Scorecard</title> 
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>
+</head>
+
+<style>
+  .metrics_holder {
+    display: flex;
+    flex-direction: column;
+    width:100%;
+  }
+  
+  .metrics_line {
+    display:flex;
+    flex-direction:row;
+    width:100%;
+    line-height:30px;
+    flex-grow: 1;
+    align-items: flex-end;
+  }
+  
+  .metrics_header {
+    font-weight:bold;
+    background: #30827a;
+    color:white;
+    border-radius:5px 5px 0px 0px;
+  }
+  
+  .metrics_odd {
+    background: #f3f3f3;
+    border-bottom: 1px dashed #c3c3c3;
+  }
+  
+  .metrics_even {
+  
+  }
+  
+  .filter_header {
+    margin-bottom: 2em;
+    font-weight: bold;
+    font-size: 14pt;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  
+  .metrics_criteria_name {
+    width:40%;
+    padding-left:5px;
+  }
+  
+  .metrics_value {
+    width:12%;
+    padding-left:5px;
+  }    
+  
+  .metrics_checkbox {
+    width:12%;
+    padding-left:5px;
+  }
+  
+  .metrics_checkbox  i {
+    font-size:14pt;    
+  }
+  
+  input {
+    border:0;
+  }
+  
+  input:focus {
+    outline:0;
+  }
+  
+  .metrics_odd input {
+    background: #f3f3f3;
+  }
+  
+  .metrics_input {
+    border-bottom: 1px solid black;
+    transition: border-width .5s linear; 
+    text-align:right; 
+    max-width:100px;
+  }
+  
+  .metrics_input:focus {
+    border-bottom:1px solid #048ec6;
+    transition : all .5s ease    
+  }
+    
+  .checkbox_holder {
+    width: 125px;
+    display: inline-flex;
+    height: 30px;
+    align-items: center;
+    align-content: center;
+    flex-grow: 1;
+    justify-content: center;
+  }
+  
+  .metrics_sub {
+    width:10%;
+    padding-left:5px;
+    display: flex;
+    justify-content: center;
+    flex: 1;
+    flex-direction: column;
+    font-weight: bold;
+  }
+  
+  .metrics_path {
+    width:22.5%;
+    padding-left:5px;
+  }
+  
+  .flex_col {
+    display:flex;
+    flex-direction:column;
+  }
+  
+  .metrics_path_line {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: baseline;
+  }
+  
+  .metrics_path_label {
+    font-weight: bold;
+    width: 80%;
+    display: flex;
+  }
+  
+  .metrics_path_icon {
+    display: flex;
+  }
+  
+  .metrics_sub_header {
+    height:60px;
+  }
+</style>
+
+<body>
+<apex:form >
+
+<apex:actionFunction name="snap_date_change" action="{!refresh_scorecard}" status="ajaxstatus" rerender="mholder" />
+
+<apex:actionStatus id="ajaxstatus">
+  <apex:facet name="start">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10110; background-color: #f2f2f2;">
+      &nbsp;
+    </div>
+    <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10111; margin: 20% 50%">
+      <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+    </div>
+  </apex:facet>
+</apex:actionStatus> 
+
+<p class="filter_header">Scorecard for &nbsp;&nbsp;
+  <apex:selectList value="{!scorecard_user}" onchange="snap_date_change();" size="1" rendered="{!is_admin}" >
+    <apex:selectOptions value="{!user_option_list}" />
+  </apex:selectList>&nbsp;&nbsp;
+  <apex:outputtext value="{!scorecard_name}" rendered="{!if(is_admin,false,true)}" />
+
+  <apex:selectList value="{!current_month}" onchange="snap_date_change();" size="1" >
+    <apex:selectOptions value="{!month_option_list}" />
+  </apex:selectList>&nbsp;&nbsp;
+  <apex:selectList value="{!current_year}" onchange="snap_date_change();" size="1" >
+    <apex:selectOptions value="{!year_option_list}" />
+  </apex:selectList>
+</p>  
+  
+  
+<apex:outputpanel layout="block" styleclass="metrics_holder" id="mholder">
+  <apex:outputpanel id="error_holder" ><apex:messages style="color:red;font-style:italics;padding-top:3px;" /></apex:outputpanel>
+  <apex:outputpanel layout="block" id="sholder" rendered="{!if(scorecard_data.size>0,true,false)}">    
+    <span class="metrics_line metrics_header">
+      <span class="metrics_col metrics_criteria_name">Criteria</span>
+      <span class="metrics_col metrics_value">Value</span>
+      <span class="metrics_col metrics_checkbox">Distance to Associate</span>
+      <span class="metrics_col metrics_checkbox">Distance to Fellow</span>
+      <span class="metrics_col metrics_checkbox">Distance to Diplomate</span>
+      <span class="metrics_col metrics_checkbox">Distance to Clinical Director</span>
+    </span>
+    <apex:variable var="rowclassname" value="metrics_odd" />
+    <apex:repeat var="srow" value="{!scorecard_data}" >
+      <span class="metrics_line {!rowclassname}">
+        <span class="metrics_col metrics_criteria_name">{!srow.line_name}</span>
+        <span class="metrics_col metrics_value">{!srow.line_value}</span>
+        <span class="metrics_col metrics_checkbox"><apex:outputpanel rendered="{!srow.achieved_associate}" styleclass="checkbox_holder"><i class="ccf-ok"></i></apex:outputpanel>&nbsp;</span>
+        <span class="metrics_col metrics_checkbox"><apex:outputpanel rendered="{!srow.achieved_fellow}" styleclass="checkbox_holder"><i class="ccf-ok"></i></apex:outputpanel>&nbsp;</span>
+        <span class="metrics_col metrics_checkbox"><apex:outputpanel rendered="{!srow.achieved_diplomate}" styleclass="checkbox_holder"><i class="ccf-ok"></i></apex:outputpanel>&nbsp;</span>
+        <span class="metrics_col metrics_checkbox"><apex:outputpanel rendered="{!srow.achieved_director}" styleclass="checkbox_holder"><i class="ccf-ok"></i></apex:outputpanel>&nbsp;</span>
+      </span>       
+      <apex:variable var="rowclassname" value="{!if(rowclassname=='metrics_odd','metrics_even','metrics_odd')}" />
+    </apex:repeat>
+    
+    <span class="metrics_line metrics_header" style="background: #a6d9f7;color: #000000;margin-top:3em;">
+      <span class="metrics_col metrics_sub">COEs</span>
+      <span class="metrics_col metrics_path">Associate</span>
+      <span class="metrics_col metrics_path">Fellow</span>
+      <span class="metrics_col metrics_path">Diplomate</span>
+      <span class="metrics_col metrics_path">Clinical Director</span>      
+    </span>
+    <span class="metrics_line metrics_odd">
+      <span class="metrics_col metrics_sub metrics_sub_header">Clinical</span>
+      <span class="metrics_col metrics_path">&nbsp;</span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Patient NPS - 40-49</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-checked"></i></span>
+          </span>
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Surgical Backlog - 40th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-checked"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Patient NPS - 50-59</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Surgical Backlog - 60th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Patient NPS - 60+</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Surgical Backlog - 70th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+        </span>      
+      </span>
+    </span>
+    <span class="metrics_line metrics_even">
+      <span class="metrics_col metrics_sub metrics_sub_header">Operational</span>
+      <span class="metrics_col metrics_path">&nbsp;</span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">GM % - 50th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-checked"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">GM % - 65th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Ideal Week Certification</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-checked"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">GM % - 80th percentile</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+        </span>      
+      </span>
+    </span>
+    <span class="metrics_line metrics_odd">
+      <span class="metrics_col metrics_sub">Battlegroup</span>
+      <span class="metrics_col metrics_path">&nbsp;</span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Two battlegroup stars</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-checked"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Four battlegroup stars</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+        </span>      
+      </span>
+      <span class="metrics_col metrics_path">
+        <span class="flex_col">
+          <span class="metrics_path_line">
+            <span class="metrics_path_label">Six battlegroup stars</span>
+            <span class="metrics_path_icon"><i class="ccf-checkbox-blank"></i></span>
+          </span>
+        </span>      
+      </span>
+    </span>
+    
+    
+  </apex:outputpanel>
+  
+  <apex:outputtext value="There is no scorecard data available to display" rendered="{!if(scorecard_data.size>0,false,true)}" />
+  
+</apex:outputpanel>
+
+
+
+
+
+</apex:form>
+</body>
+</apex:page>

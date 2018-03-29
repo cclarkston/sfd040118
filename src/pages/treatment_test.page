@@ -1,0 +1,32 @@
+<apex:page controller="account_treatment_plans" sidebar="false" showheader="false" applyBodyTag="false" renderAs="pdf">
+<head>
+  <title>Treatment Comparison</title>
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Montserrat:400,700" />
+  <apex:stylesheet value="{!URLFOR($Resource.Thandout_Resource_rev2, 'dist/style/style.css?v=6')}"/>
+</head>
+<body class="{!template_name}">
+
+<div class="wrapper">
+  <div class="hf-wrapper header-wrapper hf-wrapper-1">
+  <apex:image url="{!URLFOR($Resource.Thandout_Resource_rev2,'images/clearchoice.png')}" styleClass="logo" alt="Clear Choice"/>
+  <div class="page-title">Preliminary Consult</div>
+  <table class="date-patient-wrap">
+    <tr class="date-patient-item-wrap doctor-name">
+      <td class="label">Doctor Name:</td>
+      <td class="value"><apex:outputtext value="{!current_doctor}" /></td>
+    </tr>
+    <tr class="date-patient-item-wrap patient-name">
+      <td class="label">PEC Name:</td>
+      <td class="value"><apex:outputtext value="{!a.owner.name}" /></td>
+    </tr>
+    <tr class="date-patient-item-wrap date">
+      <td class="label">PEC Phone:</td>
+      <td class="value"><apex:outputtext value="{!a.owner.phone}" rendered="{!if(a.owner.phone=='',false,true)}" /><apex:outputfield value="{!center.Local_Front_Desk__c}" rendered="{!if(a.owner.phone=='',true,false)}" /></td>
+    </tr>
+  </table>
+</div>
+</div>
+  
+
+</body>
+</apex:page>

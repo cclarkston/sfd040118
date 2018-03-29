@@ -1,0 +1,1111 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="dp_clinical_calendar_sandbox" docType="html-5.0" >
+<head>
+  <meta charset="UTF-8" />
+  <title>HopeRx</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+
+  <link rel="icon" type="image/png" href="{!$Resource.CCFavIcon}" />
+  <link rel="icon shortcut"  href="{!$Resource.CCFavIcon}" />
+
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-hrxfont.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-pot.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-perio.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/forms.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-printClinical.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/generic-print.css')}" html-media="print"/>
+
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/ccare_clinical_pot_page.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/ccare_clinical_pot_page_print.css')}" html-media="print"/>
+
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/colorpicker.css')}" html-media="screen"/>    
+
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'lib/prototype.js')}"></script>
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'src/scriptaculous.js')}"></script>
+  <script type="text/javascript" src="{!URLFOR($Resource.Dental_Practice_Resources, 'js/colorpicker.js')}"></script>
+    
+<script>
+var $j = jQuery.noConflict();
+// $j is now an alias to the jQuery function; creating the new alias is optional.
+</script>
+
+<style type="text/css" media="print">
+  * {transition: none !important}
+
+  .no-print {
+    display:none !important;
+  }
+  
+  .print-only {
+    display:flex !important;
+  }
+  
+  .narrative_label {
+  font-weight:bold;
+}
+
+.narrative_section {
+  padding-bottom:1em;
+}
+</style>
+
+</head>
+
+
+
+<style>
+.no-display {
+  display:none;
+}
+
+.print-only {
+  display:none;
+}
+
+a.icon_hyperlink {
+  text-decoration:none;
+  color:inherit;
+}
+
+a.icon_hyperlink:focus , a.icon_hyperlink:hover {
+  text-decoration:none;
+}
+
+.cc-subsection-button-error-hover {
+  color:red;
+}
+
+
+.cc-subsection-button-error-hover:hover {
+  background: yellow;
+  color:black;
+}
+
+
+.file_drop_outer {
+   position: relative;
+   height: 5em;
+   font-size: 12pt;
+   color: #777;
+   border: 2px dotted #58595b;
+   max-width:500px;
+   max-height:200px
+ }
+ .file_drop_inner {
+   position: absolute;
+   top: 50%;
+   left: 0;
+   right: 0;
+   text-align: center;
+   margin-top: -0.5em;
+   margin-left: auto;
+   margin-right: auto;
+ }
+ 
+ .cc-toolbar-button-icon-container:hover .cc-toolbar-button-icon-tooltip {
+  display:block;
+  opacity:1;
+ }
+
+.cc-sub-nav-cell [class^="ccf-"], [class*=" ccf-"] {
+  line-height:1.2;
+}
+
+.icon_tooltip {
+  position: relative;
+}
+
+.icon_tooltip .icon_tiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: white;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  border:1px solid black;
+  color: black;
+  box-shadow: -1px 9px 31px -4px rgba(0,0,0,0.75);
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -75px;
+  font-size:12pt;
+}
+
+.icon_tooltip:hover .icon_tiptext {
+  visibility: visible;
+}
+
+.cc-back-container {
+  display: flex;
+  flex-direction: row;
+}
+
+  
+  .center_header {
+    display: flex;
+    align-items: flex-end;
+    width: 50%;
+    min-width:500px;
+    justify-content: flex-end;
+    flex-grow: 2;
+    text-align: right;
+  }
+
+  .print-only {
+    display:none;
+  }
+
+  .patient_label {
+color:#0000FF;
+font-weight:bold;
+}
+
+.vertical-text {
+	transform: rotate(270deg);
+	transform-origin: center;
+	font-weight:400;
+	min-width: 60px;
+}
+
+.hover_add {
+  color:black;
+  text-decoration:none;
+}
+
+.hover_add:hover {
+  color:white;
+  text-decoration:none;
+}
+
+.hover_add:visited {
+  text-decoration:none;
+}
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .pad-main-wrapper {
+    margin-top:145px;
+  }
+
+  a.nav_anchor {
+    color:black;
+    font-weight:300;
+    font-size: 12pt;
+    letter-spacing: 1px;
+  }
+
+  a.nav_anchor:hover {
+    color:white;
+    text-decoration:none;
+  }
+
+  span.dateFormat {
+    display:none;
+  }
+
+  .cc-field-label {
+    display:inline-block;
+    padding-right:5px;
+    font-weight:bold;
+  }
+
+  .cc-field-input {
+    border:none;
+    outline:0;
+    font-szie:12pt;
+  }
+
+  .cc-email-attachment-item {
+    display:inline-block;
+    padding-right:20px;
+  }
+
+  .cc-email-attachment-remove {
+    padding-left:10px;
+    display:inline-block;
+  }
+
+  .cc-section-header-right-button-container a:hover {
+    color:white;
+    text-decoration:none;
+  }
+
+  table.bend_table {
+      width:100%;
+    }
+
+    tr.bend_header {
+
+    }
+
+    .cc-bgColor-blue {
+      background-color:rgb(10,102,224);
+    }
+
+    .gray_under {
+       display:inline-block;
+       border-bottom:1px solid #bfbfbf;
+       padding-left:5px;
+       padding-right:5px;
+     <!--text-decoration: underline;
+      -moz-text-decoration-color: #bfbfbf; /* Code for Firefox */
+      text-decoration-color: #bfbfbf;-->
+    }
+
+    .hover-blue:hover {
+      color:#189BEB;
+    }
+
+    .hover-over-red:hover {
+      background-color: rgb(227,20,20);
+    }
+
+    .no-uline:hover {
+      text-decoration:none;
+    }
+
+    tr.bend_header td {
+
+    }
+
+    tr.odd {
+
+    }
+
+    tr.odd td {
+      padding-left:5px;
+      border-bottom:1px dotted #bfbfbf;
+    }
+
+    tr.even {
+
+    }
+
+    tr.even td {
+      padding-left:5px;
+      background:#f5f5f5;
+      border-bottom:1px dotted #bfbfbf;
+    }
+
+    .review_selection {
+    background-color: rgba(25, 117, 210, 0.55);
+    border: 4px solid rgba(25, 117, 210, 0.55);
+    }
+    
+    .pop_out_bar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #b13968;
+      color: white;
+      border-radius: 0px 0px 0px 10px;
+      font-size: 8pt;
+      min-height: 20px;
+      min-width: 10px;
+      width: 10px;
+      z-index:3000;
+      padding-left: 2px;
+      transition : width 2s;
+      -webkit-transition: width 2s;
+      transition-timing-function: ease;
+      -webkit-transition-timing-function: ease;
+      display:flex;
+    }
+    
+    .pop_out_bar:hover {
+      width:100%;
+      border-radius:0px;      
+    }
+    
+    .pop_out_bar:hover .expansion_icon {
+      display:none;
+    }
+    
+    .pop_out_bar .tool_icons {
+      display:none;
+    }
+    
+    .pop_out_bar:hover .tool_icons {
+      padding-right: 2px;
+	    padding-left: 2px;
+	    display: flex;
+	    margin-top: 2px;
+	    margin-bottom: 2px;
+	    border-right: 2px solid #ffffff;
+	    min-width: 30px;
+	    justify-content: center;
+	    align-items: center;
+    }
+    
+    .tool_icon_tooltip {
+      visibility:hidden;
+      min-width: 250px;
+	  position: absolute;
+	  color: white;
+	  background: #535353;
+	  height: auto;
+	  padding-left: 20px;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: flex-start;
+	  padding-right: 10px;
+	  padding-top: 5px;
+	  padding-bottom: 5px;
+	  border-radius: 6px;
+	  font-weight: 300;
+	  letter-spacing: 1px;
+	  font-size: 10pt;
+	  box-shadow:     box-shadow: -1px 9px 31px -4px rgba(0,0,0,0.75);
+	  top:20px;
+	  right:0;
+    }
+    
+    .tool_icons:hover .tool_icon_tooltip {
+      visibility:initial;
+    }
+    
+    
+    
+    .clipboard_container {
+      width:50px;
+      height:300px;
+      position: fixed;
+      left: 0px;
+      top: 200px;
+      z-index: 20000;
+      transition : width 2s;
+      -webkit-transition: width 2s;
+      transition-timing-function: linear;
+      -webkit-transition-timing-function: linear;
+      display: flex;
+      flex-direction: row;
+    }
+    
+    .clipboard_container:hover {
+      width:400px;
+    }
+    
+    .clipboard_container:hover .clipboard_contents {
+      display:flex;
+      height:100%;
+      width:100%;
+      border-top: 2px solid gray;
+      border-bottom: 2px solid gray;
+      border-right: 2px solid gray;
+      border-left: 1px solid gray;    
+      border-radius: 0px 5px 5px 0px;    
+    }
+    
+    .clipboard_container:hover .clipboard_icon {
+      border-top: 2px solid gray;
+      border-bottom: 2px solid gray;
+      border-right: 1px solid white;      
+    }
+    
+    .clipboard_container:hover .clipboard_icon i {
+      color:#3968b1;
+    }
+    
+    .clipboard_icon {
+      width:50px;
+      height:50px;
+      padding: 5px;
+      display:flex;
+      position:relative;
+      left:1px;
+    }
+    
+    .clipboard_contents {      
+      display:none;
+      padding-left: 10px;
+      background: #f7f7f7;
+    }
+    
+    .clipboard_icon i {
+      font-size: 25pt;
+      color: #b9b9b9;      
+    }
+    
+    .clip_counter {
+      position: relative;
+      left: -14px;
+      top: 15px;
+      font-weight: bold;
+    }
+    
+    .pstatus_container {
+      width:50px;
+      height:300px;
+      position: fixed;
+      left: 0px;
+      bottom: 0px;
+      z-index: 20000;
+      transition : width .5s;
+      -webkit-transition: width .5s;
+      transition-timing-function: linear;
+      -webkit-transition-timing-function: linear;
+      display: flex;
+      flex-direction: row;
+    }
+    
+    .pstatus_icon {
+      width:50px;
+      height:50px;
+      padding: 5px;
+      display:flex;
+      position:relative;
+      left:1px;
+    }
+    
+    .pstatus_icon i {
+      font-size: 25pt;
+      color: #b9b9b9;      
+    }
+    
+    .pstatus_container:hover .pstatus_icon i {
+      color:#3968b1;
+    }
+    
+    .pstatus_counter {
+      position: relative;
+      left: -10px;
+      top: 20px;
+      font-weight: bold;
+    }
+    
+    .pstatus_inner {
+      display:none;
+      padding-left: 10px;
+      background: white;
+    }
+    
+    .pstatus_container:hover {
+      width:525px;
+    }
+    
+    .pstatus_container:hover .pstatus_inner {
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      width:100%;
+      border-top: 2px solid gray;
+      border-bottom: 2px solid gray;
+      border-right: 2px solid gray;
+      border-left: 1px solid gray;    
+      border-radius: 0px 5px 5px 0px;    
+    }
+    
+    .pstatus_container:hover .pstatus_icon {
+      border-top: 2px solid gray;
+      border-bottom: 2px solid gray;
+      border-right: 1px solid white;      
+    }
+    
+    .pstatus_tab {
+      padding:6px;
+      margin-right:10px;
+    }
+    
+    .pstatus_tab:hover {
+      font-weight:bold;
+    }
+    
+    .pstatus_arrow {
+      
+    }
+    
+    .pstatus_tab:hover .pstatus_arrow {
+      display: inline-block;
+      border-left: 5px solid #f17834;
+      border-bottom: 5px solid transparent;
+      border-top: 5px solid transparent;
+      height: 5px;
+      width: 10px;
+    }
+    
+    .pstatus_tab_selected {
+      border-right: 2px solid gray;
+      border-left: 2px solid gray;
+      background: #3968b1;
+      color: white;
+      font-weight: bold;
+      position: relative;
+      top: 1px;
+      border-bottom: 1px solid #ffffff;
+      padding: 6px;
+      margin-right: 10px;
+    }
+    
+    .pstatus_details {
+      display:flex;
+      flex-direction:column;
+      overflow-y:auto;
+    }
+    
+    .pstatus_details_all {
+      display:none;
+    }
+    
+    .pstatus_details_visible {
+      display:flex ;
+      flex-direction:column;
+      hieght:100%;
+      width:100%;
+    }
+    
+    .pstatus_details_hidden {
+      display:none;
+    }
+            
+    .pstatus_tab_container {
+      display:flex;
+      flex-direction:row;
+      border-bottom:1px dotted black;
+      margin-right:2px;
+      min-height: 30px;
+      height:30px;
+    }
+    
+    .pstatus_row_odd {
+      width: 100%;
+      background-color: #f3f4f4;
+      border-bottom: 1px dashed #ad79a4;
+      padding: 5px;
+    }
+    
+    .pstatus_row_even {
+      padding: 5px;
+      border-bottom: 1px dashed #c7c7c7;
+      width: 100%;
+    }
+    
+    .pstatus_pname {
+      flex-grow:1;
+    }
+    
+    .pstatus_status {
+    
+    }
+    
+    .pstatus_header {
+      width: 100%;
+      display: flex;
+    }
+    
+    .pstatus_footer {
+      width: 100%;
+      display: flex;
+    }
+    
+    .pstatus_apt_name {
+      flex-grow:1;
+    }
+    
+    .pstatus_apt_timer {
+      
+    }
+}
+
+</style>
+
+<script type="text/javascript">  
+  function reset_pstatus_tabs() {
+    $j('.pstatus_tab_selected').each(function (i,tab) {
+      $j(tab).removeClass('pstatus_tab_selected');
+      $j(tab).addClass('pstatus_tab');
+    });    
+    $j('.pstatus_details_visible').each(function (i,tab) {
+      $j(tab).removeClass('pstatus_details_visible');
+      $j(tab).addClass('pstatus_details_hidden');
+    });
+  }
+  
+  function select_pstatus_tab(x) {
+    reset_pstatus_tabs();
+    $j('#pstatus_tab_' + x).removeClass('pstatus_tab');
+    $j('#pstatus_tab_' + x).addClass('pstatus_tab_selected');
+    $j('#pstatus_details_' + x).removeClass('pstatus_details_hidden');
+    $j('#pstatus_details_' + x).addClass('pstatus_details_visible');
+  }
+  
+</script> 
+
+<body>
+<apex:form onsubmit="return true;">
+<apex:outputpanel styleclass="cc-wrapper" layout="block">
+
+
+<c:HopeRx_print_header CenterRecord="{!current_center}"  />
+<c:HopeRx_print_header_single_line CenterRecord="{!current_center}"  />
+
+<apex:outputpanel layout="block" styleclass="cc-nav-wrapper no-print">
+  <apex:outputpanel styleclass="cc-nav-container">
+    <apex:outputpanel styleclass="cc-top-nav-container" id="nav_content" layout="block">
+      <div class="cc-top-nav-left">
+        <apex:outputpanel id="back_holder" styleclass="cc-back-container" layout="block" >
+          <apex:outputpanel ><a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a></apex:outputpanel>
+        </apex:outputpanel>
+        <span class="spacer">&nbsp;</span>
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="Recent Patients"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="rpatient" value="{!recent_records}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:nav_to_recent('{!rpatient.id}');" style="color:#189BEB"><apex:outputtext value="{!rpatient.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="center" value="{!center_list}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" styleClass="c-pointer"
+            onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+            onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+            onclick="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+             /></a>
+          <ul class="dropdown-menu gear-menu dropdown-menu-right">
+            <apex:repeat var="gitem" value="{!gear_menu}" >
+                <li class="dropdown-lineitem" style="display:inline-block;">
+                  <a href="{!gitem.Page_URL__c}" style="color:#189BEB;" target="{!gitem.hyperlink_target__c}"
+                      onmouseover="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name_Hover__c)}';this.style.color='black';"
+                      onmouseout="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}';this.style.color='#189BEB';">
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}" width="{!if(gitem.name=='Salesforce','30','20')}" height="20" style="display:inline;{!if(gitem.name=='Salesforce','position:relative;left:-7px;margin-right:-6px;','margin-right:5px;')}" />&nbsp;&nbsp;{!gitem.name}
+                  </a>
+                </li>
+            </apex:repeat>
+          </ul>
+          </span>
+      </div>
+    </apex:outputpanel>
+    <div class="cc-sub-nav-container" >
+      <apex:repeat var="mitem" value="{!clinical_header_items}">
+        <apex:outputpanel layout="block" styleclass="cc-sub-nav-cell {!if(mitem.name=='Clinical','cc-color-topNav-selected','')}" onclick="nav_to('{!mitem.id}')">
+          <button class="cc-sub-nav-top-button cc-color-{!mitem.css_class__c} cc-hover-tooltips-dark-anchor-nav">
+            <i class="{!if(mitem.image_name__c=='home','hrxicon','ccf')}-{!mitem.image_name__c} cc-color-font-white"></i>
+            <div>{!mitem.name}</div>
+          </button>
+          <div class="cc-button-text">
+            {!mitem.name}
+          </div>
+          <apex:outputpanel rendered="{!if(mitem.name=='Notifications',true,false)}" layout="block"  styleclass="cc-calBadge-badge" style="right:60%;">{!dosespot_notification_count}</apex:outputpanel>
+          <div class="cc-button_bg cc-color-{!mitem.css_class__c}">
+            <!-- <apex:outputpanel rendered="{!if(mitem.name=='Notifications',true,false)}" layout="block"  styleclass="cc-calBadge-badge">{!dosespot_notification_count}</apex:outputpanel>-->
+          </div>
+        </apex:outputpanel>
+      </apex:repeat>
+    </div>
+
+   <apex:outputPanel styleclass="cc-clinical-calendar-nav" layout="block" id="calendar_nav">   
+          
+
+     <div class="cc-nav-right">
+     <apex:outputpanel layout="block" styleclass="cc_cc_cal_options-container">            
+       <apex:outputpanel layout="block" styleclass="cc-toolbar-button-icon-container">
+         <apex:outputpanel layout="block" styleclass="cc-toolbar-button-patient" onclick="opatient_search();">
+           <i class=" ccf-patient"></i>
+           <apex:outputpanel styleclass="patient_label" >Patient Name Here</apex:outputpanel>
+         </apex:outputpanel>
+         <apex:outputpanel layout="block" styleclass="cc-toolbar-button-icon-tooltip" style="left: 0%; width: 160px; display: none; opacity: 1;">
+           <apex:outputpanel layout="block">Change patient</apex:outputpanel>
+         </apex:outputpanel>
+       </apex:outputpanel>       
+     </apex:outputpanel>
+     </div>
+     
+   </apex:outputpanel> <!--end cc-clinical-calendar-nav-->
+  </apex:outputpanel>
+</apex:outputpanel>
+
+<apex:outputpanel layout="block" styleclass="cc-content-wrapper" id="main_holder">
+  <apex:outputpanel layout="block" styleclass="cc-content-container">
+  <apex:actionStatus id="ajaxstatus">
+    <apex:facet name="start">
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10110; background-color: #f2f2f2;">
+        &nbsp;
+      </div>
+      <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10111; margin: 20% 50%">
+        <!--<apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}"/>-->
+<!--       <img src="http://upload.wikimedia.org/wikipedia/commons/e/ed/Cursor_Windows_Vista.gif" />-->
+        <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+        <!--<img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}" />-->
+      </div>
+    </apex:facet>
+  </apex:actionStatus>
+  <apex:variable var="dfilter_display" value="true" />
+
+
+  <apex:outputpanel layout="block" styleclass="cc-clinical-content-container" style="padding-top:1em;">
+    <apex:messages style="color:red;" />
+    <input type="text" maxlength="6" size="6" id="colorpickerField1" value="00ff00" /><br /><br />
+    <input type="text" maxlength="6" size="6" id="colorpickerField2" value="00eecc" /><br /><br />
+    <input type="text" maxlength="6" size="6" id="colorpickerField3" value="00ffbb" /><br /><br />
+    <script>
+    $j('#colorpickerField1, #colorpickerField2, #colorpickerField3').ColorPicker({
+		onSubmit: function(hsb, hex, rgb, el) {
+			$j(el).val(hex);
+			$j(el).ColorPickerHide();
+		},
+		onBeforeShow: function () {
+			$j(this).ColorPickerSetColor(this.value);
+		}
+	})
+	.bind('keyup', function(){
+		$j(this).ColorPickerSetColor(this.value);
+	});
+    </script>
+    
+    <div style="height:100px;width:120px;background:#cccccc;z-index:1;position:relative;">
+      <div style="height:100%;width:100%;z-index:3;position:relative">
+        Text goes here<br />
+        Text goes here<br />
+      </div>
+      <div style="height:40px;position:relative;top:40px;width:100%;z-index:2;background:#dddddd;position:absolute;">      
+      
+      </div>  
+      <div class="pop_out_bar" >
+       <span class="expansion_icon">+</span>
+      </div>        
+    </div>
+    
+    <br /><br />
+    
+    <div style="width:200px;position:relative;">Test
+      <div class="pop_out_bar"><span class="expansion_icon">+</span>
+        <div class="tool_icons" style="width:5px;min-width:5px;">&nbsp;</div>        
+        <div class="tool_icons">
+          <i class="ccf-play"></i>          
+          <div class="tool_icon_tooltip">
+            <span class="tool_icon_tooltip_row">
+              <span class="tool_icon_tooltip_img" style="padding-right:10px;"><i class="ccf-patient"></i></span>
+              <span class="tool_icon_tooltip_label">Steven S</span>
+            </span>
+            <span class="tool_icon_tooltip_row">
+              <span class="tool_icon_tooltip_img" style="padding-right:10px;"><i class="ccf-clock"></i></span>
+              <span class="tool_icon_tooltip_label">7:00 AM - 7:40 AM</span>
+            </span>
+          </div>
+        </div>
+        <div class="tool_icons"><i class="hrxicon-clipboard"></i></div>
+      </div>
+    </div>
+    
+    <div class="clipboard_container" style="top:400px;">
+      <div class="clipboard_icon"><i class="hrxicon-clipboard"></i><span class="clip_counter">3</span></div>
+      <div class="clipboard_contents">
+        content here
+      </div>      
+    
+    </div>
+  </apex:outputpanel>
+  
+  
+  <div class="clipboard_container" style="top:100px;">
+    <div class="clipboard_icon" style="padding-bottom: 20px !important;height: 70px;width: 60px;"><i class="ccf-calendar"></i>
+      <span class="clip_counter" style="left: -35px;top: 35px;font-weight: bold;font-size: 7pt;">2/13/2018</span>
+    </div>
+    <div class="clipboard_contents">
+      <div style="flex-grow:1;">
+	    <apex:outputtext value="{0,date,M/dd/yyyy}" ><apex:param value="{!current_date}" /></apex:outputtext>
+	  </div>
+	  <div onclick="to_today();">
+	    <i class="hrxicon-today " style="font-size:14px; padding-right:5px;"></i>
+	  </div>
+	  <div onclick="p_calendar_day();">
+	    <i class="ccf-left-arrow" style="font-size: 14px; padding-right: 5px;" ></i>
+	  </div>
+	  <div onclick="n_calendar_day();">
+	    <i class="ccf-right-arrow" style="font-size: 14px; padding-right: 5px;" ></i>
+	  </div>
+	  <div onclick="calendar_drop();">
+	    <i class="ccf-calendar" style="font-size: 14px; padding-right: 5px;" ></i>
+	  </div>
+	</div>
+	
+  </div>    
+  
+  
+  <div class="pstatus_container">
+    <div class="pstatus_icon">
+      <i class="ccf-patient"></i>
+      <span class="pstatus_counter">8</span>
+    </div>
+    <div class="pstatus_inner">
+      <div class="pstatus_tab_container">      
+        <div class="pstatus_tab_selected" id="pstatus_tab_all" onclick="select_pstatus_tab('all');"><span class="pstatus_arrow"></span>All</div>
+        <div class="pstatus_tab" id="pstatus_tab_arrived" onclick="select_pstatus_tab('arrived');"><span class="pstatus_arrow"></span>Arrived</div>
+        <div class="pstatus_tab" id="pstatus_tab_ready" onclick="select_pstatus_tab('ready');"><span class="pstatus_arrow"></span>Ready</div>
+        <div class="pstatus_tab" id="pstatus_tab_started" onclick="select_pstatus_tab('started');"><span class="pstatus_arrow"></span>Started</div>
+        <div class="pstatus_tab" id="pstatus_tab_completed" onclick="select_pstatus_tab('completed');"><span class="pstatus_arrow"></span>Completed</div>
+        <div class="pstatus_tab" id="pstatus_tab_noshow" onclick="select_pstatus_tab('noshow');"><span class="pstatus_arrow"></span>No Show</div>
+      </div>
+      <div class="pstatus_details">
+        <div id="pstatus_details_all" class="pstatus_details_visible">
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">John Doe</span>
+              <span class="pstatus_status">Arrived</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+          <span class="pstatus_row_even">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span>
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+          <span class="pstatus_row_even">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span>
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+          <span class="pstatus_row_even">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span>
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+          <span class="pstatus_row_even">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span>
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+          <span class="pstatus_row_even">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span>
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+        </div>
+        <div id="pstatus_details_arrived" class="pstatus_details_hidden">
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">John Doe</span>
+              <span class="pstatus_status">Arrived</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+        </div>
+        <div id="pstatus_details_ready" class="pstatus_details_hidden">Ready patient info here</div>
+        <div id="pstatus_details_started" class="pstatus_details_hidden">
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Rudy Thompson</span>
+              <span class="pstatus_status">Started</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">General Repair</span>
+              <span class="pstatus_apt_timer">3:37</span>
+            </span>
+          </span></div>
+        <div id="pstatus_details_completed" class="pstatus_details_hidden">
+          <span class="pstatus_row_odd">
+            <span class="pstatus_header">
+              <span class="pstatus_pname">Mary Test</span>
+              <span class="pstatus_status">Completed</span>
+            </span>
+            <span class="pstatus_footer">
+              <span class="pstatus_apt_name">Prosth Exam</span>
+              <span class="pstatus_apt_timer">5:00</span>
+            </span>
+          </span>
+        </div>
+        <div id="pstatus_details_noshow" class="pstatus_details_hidden">No Show patient info here</div>
+      </div>      
+    </div>
+    
+  </div>  
+
+  </apex:outputpanel> <!--end cc-content-container-->
+</apex:outputpanel> <!--end cc-content-wrapper-->
+</apex:outputpanel> <!--end cc-wrapper-->
+
+</apex:form>
+</body>
+<script>
+function echo_timers() {
+          var my_element;
+          var all_elements = document.getElementsByClassName('pstatus_apt_timer_alert');
+          for(var i = 0; (my_element = all_elements[i]) != null; i++) {
+            var current_time = my_element.innerHTML;
+            var minutes;
+            var seconds;
+            if(current_time.search(':')==-1) {
+              minutes = 0;
+              seconds = current_time;
+            }
+            else {
+              minutes = current_time.substring(0,current_time.search(':'));
+              seconds = current_time.substring((current_time.search(':') + 1));
+              if(seconds.charAt(0)=='0')
+                seconds = seconds.substring(1);
+            }
+            var total_seconds = 0;
+            total_seconds = parseInt(minutes) * 60 + parseInt(seconds) + 1;
+            seconds = total_seconds%60 + "";
+            if(seconds.length<2)
+              seconds = '0' + seconds;
+            if(total_seconds>=60) {
+              minutes = parseInt(total_seconds/60);
+              my_element.innerHTML = minutes + ':' + seconds;
+            }
+            else
+              my_element.innerHTML = '0:' + seconds;
+          }
+
+          all_elements = document.getElementsByClassName('pstatus_apt_timer');
+          for(i = 0; (my_element = all_elements[i]) != null; i++) {
+            var current_time = my_element.innerHTML;
+            var minutes;
+            var seconds;
+            if(current_time.search(':')==-1) {
+              minutes = 0;
+              seconds = current_time;
+            }
+            else {
+              minutes = current_time.substring(0,current_time.search(':'));
+              seconds = current_time.substring((current_time.search(':') + 1));
+              if(seconds.charAt(0)=='0')
+                seconds = seconds.substring(1);
+            }
+            var total_seconds = 0;
+            total_seconds = parseInt(minutes) * 60 + parseInt(seconds) + 1;
+            seconds = total_seconds%60 + "";
+            if(seconds.length<2)
+              seconds = '0' + seconds;
+            if(total_seconds>=60) {
+              minutes = parseInt(total_seconds/60);
+              if(parseInt(total_seconds/60) >= 15 && parseInt((total_seconds-1)/60)<15)
+                my_element.className = 'pstatus_apt_timer_alert';
+              my_element.innerHTML = minutes + ':' + seconds;
+            }
+            else
+              my_element.innerHTML = '0:' + seconds;
+          }
+
+        }
+        
+        window.onload = function() { 
+          setInterval(echo_timers, 1000);   
+        }
+</script>
+</apex:page>

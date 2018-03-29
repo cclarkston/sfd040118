@@ -1,0 +1,737 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="dp_clinical_patient" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClearCare</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+  
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>   
+
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+       
+</head>
+<style type="text/css" media="print">
+  .no-print {
+    display:none;
+  }
+</style>
+
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0 auto;
+    padding: 0;
+  }  
+  
+  .pad-main-wrapper {
+    margin-top:145px;
+  }
+  
+  a.nav_anchor {
+    color:black;
+    font-weight:300;
+    font-size: 12pt;
+    letter-spacing: 1px;
+  }
+  
+  a.nav_anchor:hover {
+    color:white;
+    text-decoration:none;
+  }
+  
+  span.dateFormat {
+    display:none;
+  }
+  
+  .cc-field-label {
+    display:inline-block;
+    padding-right:5px;
+    font-weight:bold;
+  }
+  
+  .cc-field-input {
+    border:none;
+    outline:0;
+    font-szie:12pt;    
+  }
+  
+  .cc-email-attachment-item {
+    display:inline-block;
+    padding-right:20px;    
+  }
+  
+  .cc-email-attachment-remove {
+    padding-left:10px;
+    display:inline-block;
+  }
+  
+  .cc-section-header-right-button-container a:hover {
+    color:white;
+    text-decoration:none;
+  }
+</style>
+
+<script type="text/javascript">    
+  var key_timeout;
+  var search_in_progress = false;
+      
+  function qsearch_key(e) {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("search_patients()",600);
+  }   
+  
+  $(function(){
+    /*
+     * this swallows backspace keys on any non-input element.
+     * stops backspace -> back
+     */
+    var rx = /INPUT|SELECT|TEXTAREA/i;
+
+    $(document).bind("keydown", function(e){
+        //alert('Alert Pressed : ' + e.which);
+        if( e.which == 8 ){ // 8 == backspace
+            if(!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly ){
+                e.preventDefault();
+            }
+        }
+        if(e.which== 116) {
+          e.preventDefault();
+        }
+    });
+});
+</script>    
+
+<body>
+<apex:form onsubmit="return true;">
+<apex:outputpanel styleclass="cc-wrapper" layout="block">
+<apex:actionFunction name="body_refresh" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="search_patients" action="{!search_consult_records}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="view_patient" action="{!select_search_patient}" rerender="calendar_nav,main_holder" status="ajaxstatus">
+  <apex:param name="ptid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="nav_to" action="{!navigate_to}" rerender="none" status="ajaxstatus">
+  <apex:param name="navid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="center_switch" action="{!change_center}" rerender="calendar_nav,main_holder" status="ajaxstatus" >
+  <apex:param name="cid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="update_patient_record" action="{!save_patient_changes}" rerender="error_holder" status="ajaxstatus" />
+<apex:actionFunction name="opatient_search" action="{!open_patient_search}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="cpatient_search" action="{!close_patient_search}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="oemail_form" action="{!open_new_mail_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="cemail_form" action="{!close_mail_form}" status="ajaxstatus" />
+<apex:actionFunction name="oattachment_form" action="{!open_attachment_form}" status="ajaxstatus"  />
+<apex:actionFunction name="cattachment_form" action="{!close_attachment_form}" status="ajaxstatus"  />
+<apex:actionFunction name="send_mail" action="{!send_email}" status="ajaxstatus"  />
+<apex:actionFunction name="ourl_form" action="{!open_url_form}" status="ajaxstatus" />
+<apex:actionFunction name="osms_form" action="{!open_sms_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="csms_form" action="{!close_sms_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="send_sms" action="{!send_sms_message}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="add_attachment" action="{!add_email_attachment}" status="ajaxstatus" />
+<apex:actionFunction name="ophoto_form" action="{!open_photo_modal}" status="ajaxstatus" />
+<apex:actionFunction name="cphoto_form" action="{!close_photo_modal}" status="ajaxstatus" />
+<apex:actionFunction name="add_photo" action="{!add_patient_photo}" status="ajaxstatus" />
+<apex:actionFunction name="delete_photo" action="{!remove_photo}" status="ajaxstatus" />
+<apex:actionFunction name="confirm_photo_delete" action="{!confirm_photo_removal}" rerender="main_holder" status="ajaxstatus" >
+  <apex:param name="atid" value="" />
+</apex:actionFunction>
+
+<apex:outputpanel layout="block" styleclass="cc-nav-wrapper">
+  <apex:outputpanel styleclass="cc-nav-container">
+    <apex:outputpanel styleclass="cc-top-nav-container" id="nav_content" layout="block">
+      <div class="cc-top-nav-left">
+        <apex:outputpanel id="back_holder" styleclass="cc-back-container" layout="block" >
+          <apex:outputpanel ><a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a></apex:outputpanel>
+        </apex:outputpanel>  
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="center" value="{!center_list}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" styleClass="c-pointer"
+            onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+            onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+            onclick="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+             /></a>
+          <ul class="dropdown-menu gear-menu dropdown-menu-right">
+            <apex:repeat var="gitem" value="{!gear_menu}" >
+                <li class="dropdown-lineitem" style="display:inline-block;">
+                  <a href="{!gitem.Page_URL__c}" style="color:#189BEB;"  
+                      onmouseover="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name_Hover__c)}';this.style.color='black';" 
+                      onmouseout="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}';this.style.color='#189BEB';">
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}" width="{!if(gitem.name=='Salesforce','30','20')}" height="20" style="display:inline;{!if(gitem.name=='Salesforce','position:relative;left:-7px;margin-right:-6px;','margin-right:5px;')}" />&nbsp;&nbsp;{!gitem.name}
+                  </a>
+                </li>
+            </apex:repeat>
+          </ul>        
+          </span>
+      </div>
+    </apex:outputpanel>
+    <div class="cc-sub-nav-container" >
+      <apex:repeat var="mitem" value="{!clinical_header_items}">
+        <apex:outputpanel layout="block" styleclass="cc-sub-nav-cell" onclick="nav_to('{!mitem.id}')">
+          <button class="cc-sub-nav-top-button cc-color-{!mitem.css_class__c} cc-hover-tooltips-dark-anchor-nav">
+            <i class="ccf-{!mitem.image_name__c} cc-color-font-white"></i>
+            <div>{!mitem.name}</div>          
+          </button>
+          <div class="cc-button-text">
+            {!mitem.name}
+          </div>
+          <div class="cc-button_bg cc-color-{!mitem.css_class__c}">
+
+          </div>
+        </apex:outputpanel>
+      </apex:repeat>
+    </div>
+
+   <apex:outputPanel styleclass="cc-clinical-calendar-nav" layout="block" id="calendar_nav">
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-patient-link">Patient</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-history-link">History</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-schedule-link">Schedule</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-forms-link">Forms</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-notes-link">Notes</a>
+     </apex:outputpanel>
+     <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space" rendered="{!if(initial_patient_search,false,true)}">
+       <a class="nav_anchor" id="cc-patient-insurance-link">Insurance</a>
+     </apex:outputpanel>
+     <div class="cc_cc_cal_options-container">
+       <div class="cc-hover-tooltips-light cc-cursor-hover">
+         <a class="cc-section-header-add-button nav_anchor" id="cc-patient-add"><i class=" ccf-add-md    "></i></a>
+         <div class="cc-tooltip cc-center" style="top:20%">New patient</div>
+       </div>
+     </div>
+   </apex:outputpanel> <!--end cc-clinical-calendar-nav-->
+  </apex:outputpanel>
+</apex:outputpanel>
+
+<apex:outputpanel layout="block" styleclass="cc-content-wrapper" id="main_holder">
+  <apex:outputpanel layout="block" styleclass="cc-content-container">
+  <apex:outputpanel id="error_holder" ><apex:messages style="color:red;font-style:italics;padding-top:3px;" /></apex:outputpanel>
+  <apex:actionStatus id="ajaxstatus">
+    <apex:facet name="start">
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 1110; background-color: black;">
+        &nbsp;
+      </div>
+      <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1111; margin: 30% 50%">
+        <!--<apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}"/>-->
+        <img src="http://upload.wikimedia.org/wikipedia/commons/e/ed/Cursor_Windows_Vista.gif" />
+        <!--<img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}" />-->
+      </div>
+    </apex:facet>
+  </apex:actionStatus>  
+  
+  <apex:outputpanel layout="block" rendered="{!initial_patient_search}">
+    <apex:outputpanel layout="block" styleclass="cc-clinical-content-container">
+      <apex:outputpanel layout="block" styleclass="cc-section-container">
+        <apex:outputPanel layout="block" styleclass="cc-section-header cc-font-light-16">
+          <apex:outputpanel layout="block" styleclass="cc_cc-notes-section-header-left">Patient Lookup</apex:outputpanel>   
+        </apex:outputpanel>          
+        <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-info">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Name:</apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+              <apex:input styleclass="cc-patientProfile-input" value="{!search_name}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:outputpanel>      
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Phone:</apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+              <apex:input styleclass="cc-patientProfile-input" value="{!search_phone}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();"/>
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Email:</apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+              <apex:input styleclass="cc-patientProfile-input" value="{!search_email}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>                 
+           
+        <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results" rendered="{!if(search_result_size>0,true,false)}">
+          <div class="cc-patient-schedule-search-results-row-container" id="cc-patient-patient-search-results-row-container" style="opacity: 1;">
+            <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results-row-label">Search Results</apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-options">
+              <apex:repeat var="patient" value="{!consult_search_results}" >
+                <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result" style="margin-top:10px;margin-bottom:20px;" onclick="view_patient('{!patient.id}');">
+                  <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result-name">{!patient.name}</apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="">{!patient.phone}</apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="">{!patient.billingstreet}</apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="">{!patient.Email__c}</apex:outputpanel>
+                </apex:outputpanel>
+              </apex:repeat>
+            </apex:outputpanel>
+          </div>
+      </apex:outputpanel><!--end search results-->
+
+      </apex:outputpanel> <!-- end section container - Patient Lookup-->
+    </apex:outputpanel>  <!-- end clinical content - Patient Lookup-->
+
+  </apex:outputpanel>
+  
+  <apex:outputpanel layout="block" rendered="{!if(initial_patient_search,false,true)}">
+    <apex:outputpanel layout="block" styleclass="cc-cc-notificationContainer" rendered="{!display_medical_warnings}" id="warning_holder">
+      <div class="cc-cc-notificationContent-show" id="cc-cc-errorContent-id">
+        <apex:outputpanel layout="block" styleclass="cc-cc-notificationHeader">
+          <apex:outputpanel layout="block"><i class="ccf-pill cc-font-light-16"></i> Patient has an allergy to Penicillin</apex:outputpanel>
+          <apex:outputpanel layout="block"><i class="ccf-error cc-font-light-16"></i> Patient has not filled out medical clearance</apex:outputpanel>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block"><apex:commandlink rerender="main_holder" styleclass="cc-cc-notificationContent-link-close" action="{!close_medical_warnings}" value="close" status="ajaxstatus"  /></apex:outputpanel>
+      </div>
+    </apex:outputpanel>
+  
+    <apex:outputpanel layout="block" styleclass="cc-clinical-content-container">
+      <apex:outputpanel layout="block" styleclass="cc-section-container">
+        <div class="cc-section-header cc-font-light-16" id="cc-patient-patient">
+          <apex:outputpanel layout="block" styleclass="cc_cc-notes-section-header-left">Patient</apex:outputpanel>          
+          <apex:outputpanel styleclass="cc_cc-notes-section-header-right">
+            <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark" id="cc-patient-search" onclick="opatient_search();">
+              <a style="color:white;"><i class="ccf-search-md"></i></a>
+              <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center">Search</apex:outputpanel>
+            </div>
+            <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark" id="cc-patient-create-email" onclick="oemail_form();">
+              <a style="color:white;"><i class="ccf-envelope-o"></i></a>
+              <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center">Email patient</apex:outputpanel>
+            </div>
+            <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark" id="cc-patient-create-text" onclick="osms_form();">
+              <a style="color:white;"><i class="ccf-message"></i></a>
+              <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center">Text message patient</apex:outputpanel>
+            </div>
+            <div class="cc-section-header-right-button-container cc-section-button-white cc-hover-tooltips-dark" id="cc-patient-waitlist">
+              <a style="color:white;"><i class="ccf-waitlist"></i></a>
+              <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center">Add patient to waitlist</apex:outputpanel>
+            </div>            
+          </apex:outputpanel>
+        </div>
+        
+        <apex:outputpanel layout="block" styleclass="cc-section-content">
+          <apex:outputpanel layout="block" id="photo_holder">          
+            <apex:outputpanel layout="block" styleclass="cc-patientImage" onclick="ophoto_form();">              
+              <!--display if we have no photos--->
+              <apex:outputpanel rendered="{!if(num_patient_photos==0,true,false)}" >
+                <div ><i class="ccf-photo"></i></div>
+                <div >Upload photo</div>
+              </apex:outputpanel>
+              <!--else display the most recent photo-->
+              <apex:outputPanel rendered="{!if(num_patient_photos==0,false,true)}">
+                <div><apex:image url="{!URLFOR($Action.Attachment.Download, main_patient_photo.id)}" style="max-width:100%;height:auto;" /></div>
+              </apex:outputPanel>
+            </apex:outputpanel>
+            <div class="cc-patientImage-thumb-container">          
+              <div class="cc-patientImage-thumb" style="font-size:38pt" id="cc-patientImage-thumb-remove" onclick="confirm_photo_delete('{!patient.main_photo_id__c}');">
+                <i class="ccf-remove cc-font-light-16"></i>                
+              </div>            
+              <div class="cc-patientImage-thumb" id="cc-patientImage-thumb-add" onclick="ophoto_form();">
+                <i class="ccf-add-light cc-font-light-16"></i>
+              </div>
+              <apex:repeat var="thumbs" value="{!thumbnail_photos}">
+                <div class="cc-patientImage-thumb" id="cc-patientImage-thumb-template" style="opacity: 1;">
+                  <apex:commandLink action="{!change_main_photo}" rerender="photo_holder" status="ajaxstatus">
+                    <apex:image url="{!URLFOR($Action.Attachment.Download, thumbs.id)}" style="max-width:100%;height:auto;" />
+                    <apex:param name="atid" value="{!thumbs.id}" />
+                  </apex:commandLink>
+                </div>
+              </apex:repeat>
+            </div>
+          </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-container">
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-column">
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">First Name:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.firstname}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder">  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off">  </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>              
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">DOB:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container"><apex:inputfield type="date" value="{!patient.Date_of_Birth__c}" styleclass="cc-patient-datepicker" onchange="update_patient_record();" /></apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row" style="height:48px;">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Address:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container" style="height:48px;">
+                  <apex:inputfield value="{!patient.billingStreet}" styleclass="cc-patientProfile-input" type="text" onchange="update_patient_record();" style="height:48px;margin-top:auto;" /> 
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apeX:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">City:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.billingcity}" styleclass="cc-patientProfile-input" onchange="update_patient_record();"/>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">State:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.billingCity}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Zip:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                 <apex:inputfield value="{!patient.billingpostalcode}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+            </apex:outputpanel>
+            
+            <apex:outputpanel layout="block" styleclass="cc-patientProfile-column">
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Last Name:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.lastname}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder">  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off">  </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel styleclass="cc-patientProfile-label">Mobile #:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.personmobilephone}" type="tel" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Home #:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.phone}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Email:</apeX:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.Email__c}" styleclass="cc-patientProfile-input" onchange="update_patient_record();"/>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Emergency Contact:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.Emergency_Contact_Name__c}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Emergency Phone:</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+                  <apex:inputfield value="{!patient.Emergency_Contact_Phone__c}" styleclass="cc-patientProfile-input" onchange="update_patient_record();" />
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+      
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-note">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Note:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:inputTextarea value="{!patient.Clinical_Notes__c}" styleclass="cc-patientProfile-note-textarea" onchange="update_patient_record();"/>
+<!--            <textarea class="cc-patientProfile-note-textarea">Likes to be called Suzy</textarea>-->
+<!-- Yes, it works <apex:outputLink value="{!URLFOR($Action.Account.GoogleMaps,patient.id)}">Google Map?</apex:outputLink>-->
+          </apex:outputpanel>
+        </apex:outputpanel> <!--end note holder -->
+        
+      </apex:outputpanel> <!--end cc-section-container - Patient-->
+      
+      <apex:outputpanel layout="block" styleclass="cc-section-container">
+        <div class="cc-section-header cc-font-light-16" style="position:relative" id="cc-patient-history">
+          History
+          <apex:outputpanel layout="block" styleclass="cc-timeline-events-connector"></apex:outputpanel>
+        </div>
+        <apex:outputpanel layout="block" styleclass="cc-timeline-container">
+          <apex:outputpanel layout="block" styleclass="cc-timeline-events-container">
+            <apex:repeat var="date" value="{!history_items}">                      
+              <apex:outputpanel layout="block" styleclass="cc-timeline-event ">
+                <!--Date entry here--->
+                <apex:outputpanel layout="block" styleclass="cc-timeline-event-details-date cc-center">{!date.formatted_history_date}</apex:outputpanel>
+                <apex:repeat var="event" value="{!date.events}">
+                  <apex:outputpanel layout="block" styleclass="cc-timeline-event-details  cc-cursor-hover cc-color-font-hover-blue ">
+                    <apex:outputpanel layout="block" styleclass="cc-timeline-event-details-icon cc-bgColor-{!event.icon_color}">
+                      <i class="{!event.icon_name}"></i>
+                    </apex:outputpanel>
+                    <apex:outputpanel layout="block" styleclass="cc-timeline-event-details-label">{!event.event_description}</apex:outputpanel>                 
+                  </apex:outputpanel> 
+                </apex:repeat>  <!-- end repeat through events-->              
+              </apex:outputpanel> <!-- end timeline event ---->
+            </apex:repeat>  <!--end repeat theough days-->
+            <apex:outputpanel layout="block">&nbsp;</apex:outputpanel>
+          </apex:outputpanel> <!-- end timeline events container ---->
+        </apex:outputpanel> <!-- end timeline container ---->
+      </apex:outputpanel> <!--end section container - HISTORY ----->
+      
+
+    </apex:outputpanel> <!--end cc-clinical-content-container-->
+  </apex:outputpanel>
+  
+  <!-- START PATIENT SEARCH MODAL------------------>
+  <apex:outputpanel layout="block" rendered="{!display_patient_search_modal}">
+  <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-close">
+        <div id="cc-patient-patient-search-close-button" onclick="cpatient_search();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </div>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-info">
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Name:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_name}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>      
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Phone:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_phone}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();"/>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Email:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_email}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>                 
+      <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results" rendered="{!if(search_result_size>0,true,false)}">
+        <div class="cc-patient-schedule-search-results-row-container" id="cc-patient-patient-search-results-row-container" style="opacity: 1;">
+          <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results-row-label">Search Results</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-options">
+            <apex:repeat var="patient" value="{!consult_search_results}" >
+              <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result" style="margin-top:10px;margin-bottom:20px;" onclick="view_patient('{!patient.id}');">
+                <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result-name">{!patient.name}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.phone}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.billingstreet}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.Email__c}</apex:outputpanel>
+              </apex:outputpanel>
+            </apex:repeat>
+          </apex:outputpanel>
+        </div>
+      </apex:outputpanel><!--end search results-->      
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel><!---END PATIENT SEARCH MODAL----->
+  
+  <!---Start Email Form---->
+  <apex:outputpanel layout="block" rendered="{!display_patient_email_modal}" id="email_holder">
+  <apex:outputpanel layout="block" styleclass="cc-patient-message-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-message-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-close">
+        <apex:outputpanel layout="block" styleclass="cc-patient-message-input-container" style="width:100%;">
+          <apex:inputText value="{!email_subject}" styleclass="cc-patient-message-input" onclick="if(this.value=='Subject') this.value='';" onblur="if(this.value=='') this.value='Subject';" />
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder" style="width:85%;"> </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off" style="width:85%;"> </apex:outputpanel>
+        </apex:outputpanel>
+        <div id="cc-patient-message-close-button" onclick="cemail_form();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </div>
+      </apex:outputpanel>
+     <!-- <apex:outputpanel layout="block" styleclass="cc-patient-message-subject-container">
+        <apex:outputpanel layout="block" styleclass="cc-patient-message-input-container">
+          <apex:inputText value="{!email_subject}" styleclass="cc-patient-message-input" />
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>-->
+      <apex:inputTextarea value="{!email_body}" styleclass="cc-patient-message-content" style="height:50%;"/>
+      <apex:outputpanel layout="block" style="width:100%;padding-top:10px;height:25%;overflow-y: auto;">
+<!--        <apex:actionRegion >-->
+        <apex:outputpanel rendered="{!if(email_attachment_display=='attachment_form',true,false)}">
+          <apex:inputFile value="{!new_email_attachment.body}" fileName="{!new_email_attachment.name}" style="display:inline-block;" onchange="add_attachment();" />
+<!-- Using onchange event now          <apex:commandButton action="{!add_email_attachment}" value="Add Attachment" />-->
+          &nbsp;&nbsp;<apex:commandButton action="{!close_attachment_form}" value="Cancel Upload" status="ajaxstatus" />
+        </apex:outputpanel>        
+<!--        </apex:actionRegion>-->
+        <apex:outputpanel rendered="{!if(email_attachment_display=='attachments',true,false)}">
+          <apex:repeat var="attach" value="{!email_attachments}">
+            <apex:outputpanel styleclass="cc-email-attachment-item">
+              {!attach.name}<apex:outputpanel styleclass="cc-email-attachment-remove" >
+                <apex:commandLink action="{!remove_email_attachment}" status="ajaxstatus">
+                  <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+                  <apex:param name="atid" value="{!attach.id}" />
+                </apex:commandLink>
+              </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:repeat>
+        </apex:outputpanel>
+        <apex:outputpanel rendered="{!if(email_attachment_display=='url_form',true,false)}">
+          <apex:outputpanel styleclass="cc-field-label">Label : </apex:outputpanel><apex:inputText value="{!url_label}" styleclass="cc-field-label"/>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>&nbsp;&nbsp;
+          <apex:outputpanel styleclass="cc-field-label">URL : </apex:outputpanel><apex:inputText value="{!url_href}" styleclass="cc-field-label"/>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>&nbsp;&nbsp; 
+          <apex:commandButton action="{!add_url_to_email}" value="Add Url" status="ajaxstatus" />&nbsp;&nbsp;
+          <apex:commandButton action="{!close_url_form}" value="Cancel" status="ajaxstatus" />    
+        </apex:outputpanel>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-buttons">      
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="cemail_form();">
+          <i class="ccf-trash"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Discard</apex:outputpanel>
+        </apex:outputpanel>
+        <!--Ron wants this to work like gmail.  That will take some serious effort on my part.
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="ourl_form();">
+          <i class="ccf-link"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Insert link</apex:outputpanel>
+        </apex:outputpanel>-->
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="oattachment_form();">
+          <i class="ccf-attach"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Attach a file</apex:outputpanel>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="send_mail();">
+          <i class="ccf-send"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Send</apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel> 
+  <!-------END EMAIL FORM-->
+  
+  <!-----START SMS FORM----------->
+  <apex:outputpanel layout="block" rendered="{!display_patient_sms_modal}" id="sms_holder">
+  <apex:outputpanel layout="block" styleclass="cc-patient-message-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-message-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-close" onclick="csms_form();">
+        <div id="cc-patient-message-close-button"><i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i></div>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-subject-container">Text message to &nbsp;&nbsp;
+        <apex:selectList value="{!sms_text_target}" size="1" style="height:100%;">
+          <apex:selectOptions value="{!valid_sms_targets}" />
+        </apex:selectList>
+      </apex:outputpanel>
+      <apex:inputTextarea styleclass="cc-patient-message-content" value="{!sms_text_msg}" />
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-buttons">
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="csms_form();">
+          <i class="ccf-trash"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Discard</apex:outputpanel>
+        </apex:outputpanel>
+        <!--Pulled - not really an sms feature .  If we do set this up,  it should work like gmail does
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover">
+          <i class="ccf-link"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Insert link</apex:outputpanel>
+        </apex:outputpanel>-->
+        <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-dark cc-color-font-hover-blue cc-cursor-hover" onclick="send_sms();">
+          <i class="ccf-send"></i>
+          <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="top:40%;">Send</apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel>
+  <!-----END SMS FORM------------->
+  
+  <!-----START PHOTO ADMIN---------->
+  <apex:outputpanel layout="block" rendered="{!display_photo_modal}" >
+  <apex:outputpanel layout="block" styleclass="cc-patient-message-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-message-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:messages />    
+      <apex:outputpanel layout="block" styleclass="cc-patient-message-close">        
+        <div id="cc-patient-message-close-button" onclick="cphoto_form();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </div>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" rendered="{!if(photo_display=='photo_admin',true,false)}" style="width:100%;height:95%;">
+        <!--photo display admin here-->     
+        <apex:outputpanel layout="block" styleclass="cc-patient-message-content" style="border:0;outline:0;margin-top:0;">
+          <apex:outputpanel layout="block" styleclass="cc-section-header cc-font-light-16" style="font-size:13pt;" >
+            <apex:outputpanel layout="block" styleclass="cc_cc-notes-section-header-left" style="height:25px">Patient Photos</apex:outputpanel>                        
+          </apex:outputpanel>
+          <apex:outputpanel rendered="{!if(num_patient_photos==0,true,false)}">There are currently no photos for this patient</apex:outputpanel>
+          <apex:outputpanel layout="block" rendered="{!if(num_patient_photos>0,true,false)}" style="overflow-y:auto;">
+            <apex:repeat var="photo" value="{!patient_photos}">
+              <apex:outputpanel layout="block" style="width:30%;display:inline-block;">
+                <apex:image url="{!URLFOR($Action.Attachment.Download,photo.id)}" style="height:75px;width:75px;" /><br />
+                {!photo.name}<br />
+                <apex:commandlink value="Remove" action="{!confirm_photo_removal}" status="ajaxstatus">
+                  <apex:param name="atid" value="{!photo.id}" />
+                </apex:commandlink>
+              </apex:outputpanel>
+            </apex:repeat>
+          </apex:outputpanel>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block" style="display: flex;flex-direction: row;width: 100%;margin-top: 15px;">      
+            <apex:inputFile value="{!new_email_attachment.body}" fileName="{!new_email_attachment.name}" style="display:inline-block;" onchange="add_photo();"/>
+        </apex:outputpanel>
+      </apex:outputpanel>
+      
+      <apex:outputpanel layout="block" rendered="{!if(photo_display=='photo_remove',true,false)}">
+        <apex:image url="{!URLFOR($Action.Attachment.Download,new_email_attachment.id)}" style="max-height:100px;max-width:100px;" /><br /><br />
+        Are you sure you want to remove this photo?<br /><br />
+        <span class="confirm-btn" onclick="delete_photo();">Confirm</span><span class="spacer">&nbsp;</span>
+      <span class="cancel-btn" onclick="ophoto_form();">Cancel</span>
+      </apex:outputpanel>
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel> 
+  <!-----END PHOTO ADMIN------------>
+  
+  </apex:outputpanel> <!--end cc-content-container-->
+</apex:outputpanel> <!--end cc-content-wrapper-->
+</apex:outputpanel>
+
+</apex:form>
+</body>
+</apex:page>

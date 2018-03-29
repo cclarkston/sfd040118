@@ -1,0 +1,238 @@
+<apex:page controller="dp_drag_test" sidebar="false" showHeader="false">
+   <head>
+       
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1" />-->
+<!--  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<!--  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<!--  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css' />-->
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css' />
+
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>
+
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'lib/prototype.js')}"></script>
+  <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'src/scriptaculous.js')}"></script>
+        
+      <script type="text/javascript">
+        
+         window.onload = function() {
+            
+            // Make all the images draggables from draggables division.
+                
+            $A($('drag_new').getElementsByTagName('span')).each(function(item) {
+               new Draggable(item, {revert: true});
+            });
+            
+            $A($('drag_existing').getElementsByTagName('p')).each(function(item) {
+               new Draggable(item, {revert: true});
+            });
+
+            Droppables.add('add_area', {onDrop: addItem, accept: 'apt_new'});
+            Droppables.add('remove_area', { onDrop: removeItem, accept: 'apt_existing'});
+            
+                
+            // Set drop area by default  non cleared.
+           
+         }
+         
+         function reset_drags() {            
+            // Mark all draggables                
+            $A($('drag_new').getElementsByTagName('span')).each(function(item) {
+               new Draggable(item, {revert: true});
+            });
+            $A($('drag_existing').getElementsByTagName('p')).each(function(item) {
+               new Draggable(item, {revert: true});
+            });
+            Droppables.add('add_area', {onDrop: addItem, accept: 'apt_new'});
+            Droppables.add('remove_area', { onDrop: removeItem, accept: 'apt_existing'});
+         }
+            
+         // The target drop area contains a snippet of instructional
+         // text that we want to remove when the first item
+         // is dropped into it.
+            
+         function addItem( draggable,droparea){
+            
+            //alert(draggable);
+            //alert(draggable.id);
+//            alert(draggable.className);
+            
+            //alert(droparea);
+  //          alert(droparea.id);
+            
+    //        alert('add ' + draggable.id);
+            add_apt(draggable.id);
+                
+//            draggable.parentNode.removeChild(draggable);
+  //          droparea.appendChild(draggable);
+         }
+         
+         function removeItem( draggable,droparea ) {
+            
+            
+            //alert(draggable);
+            //alert(draggable.id);
+           // alert(draggable.className);
+            
+            //alert(droparea);
+            //alert(droparea.id);
+            
+            //alert('remove ' + draggable.id);
+            remove_apt(draggable.id);
+                
+//            draggable.parentNode.removeChild(draggable);
+  //          droparea.appendChild(draggable);
+         }
+         
+      </script>
+        
+      <style type="text/css">
+        
+         <!--#draggables {
+            width: 172px;
+            border: 3px ridge blue;
+            float: left;
+            padding: 9px;
+         }-->
+            
+         #droparea {
+            float: left;
+            margin-left: 16px;
+            width: 172px;
+            border: 3px ridge maroon;
+            text-align: center;
+            font-size: 24px;
+            padding: 9px;
+            float: left;
+         }
+            
+         .hoverActive {
+            background-color: #ffffcc;
+         }
+            
+         #draggables img, #droparea img {
+            margin: 4px;
+            border:1px solid red;
+         }
+         
+         .drag_test {
+           display:block;
+           padding-bottom:1em;
+         }
+         
+         .apt_name {
+           display:inline-block;
+           width:450px;
+         }
+         
+         .days_value {
+           display:inline-block;
+           width:150px;
+         }
+         
+         #remove_area {
+           background:#ffd2d2;
+           border:1px solid red;
+           height:70px;           
+           width:200px;
+           padding:10px;
+           text-align:center;
+           font-weight:bold;
+           padding-top:25px;
+         }
+         
+         .pot_div {
+           float:left;
+           margin-right:2em;
+           padding:5px;
+         }
+         
+         .apt_div {
+           float:left;
+           max-width:250px;
+         }
+         
+         .apt_new {
+           display:block;
+           width:100px;
+           min-height:50px;
+           padding:10px;
+           text-align:center;
+           background:#33ccff;
+           margin-bottom:10px;
+           font-weight:bold;
+           border:1px solid black;
+           float:left;
+           margin-right:1em;
+         }
+            
+          #add_area {
+           background:#66ff99;
+           border:1px solid green;
+           height:70px;           
+           width:200px;
+           padding:10px;
+           text-align:center;
+           font-weight:bold;
+           padding-top:25px;
+           margin-bottom:1em;
+          }
+      </style>
+   </head>
+<body>
+<apex:form >
+<apex:actionFunction name="add_apt" action="{!add_appointment}" rerender="main_holder" oncomplete="reset_drags();">
+  <apex:param name="caid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="remove_apt" action="{!remove_appointment}" rerender="main_holder" oncomplete="reset_drags();">
+  <apex:param name="paid" value="" />
+</apex:actionFunction>
+
+
+<apex:outputpanel layout="block" id="main_holder" style="padding-top:2em;padding-left:2em;">
+
+  <apex:outputpanel id="pot_holder" styleclass="pot_div" layout="block">   
+      <b>Doctor :</b> {!pt.doctor__r.name}<br /><br />
+      <b>Plan of Treatment :</b> {!pt.name}<br /><br />
+      
+      <span class="apt_name"><b>Appointments</b></span>
+      <span class="days_value"><b>Days Out</b></span>
+      <div id="drag_existing">
+        <apex:repeat var="pa" value="{!apt_list_selected}">
+          <p id="{!pa.id}" style="display:inline-block;" class="apt_existing">
+            <span class="apt_name">{!pa.clinical_appointment__r.name}</span>
+            <span class="days_value">{!pa.Days_Out__c}</span>
+          </p><br />
+        </apex:repeat>
+      </div><br /><br />
+   <div id="remove_area">
+     Remove from plan
+   </div>
+  </apex:outputpanel>   
+   
+  <apex:outputpanel id="apt_holder" styleclass="apt_div" layout="block">
+   <h2 >Appointments</h2><br /><br />
+   <div id="add_area">
+     Add to plan
+   </div>        
+               
+   <div id="drag_new">
+     <apex:repeat var="apt" value="{!apt_list_unselected}">
+       <span id="{!apt.id}" class="apt_new">{!apt.name}</span>
+     </apex:repeat>
+<!--     <span id="id_1" class="drag_test">Procedure 1</span>
+     <span id="id_2" class="drag_test">Procedure 2</span>
+     <span id="id_3" class="drag_test">Procedure 3</span>-->
+   </div>
+
+<!--      <div id="droparea">
+         Drag and Drop to here
+      </div>-->
+   </apex:outputpanel>
+</apex:outputpanel>
+</apex:form>        
+</body>
+</apex:page>

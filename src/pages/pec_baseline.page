@@ -1,0 +1,140 @@
+<apex:page controller="CtrlPecBaseline" showHeader="true" sidebar="true">
+    <apex:stylesheet value="{!URLFOR($Resource.Assets, 'css/pecbaseline.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}"  />
+
+    <style>
+    </style>
+
+    <apex:sectionHeader title="Set a baseline TCR and CPC for a PEC by month" subtitle="PEC Baseline by Month" />
+        <hr></hr>
+
+    <apex:outputPanel styleClass="main">
+            <apex:form >
+            <apex:outputPanel id="filters" layout="block">
+
+                <apex:actionstatus id="loadStatus">
+                       <apex:facet name="start">
+                           <div class="waitingSearchDiv" id="loading" style="background-color: #fbfbfb;
+                                  height: 100%;opacity:0.65;width:100%;">
+                               <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                                   <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                   <span class="waitingDescription">Loading...</span>
+                               </div>
+                           </div>
+                       </apex:facet>
+                   </apex:actionstatus>
+
+                <apex:actionFunction action="{!searchPecs}" name="searchPecs" status="loadStatus" oncomplete="searchComplete()" rerender="select-pec" />
+                <apex:actionFunction action="{!pecBaselinesByCenter}" name="pecBaselinesByCenter" rerender="pec-baseline" onComplete="hidePecSelect()" />
+                <apex:actionFunction action="{!pecBaselinesByPec}" name="pecBaselinesByPec" rerender="pec-baseline" onComplete="hidePecSelect()">
+                    <apex:param name="userId" value="" />
+                </apex:actionFunction>
+                <apex:actionFunction action="{!pecBaselinesByRegion}" name="pecBaselinesByRegion" rerender="pec-baseline" onComplete="hidePecSelect()" />
+
+                <apex:outputText styleClass="text">Search by PEC:</apex:outputText>
+                    <apex:inputText value="{!pecSearch}" id="pecSearch" label="Search By PEC" onkeyup="search(event)" onkeydown="if(event.keyCode==13{this.blur();}" styleClass="filter"></apex:inputText>
+
+                <apex:outputText styleClass="text">Search By Center: </apex:outputText>
+                    <apex:selectList value="{!centerId}" size="1" styleClass="filter" onchange="pecBaselinesByCenter()">
+                        <apex:selectOptions value="{!centerOptions}" />
+                    </apex:selectList>
+
+                <apex:outputText styleClass="text">Search By Region: </apex:outputText>
+                    <apex:selectList value="{!regionId}" size="1" styleClass="filter" onchange="pecBaselinesByRegion()">
+                        <apex:selectOptions value="{!regionOptions}" />
+                    </apex:selectList>
+
+            </apex:outputPanel>
+
+            <apex:outputPanel id="select-pec" layout="block" styleClass="select-pec">
+
+                <apex:outputPanel >
+                    <apex:outputText >Page {!pageCount} of {!totalPages} pages of results...</apex:outputText>
+                </apex:outputPanel>
+
+                <apex:outputPanel styleClass="search-results">
+                    <apex:commandButton action="{!previousPage}" disabled="{!If(disablePrevious == false, false, true)}" value="<< previous" reRender="select-pec"></apex:commandButton>
+                    <apex:commandButton action="{!nextPage}" disabled="{!If(disableNext == false, false, true)}" value="next >>" reRender="select-pec"></apex:commandButton>
+
+                    <apex:repeat value="{!displayPecs}" var="pec">
+                        <div class="pec" onclick="pecBaselinesByPec('{!pec.Id}')">{!pec.Name}</div>
+                    </apex:repeat>
+                </apex:outputPanel>
+
+            </apex:outputPanel>
+
+            <apex:outputPanel id="pec-baseline" layout="block" styleClass="pec-baseline">
+                <table class="pec-baseline-table">
+                    <thead>
+                        <th>PEC</th>
+                        <th>Goal Type</th>
+                        <th>Center</th>
+                        <th>Field Date</th>
+                    </thead>
+                    <tr>
+                        <td><apex:outputField value="{!pecInfo.pecBaseline.User__r.Name}"></apex:outputField></td>
+                        <td><apex:inputField value="{!pecInfo.pecBaseline.User__r.Goal_Type__c}"></apex:inputField></td>
+                        <td><apex:inputField value="{!pecInfo.center.Name}"></apex:inputField></td>
+                        <!--  field date -->
+                    </tr>
+                </table>
+                <hr />
+                <hr />
+                <table class="pec-baseline-table">
+                    <thead>
+                    </thead>
+                    <apex:repeat value="{!pecData}" var="pec">
+                    <tr>
+                        <tr>
+                            <th scope="row"></th>
+                                <td><apex:outputField value="{!pec.pecBaseline.Month__c}"></apex:outputField>/<apex:outputField value="{!pecInfo.pecBaseline.Year__c}"></apex:outputField></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"></th>
+                            <td><apex:inputField value="{!pec.pecBaseline.TCR__c}"></apex:inputField></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"></th>
+                            <td><apex:inputField value="{!pec.pecBaseline.CPC__c}"></apex:inputField></td>
+                        </tr>
+                    </tr>
+                    </apex:repeat>
+                </table>
+            </apex:outputPanel>
+
+        </apex:form>
+    </apex:outputPanel>
+
+    <script>
+    var timeout;
+    var searchInProgress = false;
+
+    j$ = jQuery.noConflict();
+
+    j$( document ).ready(function() {
+        hidePecBaseline();
+        hidePecSelect();
+    });
+
+    function search(event) {
+        if(searchInProgress) {
+            clearTimeout(timeout);
+        }
+        searchInProgress = true;
+        timeout = setTimeout("searchPecs()", 1800);
+    }
+
+    function searchComplete() {
+        searchInProgress = false;
+        hidePecBaseline();
+    }
+
+    function hidePecSelect() {
+        j$(".select-pec").hide();
+    }
+
+    function hidePecBaseline() {
+        j$(".pec-baseline").hide();
+    }
+    </script>
+</apex:page>

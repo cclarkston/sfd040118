@@ -1,0 +1,975 @@
+<apex:page controller="ctrl_consultschedule" sidebar="false" showHeader="true">
+<apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" />
+
+
+<script>
+var ie_check = false;
+var ie_ver; 
+
+function getInternetExplorerVersion()
+// Returns the version of Internet Explorer or a -1
+// (indicating the use of another browser).
+{
+  var rv = -1; // Return value assumes failure.
+  if (navigator.appName == 'Microsoft Internet Explorer') {
+    var ua = navigator.userAgent;
+    var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+    if (re.exec(ua) != null)
+      rv = parseFloat( RegExp.$1 );
+  }
+  return rv;
+}
+
+function ietruebody(){
+return (document.compatMode && document.compatMode!="BackCompat")? document.documentElement : document.body
+}
+
+var ie=document.all;
+var ns6=document.getElementById && !document.all
+var offsetxpoint=-250;
+var offsetypoint=20;
+
+function apt_modal(e,apt_id) {
+  getScrollXY() ;
+  alertSize();
+  if(!ie_check)
+    ie_ver = getInternetExplorerVersion();    
+//  alert('Height : ' + scrH + ' Width : ' + scrW + ' X Pos : ' + scrX + ' Y Pos : ' + scrY + ' PageY : ' + e.pageY + ' PageX : ' + e.pageX);  
+  if (! document.styleSheets) return
+    var CSSRules;  // IE uses rules...
+    for (var i = 0; i < document.styleSheets.length; i++) {
+        (document.styleSheets[0].cssRules) ? CSSRules = 'cssRules' : CSSRules = 'rules';     
+        for (var j = 0; j < document.styleSheets[i][CSSRules].length; j++) {                             
+            if (document.styleSheets[i][CSSRules][j].selectorText == '.modalPopup_outer') {  
+  //            alert('Test');                        
+              var curX=(ns6)?e.pageX : e.clientX+ietruebody().scrollLeft;
+              var curY=(ns6)?e.pageY : e.clientY+ietruebody().scrollTop;
+    //          alert('Cur X: ' + curX + ' Cur Y : ' + curY);
+      //        alert('ietruebody.clientwidth : ' + ietruebody().clientWidth + ' Client X : ' + e.clientX + ' Offset : ' + offsetxpoint );
+              var rightedge=ie&&!window.opera? e.clientX+offsetxpoint + 500 : e.clientX+offsetxpoint-20 + 500;
+              var bottomedge=ie&&!window.opera? ietruebody().clientHeight-e.clientY-offsetypoint : window.innerHeight-e.clientY-offsetypoint-20
+        //      alert('Right Edge : ' + rightedge + ' bottom edge : ' + bottomedge);
+          //    alert('Width : ' + document.styleSheets[i][CSSRules][j].style.width );              
+              var leftedge=(offsetxpoint<0)? offsetxpoint*(-1) : -1000
+            //  alert('Left Edge : ' + leftedge);
+              var newleft;
+              var newtop;             
+               
+              if (rightedge>scrW)
+                newleft = curX-500+"px";   
+              else if (curX<leftedge)
+                newleft = curX;
+              else
+                newleft = curX+offsetxpoint+"px"; 
+       //       alert(newleft);
+              document.styleSheets[i][CSSRules][j].style.left = newleft; 
+              if(curY-scrY<300) 
+                newtop = scrY-125;
+              else
+                newtop = curY-300;
+              document.styleSheets[i][CSSRules][j].style.top = newtop+"px";                                          
+      }
+    }   
+  }
+
+  display_apt(apt_id);       
+}
+
+</script>
+
+<style>
+
+  table.history {
+    font-family:verdana,arial;
+  }
+   
+  table.history tr.control {
+    font-weight:bold;
+    font-size:10pt;
+  }
+   
+  table.history tr.control td {
+    border-bottom:1px solid black;
+    padding-bottom:3px;    
+    empty-cells:hide;  
+  }
+     
+  table.history tr.hodd td {
+    text-align:left;  
+    padding-top:2px; padding-bottom:3px;
+    font-size:10pt;
+    border-bottom:1px dashed #5789AE; 
+    empty-cells:hide;      
+  }
+  
+  table.history tr.heven {
+    background-color:#C9E4E4;
+  }
+   
+  table.history tr.heven td {
+    text-align:left;  
+    padding-top:2px; padding-bottom:3px;
+    font-size:10pt;
+    border-bottom:1px dashed #5789AE; 
+    empty-cells:hide;       
+  }
+ 
+span.button_spacer {
+  display:inline-block;
+  width:20px;  
+}
+
+span.blank {
+    font-style:italic;
+    font-weight:bold;    
+  }    
+  
+span.scheduling_header {
+  display:block;
+  color:black;
+  font-weight:bold;
+  padding-left:10px; 
+}
+
+ 
+  .room_note_header {
+     display:none;
+     font-weight:normal; 
+                
+  }
+
+  .modalPopup_history{
+     display:inline-block;    
+     background-color: white;
+     border-width: 1px;
+     border-style: solid;
+     padding:0px;     
+     width:100%;
+     position:relative;
+     left:-1px;
+     height:200px;
+     overflow:auto;  
+  }    
+  
+.modalPopup_action{
+        display:inline-block;    
+        background-color: white;
+        border-width: 1px;
+        border-style: solid;
+        padding:0px;     
+        margin-top:5px;        
+        width:100%;
+        position:relative;
+        left:-1px;
+    }  
+   
+  .room_note {
+    font-style:italic;     
+  }
+
+  .room_holder {
+    display:inline;
+    padding-right:75px;
+    float:left;   
+  }  
+  
+  span.room_header {
+    font-weight:bold;
+    font-size:12pt;
+    color:#5789AE;
+    display:block;
+    padding-bottom:.5em;  
+    text-align:center;  
+  }
+  
+  table.calendar_view {
+<!--    background-image:url('https://cs12.salesforce.com/resource/1336491391000/LinesBackground'); -->
+    empty-cells: show;    
+    border-collapse: collapse;
+    border-spacing: 0;  
+  }
+
+  table.calendar_view td {    
+    height:15px; 
+    border-collapse: collapse;
+    border-spacing: 0;      
+  }
+  
+  table.calendar_view tr.maintick {
+    
+  }
+
+  table.calendar_view tr.maintick td {
+    vertical-align:top;   
+    padding:0;
+    margin:0;     
+    padding-left:2px;
+    padding-right:2px;    
+    border-collapse: collapse;
+    border-spacing: 0;      
+  }  
+
+  table.calendar_view tr.maintick td.hour {
+    border-top:1px solid black; 
+    font-weight:bold;
+    height:15px;    
+    width:75px;    
+    border-collapse: collapse;
+    border-spacing: 0; 
+    padding:0;
+    margin:0;      
+  }    
+
+  table.calendar_view tr.subtick {
+
+  }
+
+  table.calendar_view tr.subtick td {    
+    vertical-align:top;  
+    padding:0;
+    margin:0;     
+    padding-left:2px;
+    padding-right:2px;    
+    border-collapse: collapse;
+    border-spacing: 0;              
+  }
+   
+  table.calendar_view tr.subtick td.hour {  
+    border-top:1px dashed #cccccc;
+    font-weight:bold;
+    height:15px;
+    color:white;    
+    width:75px;    
+    border-collapse: collapse;
+    border-spacing: 0; 
+        padding:0;
+    margin:0;  
+  }  
+  
+  span.apt_blue {
+    min-width:65px;    
+    background:#9BDEFF;
+    border-collapse: collapse;
+    border-spacing: 0;      
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }
+
+  span.apt_blue:hover {
+   box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black;  
+   border-collapse: separate;  
+  }   
+ 
+  span.apt_purple {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#C9CEE4;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  } 
+
+  span.apt_purple:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black;  
+    border-collapse: separate;  
+  }
+    
+  span.apt_brown {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#CECE9D;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }   
+  
+  span.apt_brown:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black; 
+    border-collapse: separate;  
+  }
+
+  span.apt_red {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#FFA4A4;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }     
+  
+  span.apt_red:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black;  
+    border-collapse: separate;  
+  }
+
+  span.apt_green {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#C7E1C4;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }     
+  
+  span.apt_green:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black; 
+    border-collapse: separate;  
+  }
+
+  span.apt_grey {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#D2D2D2;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }     
+
+  span.apt_grey:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black; 
+    border-collapse: separate;  
+  }  
+
+  span.apt_yellow {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#FFFFAA;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }     
+  
+  span.apt_yellow:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black;  
+    border-collapse: separate;  
+  }
+
+  span.apt_orange {
+    min-width:65px;  
+    border-collapse: collapse;
+    border-spacing: 0;      
+    background:#FED681;    
+    color:black;
+    font-weight:bold;
+    display:block;
+    position:relative;
+    padding:0;
+    margin:0;  
+    text-align:center;    
+  }     
+
+  span.apt_orange:hover {
+    box-shadow: 5px 5px 5px #888, inset 0px 0px 3px black;
+    border-collapse: separate;  
+  }
+
+  span.calendar_name {
+    width:200px;    
+    font-size:12pt;
+    font-weight:bold; 
+    font-family:verdana;   
+    display:block;
+    padding-bottom:10px;   
+  }
+  
+  .cal_commands {
+    font-size:10pt;
+    font-weight:bold;
+    color:blue;
+    display:block;
+    padding-left:10px;
+    text-decoration:none;
+    padding-bottom:1em;    
+  }  
+  
+  .cal_commands:hover {
+    color:red;
+    text-decoration:none;
+    border:0;    
+  }
+ 
+  span.center_line {
+    display:block;
+    padding-bottom:5px;    
+    text-align:center;  
+    width:200px; 
+  }
+  
+  span.center_tag {
+    font-weight:bold;
+    width:75px;    
+  }
+      
+  span.month_name {
+    text-align:left;
+    width:145px;  
+    display:inline-block;    
+  }
+
+  span.year_name {
+    text-align:right;   
+    width:40px;    
+    display:inline-block;    
+  }
+
+  table.calendar {
+    width:200px;
+  }
+  
+  table.calendar tr.cheader {
+    font-weight:bold;    
+  }
+  
+  table.calendar tr.cheader td {
+    border-bottom:1px solid black;    
+  }
+   
+  table.calendar td {
+    text-align:right;
+    margin-left:1px;
+    padding-right:5px;
+  }  
+  
+  table.calendar td.selected {
+    border:1px dotted black;
+    background : #ECF9FF; 
+    font-weight:bold;
+  }  
+  
+  table.calendar td.no_apt {
+    color:gray;        
+  }
+  
+  table.calendar td.empty {
+    color:green;        
+    font-weight:bold;
+  }  
+
+  table.calendar td.near_full {
+    color:blue; 
+    font-weight:bold;
+  }
+  
+  table.calendar td.full {
+    color:red;
+    font-weight:bold;
+  }
+      
+  table.calendar tr.mname td {
+    font-size:10pt;
+    text-align:center;
+    height:20px;    
+  } 
+  
+  table.calendar tr.year td {
+    font-size:10pt;
+    text-align:center;
+    height:20px;    
+  }
+   
+  span.form_header {
+    display:block;
+    margin-bottom:1em;
+    color:#5789AE;
+    font-size:12pt;
+    font-weight:bold;
+    padding-left:20px;
+    margin-left:20px;   
+    border-bottom:1px solid black;
+    width:400px;    
+  }  
+  span.form_line {
+    display:block;
+    padding-bottom:1em;    
+  }
+  span.apt_line {
+    display:block;
+    padding-bottom:5px;
+  }  
+  span.form_tag {
+    font-weight:bold;
+    width:125px;
+    display:inline-block; 
+  }
+  span.apt_tag {
+    font-weight:bold;
+    width:100px;
+    display:inline-block; 
+  }  
+  input:focus {
+        background:#E8E8D0;  
+  }
+</style>
+
+<apex:form id="calendar_form">
+
+<table><tr><td style="width:210px;border-right:1px solid black;vertical-align:top;">
+<apex:actionRegion >
+<apex:actionFunction name="view_months" action="{!display_months}" rerender="calendar_holder" />
+<apex:actionFunction name="view_years" action="{!display_years}" rerender="calendar_holder" />
+<apex:actionFunction name="change_calendar_month" action="{!change_month}" rerender="calendar_holder,main_holder">
+  <apex:param name="mnum" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="change_calendar_day" action="{!change_calendar_day}" rerender="calendar_holder,main_holder">
+  <apex:param name="mday" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="change_calendar_year" action="{!change_calendar_year}" rerender="calendar_holder,main_holder">
+  <apex:param name="cyear" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="change_center" action="{!change_center}" rerender="calendar_holder,main_holder" />
+<apex:outputPanel layout="block" id="calendar_holder" style="padding-bottom:1em;">
+  <apex:outputPanel rendered="{!display_admin}">
+  <span class="center_line"><apex:selectList value="{!selected_center}" onchange="change_center();" size="1" >
+      <apex:selectOptions value="{!center_list}"></apex:selectOptions>
+    </apex:selectList></span>
+  </apex:outputPanel> 
+  <apex:outputPanel rendered="{!if(display_admin,false,true)}">
+    <span class="center_line"><apex:outputText value="{!scheduling_lead.center__r.name}" /></span>
+  </apex:outputPanel> 
+  <span class="calendar_name"><span class="month_name" onclick="view_months()">{!cmonth.monthname}</span> 
+  <span class="year_name" onclick="view_years();">{!cmonth.yearnum}</span></span>
+  <apex:outputPanel id="calendar_view" rendered="{!if(calendar_view=='calendar','true','false')}">
+  <table class="calendar">
+  <tr class="cheader">
+    <td>Su</td>
+    <td>M</td>
+    <td>Tu</td>
+    <td>W</td>
+    <td>Th</td>
+    <td>F</td>
+    <td>Sa</td></tr> 
+  <apex:repeat value="{!cmonth.weeks}" var="week">
+    <tr>
+    <apex:repeat value="{!week.days}" var="day">
+      <td class="{!day.css_style}" onclick="{!if(day.display_date,'change_calendar_day(' + text(day.date_num) + ');','return false;')}"><apex:outputText rendered="{!day.display_date}" escape="false;" value="{!day.date_num}" /></td>
+    </apex:repeat>
+    </tr>
+  </apex:repeat>
+  </table>
+  </apex:outputPanel>
+  <apex:outputPanel id="month_view" rendered="{!if(calendar_view=='months','true','false')}">
+    <table class="calendar" >
+    <apex:variable var="mnum" value="1" />          
+    <apex:repeat value="{!month_list}" var="mrow">
+      <tr class="mname">
+        <apex:repeat value="{!mrow}" var="mname">
+          <td class="{!if(mname==selected_monthname,'selected','none')}"><span onclick="change_calendar_month({!mnum});">{!mname}</span></td>
+          <apex:variable var="mnum" value="{!(value(mnum)+1)}" />             
+        </apex:repeat>      
+      </tr>      
+    </apex:repeat>  
+    </table>    
+  </apex:outputPanel>  
+  <apex:outputPanel id="year_view" rendered="{!if(calendar_view=='years','true','false')}">
+    <table class="calendar">
+    <apex:repeat value="{!year_list}" var="yrow">
+      <tr class="year">
+        <apex:repeat value="{!yrow}" var="yvalue">
+          <td class="{!if(yvalue==selected_year,'selected','none')}"><span onclick="change_calendar_year({!yvalue})">{!yvalue}</span></td>        
+        </apex:repeat>      
+      </tr>   
+    </apex:repeat>    
+    </table>
+  </apex:outputPanel> 
+</apex:outputPanel>
+</apex:actionRegion>
+
+<apex:outputPanel layout="block" id="action_holder"  style="padding-top:1em;border-top:1px solid #5789AE;">
+  <apex:commandLink value="Display Consult Schedule" action="{!display_consults}" rerender="main_holder,modal_holder" styleClass="cal_commands" onmouseover="tooltip.show('<p>This option will return you to the main consult calendar view at any point in time.  Any unsaved work will be lost</p>');" onmouseout="tooltip.hide();" />
+  <apex:commandLink value="Create New Consult Room" action="{!display_room_form}" reRender="main_holder" rendered="{!display_admin}" styleClass="cal_commands" onmouseover="tooltip.show('<p>This option will allow you to add a new consult room to the currently selected center</p>');" onmouseout="tooltip.hide();"/>
+  <!--  Check to see if we are currently working on scheduling a lead --->  
+  <apex:outputPanel rendered="{!if(scheduling_lead.id==null,false,true)}">
+   <span onmouseover="tooltip.show('<p><span class=\'blank\'>Click on an open appointment block to schedule this patient</span></p>');" onmouseout="tooltip.hide();">  
+   <span class="scheduling_header">Currently Scheduling : </span>
+   <apex:outputLink value="../{!scheduling_lead.id}" id="ppt_link" style="color:blue;font-weight:bold;"><apex:outputText value="{!scheduling_lead.name}" style="text-align:center;display:block;" /></apex:outputLink>
+   <apex:outputText value="{!scheduling_lead.Pre_Screen__c}" style="text-align:center;display:block;font-style:italic;" />   
+   <apex:outputText value="{!schedule_warnings}" escape="false" style="text-align:center;color:red;display:block;" />   
+   </span>
+  </apex:outputPanel>  
+  <!-- check to see if we are currently working on scheduling an account------>
+  <apex:outputPanel rendered="{!if(scheduling_account.id==null,false,true)}">
+   <span onmouseover="tooltip.show('<p><span class=\'blank\'>Click on an open appointment block to schedule this patient</span></p>');" onmouseout="tooltip.hide();">  
+   <span class="scheduling_header">Currently Scheduling : </span>
+   <apex:outputLink value="../{!scheduling_account.id}" id="acntt_link" style="color:blue;font-weight:bold;"><apex:outputText value="{!scheduling_account.name}" style="text-align:center;display:block;" /></apex:outputLink>
+   <apex:outputText value="{!scheduling_account.Pre_Screen__c}" style="text-align:center;display:block;font-style:italic;" />   
+   <apex:outputText value="{!schedule_warnings}" escape="false" style="text-align:center;color:red;display:block;" />   
+   </span>
+  </apex:outputPanel>      
+</apex:outputpanel>
+</td>
+<td style="vertical-align:top;padding-left:20px;">
+<apex:outputPanel id="main_holder" layout="block" style="width:1500px;overflow:auto;">
+<!--------Form to create a new appointment block -------------------------->
+  <apex:outputPanel id="aptblock_holder" rendered="{!if(main_view=='new_apt_form','true','false')}">
+    <apex:actionRegion >
+      <span class="form_header" >New Consult Appointment</span>    
+    <table><tr><td style="padding-left:40px;">    
+    <apex:outputText escape="false" value="{!new_room_issues}" /><br />   
+    <span class="form_line">    
+      <span class="form_tag">Room Name : </span><apex:outputField value="{!new_room.name}" /></span>
+    <span class="form_line">    
+    <table><tr><td><span class="form_tag">Date : </span></td><td><apex:inputField value="{!view_apt.Apt_Date__c}" /></td></tr></table></span> 
+    <span class="form_line">    
+    <table><tr><td><span class="form_tag">Start Time :</span></td>
+      <td><apex:inputField value="{!view_apt.Start_Hour__c}" style="width:20px;text-align:right;display:inline-block;"  /></td>
+      <td style="width:5px;text-align:center;"> : </td>      
+      <td><apex:inputField value="{!view_apt.Start_Minute__c}" style="width:20px;text-align:right;display:inline-block;"  /></td></tr></table></span>
+    <span class="form_line">    
+    <table><tr><td><span class="form_tag">End Time :</span></td>
+      <td><apex:inputField value="{!view_apt.End_Hour__c}" style="width:20px;text-align:right;display:inline-block;"  /></td>
+      <td style="width:5px;text-align:center;"> : </td>      
+      <td><apex:inputField value="{!view_apt.End_Minute__c}" style="width:20px;text-align:right;display:inline-block;"  /></td></tr></table></span>
+    <span class="form_line">    
+    <span class="form_tag">Pre-Screen Type : </span><apex:inputField value="{!view_apt.Pre_Screen_Type__c}" /></span>
+    <span class="form_line">    
+    <span class="form_tag">Color : </span><apex:inputField value="{!view_apt.Color__c}" /></span>    
+    <apex:commandButton reRender="main_holder" value="Create Consult Apt" action="{!create_new_aptblock}" /> <span style="display:inline-block;width:50px;"></span>
+    <apex:commandButton reRender="main_holder" value="Cancel" action="{!display_consults}" />    
+    </td></tR></table>    
+    </apex:actionRegion> 
+  </apex:outputPanel>  
+<!------- End Form to create a new consult room----------------------------------------------->
+
+
+<!--------Form to create a new consult rooom -------------------------->
+  <apex:outputPanel id="room_holder" rendered="{!if(main_view=='room_form','true','false')}">
+    <apex:actionRegion >
+      <span class="form_header" >New Consult Room</span>    
+    <div style="padding-left:40px;">    
+    <apex:outputText escape="false" value="{!new_room_issues}" /><br />   
+    <span class="form_line">    
+      <span class="form_tag">Room Name : </span><apex:inputField value="{!new_room.name}" /></span>
+    <span class="form_line">    
+      <span class="form_tag">Room Type : </span>
+        <apex:selectList value="{!new_room.Room_Type__c}" size="1" >
+          <apex:selectOption itemLabel="Normal" itemvalue="Normal" />
+          <apex:selectOption itemLabel="OverFlow" itemvalue="OverFlow" />                  
+          <apex:selectOption itemLabel="Manual" itemvalue="Manual" />                            
+        </apex:selectList>
+    </span>
+    <span class="form_line">    
+      <span class="form_tag">Schedule Template : </span>
+        <apex:selectList value="{!new_room.Schedule_Template__c}" size="1" >      
+          <apex:selectOptions value="{!Templatelist}" />
+        </apex:selectList>        
+    </span>    
+    <span class="form_line">    
+    <table><tr><td><span class="form_tag">Days Built Out : </span></td><td><apex:inputField value="{!new_room.Days_Built_Out__c}"  style="width:40px;text-align:right;" /></td></tr></table></span>    
+    <span class="form_line">    
+      <span class="form_tag">Center : </span><apex:outputText value="{!centername}" /></span>    
+    <apex:commandButton reRender="main_holder" value="Create Consult Room" action="{!create_new_room}" /> <span style="display:inline-block;width:50px;"></span>
+    <apex:commandButton reRender="main_holder" value="Cancel" action="{!display_consults}" />    
+    </div>           
+    </apex:actionRegion> 
+  </apex:outputPanel>  
+<!------- End Form to create a new consult room----------------------------------------------->
+
+<!------- Start Form to modify an existing consult room / Create a new room note --------------------->
+  <apex:outputPanel id="mroom_holder" rendered="{!if(main_view=='modify_room','true','false')}">
+    <apex:actionRegion >
+      <span class="form_header" >Modify Consult Room</span>    
+    <div style="padding-left:40px;">    
+    <apex:outputText escape="false" value="{!new_room_issues}" /><br />   
+    <span class="form_line">    
+      <span class="form_tag">Room Name : </span><apex:inputField value="{!new_room.name}" /></span>
+    <span class="form_line">    
+      <span class="form_tag">Room Type : </span>
+        <apex:selectList value="{!new_room.Room_Type__c}" size="1" >
+          <apex:selectOption itemLabel="Normal" itemvalue="Normal" />
+          <apex:selectOption itemLabel="OverFlow" itemvalue="OverFlow" />                  
+          <apex:selectOption itemLabel="Manual" itemvalue="Manual" />             
+        </apex:selectList>
+    </span>
+    <span class="form_line">    
+      <span class="form_tag">Schedule Template : </span>
+        <apex:selectList value="{!new_room.Schedule_Template__c}" size="1" >      
+          <apex:selectOptions value="{!Templatelist}" />
+        </apex:selectList>        
+    </span>    
+    <span class="form_line">    
+      <span class="form_tag">Center : </span><apex:outputText value="{!centername}" /></span>   
+        <span class="form_line">    
+    <table><tr><td><span class="form_tag">Days Built Out : </span></td><td><apex:inputField value="{!new_room.Days_Built_Out__c}"  style="width:40px;text-align:right;" /></td></tr></table></span>       
+    <apex:commandButton reRender="main_holder" value="Modify Consult Room" action="{!update_consult_room}" /> <span style="display:inline-block;width:50px;"></span>
+    <apex:commandButton reRender="main_holder" value="Cancel" action="{!display_consults}" /> <span style="display:inline-block;width:50px;"></span>
+    <apex:commandButton rendered="{!if(num_dayapt==0,true,false)}" reRender="main_holder" value="Clear Apts for {!selected_date}" action="{!clear_dayapts}" />   
+    </div>           
+    </apex:actionRegion><br /><br /><br /> 
+    <apex:actionRegion >    
+    <span class="form_header" >New Room Note</span>    
+    <p style="padding-left:40px;">     
+      <apex:outputText escape="false" value="{!new_room_note_issues}" /><br />       
+      <span class="form_line">    
+      <span class="form_tag">Start Date : </span><apex:inputField value="{!new_note.Note_Date__c}" /></span>     
+      <span class="form_line">    
+      <span class="form_tag">End Date : </span><apex:inputField value="{!end_note.Note_Date__c}" /></span>     
+      <span class="form_line">    
+      <span class="form_tag" style="vertical-align:top;">Note : </span><apex:inputField value="{!new_note.Comment__c}" style="width:200px;height:40px;" /></span>    
+      <apex:commandButton reRender="main_holder" value="Add Note" action="{!add_room_note}" /><span style="display:inline-block;width:50px;"></span>             
+    </p>  
+    </apex:actionRegion>  
+  </apex:outputPanel>  
+<!------- End form to modify an existing consult room / Create a new room note ----------------------->  
+
+<!------- Start Modify note form --------------------------------------------------------------------->
+   <apex:outputPanel id="mnote_holder" rendered="{!if(main_view=='note_form','true','false')}">
+   <apex:actionRegion >    
+    <span class="form_header" >Modify Room Note</span>    
+    <p style="padding-left:40px;">     
+      <apex:outputText escape="false" value="{!new_room_note_issues}" /><br />       
+      <span class="room_note">To delete a note,  just leave the note blank</span><br /><br />  
+      <span class="form_line">    
+      <span class="form_tag">Room : </span><apex:outputField value="{!new_note.Consult_room__r.Name}" /></span>              
+      <span class="form_line">    
+      <span class="form_tag">Date : </span><apex:outputField value="{!new_note.Note_Date__c}" /></span>        
+      <span class="form_line">    
+      <span class="form_tag" style="vertical-align:top;">Note : </span><apex:inputField value="{!new_note.Comment__c}" style="width:200px;height:40px;" /></span>    
+      <apex:commandButton reRender="main_holder" value="Modify Note" action="{!modify_room_note}" /><span style="display:inline-block;width:50px;"></span>
+      <apex:commandButton reRender="main_holder" value="Back to Consults" action="{!display_consults}" />             
+    </p>  
+  </apex:actionRegion>  
+  </apex:outputPanel>
+<!------- End Modify Note form ----------------------------------------------------------------------->
+
+<!-------  Start main consult schedule view ---------------------------------------------------------->
+  <apex:outputPanel id="consultview_holder" rendered="{!if(main_view=='consult_view','true','false')}"> 
+  <apex:actionRegion >
+  <apex:actionFunction name="display_modify_room_form" action="{!modify_room_form}"  rerender="main_holder" >  
+    <apex:param name="rnum" value="" />
+  </apex:actionFunction>  
+  <apex:actionFunction name="modify_note_form" action="{!modify_note_form}" rerender="main_holder">
+    <apex:param name="nnum" value="" />
+  </apex:actionFunction>    
+  <apex:actionFunction action="{!display_apt_details}" name="display_apt" reRender="modal_holder">
+    <apex:param name="anum" value="" /> 
+  </apex:actionFunction>    
+  <apex:actionFunction action="{!display_new_apt_form}" name="new_apt_form" reRender="main_holder" >  
+    <apex:param name="shour" value="" />
+    <apex:param name="smin" value="" />
+    <apex:param name="rid" value="" />    
+  </apex:actionFunction>  
+  <apex:repeat value="{!view_allrooms}" var="consult_room">  
+  <div class="room_holder">
+  <apex:outputPanel rendered="{!display_admin}">
+    <span class="room_header" onclick="tooltip.hide();display_modify_room_form('{!consult_room.room.id}');" onmouseover="tooltip.show('<p style=\'padding-left:50px;padding-bottom:1em;\'><span style=\'color:yellow;width:75px;display:inline-block;\'>Type : </span>{!consult_room.room.room_type__c}<br /><span style=\'color:yellow;width:75px;display:inline-block;\'>Template : </span>{!consult_room.room.schedule_template__r.name}</p><p>Click here to modify the room or to add a new note<p>');" onmouseout="tooltip.hide();">{!consult_room.room.name}</span>
+  </apex:outputPanel>  
+  <apex:outputPanel rendered="{!if(display_admin,false,true)}">
+    <span class="room_header">{!consult_room.room.name}</span>
+  </apex:outputPanel>  
+    
+  <apex:outputText rendered="{!if(consult_room.num_notes=0,'false','true')}"><span style='font-weight:bold;'>Notes : </span></apex:outputText>  
+  <apex:repeat value="{!consult_room.all_notes}" var="room_notes">  
+    <span class="room_note_header">{!room_notes.createdby.name} -&nbsp; <apex:outputField value="{!room_notes.createddate}" /></span>
+    <span class="room_note" onclick="modify_note_form('{!room_notes.id}');">{!room_notes.Comment__c}</span><br />  
+  </apex:repeat>
+    <br /><br />   
+    <table class="calendar_view">      
+      <apex:repeat value="{!consult_room.consult_view}" var="crows">
+          <tr class="{!crows.cclass}">
+            <td style="height:15px;border-collaps:collapse;" class="hour">
+              <apex:outputPanel rendered="{!if(display_admin || display_cc,true,false)}" onclick="new_apt_form('{!crows.chours}','{!crows.cminutes}','{!consult_room.room.id}');" >{!crows.row_label}</apex:outputPanel>
+              <apex:outputPanel rendered="{!if(display_admin || display_cc,false,true)}" >{!crows.row_label}</apex:outputPanel>
+            </td>
+            <apex:repeat value="{!crows.row_apts}" var="ablocks">
+            <td rowspan="{!ablocks.crowspan}" >
+              <span class="{!ablocks.cclass}" style="padding-left:5px;padding-right:5px;height:{!ablocks.cheight}px;position:relative;top:{!ablocks.ctop}px;display:block;"  onclick="apt_modal(event,'{!ablocks.capt.id}');" >
+              <apex:outputPanel rendered="{!if(ablocks.capt.Scheduled_Lead__c==null && ablocks.capt.Scheduled_Account__c==null,'true','false')}">
+                <!---figure out if the block is avaliable or not              
+                <span class="blank">Available</span><br />{!ablocks.capt.pre_screen_type__c}              --->
+                <apex:outputText escape="false" value="{!ablocks.avail_text}" style="position:relative;top:3px;" />               
+              </apex:outputPanel>              
+              <apex:outputPanel rendered="{!if(ablocks.capt.Scheduled_Lead__c==null && ablocks.capt.Scheduled_Account__c==null,'false','true')}">
+                <apex:outputText escape="false"  value="{!ablocks.block_text}" style="position:relative;top:3px;" />
+              </apex:outputPanel>              
+              </span></td>            
+            </apex:repeat>
+          </tr>
+        </apex:repeat>      
+        </table>         
+  </div>  
+  </apex:repeat> 
+  </apex:actionRegion>     
+  </apex:outputPanel>
+<!-------  End main consult schedule view ---------------------------------------------------------->  
+</apex:outputPanel>
+</td></tr></table>
+
+<!-------  Modal pop-up holder --------------------------------------------------------------------->
+<apex:outputPanel id="modal_holder">
+<apex:actionRegion >
+  <apex:actionFunction action="{!close_modal}" name="close_pop" rerender="modal_holder"/>
+  <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!modal_display}"/>
+    <apex:outputPanel styleClass="modalPopup_outer" layout="block" rendered="{!modal_display}" id="outerpop">
+    <span class="modalPopup_outerheader" onclick="close_pop();">Close X</span>
+
+      <apex:outputPanel styleClass="modalPopup_inner" rendered="{!if(modal_display && modal_type=='apt_view',true,false)}" id="innerpop">    
+      <table><tr><td style="width:250px;vertical-align:top;">
+      <!---lead scheduled---->
+      <apex:outputPanel rendered="{!if(view_apt.scheduled_lead__r.id==null && view_apt.scheduled_account__r.id==null,true,false)}">
+          <span class="apt_line">    
+          <span class="apt_tag">Lead : </span><span class="blank" style="color:red;">Consult Avaliable</span></span>        
+      </apex:outputPanel>      
+      <apex:outputpanel rendered="{!if(view_apt.scheduled_lead__r.id==null,false,true)}" >
+          <span class="apt_line">    
+          <span class="apt_tag">Lead : </span>
+            <apex:outputLink value="../{!view_apt.scheduled_lead__r.id}" style="color:blue;font-weight:bold;"><apex:outputText value="{!view_apt.scheduled_lead__r.name}" /></apex:outputLink></span>
+          <span class="apt_line">    
+          <span class="apt_tag">PPT Pre-Screen : </span>{!view_apt.scheduled_lead__r.Pre_Screen__c}</span>
+          <span class="apt_line">    
+          <span class="apt_tag">Phone # : </span>{!view_apt.scheduled_lead__r.phone}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag">Mobile # : </span>{!view_apt.scheduled_lead__r.mobilephone}</span>
+          <span class="apt_line">    
+          <span class="apt_tag">Scheduled By : </span>{!view_apt.scheduled_by__r.name}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag">Treatment : </span>    
+          <apex:inputField value="{!view_apt.Treatment__c}" rendered="{!display_admin}" /><apex:outputField value="{!view_apt.Treatment__c}" rendered="{!if(display_admin,false,true)}" /></span>                    
+          <span class="apt_line">           
+          <span style="font-weight:bold;" >Confirmed : </span>
+            <apex:inputField value="{!view_apt.scheduled_lead__r.Confirmed_Appointment__c}" rendered="{!display_admin}" />
+            <apex:outputField value="{!view_apt.scheduled_lead__r.Confirmed_Appointment__c}" rendered="{!if(display_admin,false,true)}" />
+          <span style="display:inline-block;width:20px;">&nbsp;</span>            
+          <span style="font-weight:bold;">Left Message : </span>
+            <apex:inputField value="{!view_apt.scheduled_lead__r.Left_Message_to_Confirm__c}" rendered="{!display_admin}" />
+            <apex:outputField value="{!view_apt.scheduled_lead__r.Left_Message_to_Confirm__c}" rendered="{!if(display_admin,false,true)}" />            
+          </span>
+          <span class="apt_line">    
+          <span class="apt_tag">Show Status : </span><apex:inputField rendered="{!display_admin}" value="{!view_apt.Consult_Show_Status__c}" /><apex:outputField value="{!view_apt.Consult_Show_Status__c}" rendered="{!if(display_admin,false,true)}"/></span>                          
+      </apex:outputPanel>
+      <apex:outputpanel rendered="{!if(view_apt.scheduled_account__r.id==null,false,true)}" >
+          <span class="apt_line">    
+          <span class="apt_tag">Consult : </span>
+            <apex:outputLink value="../{!view_apt.scheduled_account__r.id}" style="color:blue;font-weight:bold;"><apex:outputText value="{!view_apt.scheduled_account__r.name}" /></apex:outputLink></span>
+          <span class="apt_line">    
+          <span class="apt_tag">PPT Pre-Screen : </span>{!view_apt.scheduled_account__r.Pre_Screen__c}</span>
+          <span class="apt_line">    
+          <span class="apt_tag">Phone # : </span>{!view_apt.scheduled_account__r.phone}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag">Mobile # : </span>{!view_apt.scheduled_account__r.personmobilephone}</span>
+          <span class="apt_line">    
+          <span class="apt_tag">Scheduled By : </span>{!view_apt.scheduled_by__r.name}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag">Treatment : </span>    
+          <apex:inputField value="{!view_apt.Treatment__c}" rendered="{!display_admin}" /><apex:outputField value="{!view_apt.Treatment__c}" rendered="{!if(display_admin,false,true)}" /></span>                    
+          <span class="apt_line">           
+          <span style="font-weight:bold;" >Confirmed : </span>
+          <span style="display:inline-block;width:20px;">&nbsp;</span>            
+          <span style="font-weight:bold;">Left Message : </span>
+          </span>
+          <span class="apt_line">    
+          <span class="apt_tag">Show Status : </span><apex:inputField rendered="{!display_admin}" value="{!view_apt.Consult_Show_Status__c}" /><apex:outputField value="{!view_apt.Consult_Show_Status__c}" rendered="{!if(display_admin,false,true)}"/></span>                          
+      </apex:outputPanel>
+      </td>
+      <td style="vertical-align:top;">      
+      <apex:outputPanel rendered="{!if(display_admin,false,true)}">     
+          <span class="apt_line">    
+          <span class="apt_tag" >Room : </span>{!view_apt.consult_room__r.name}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Date : </span><apex:outputField value="{!view_apt.Apt_Date__c}" /></span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Start Time : </span>{!view_apt.start_hour__c}:{!view_apt.Start_Minute__c}</span>
+          <span class="apt_line">    
+          <span class="apt_tag" >End Time : </span>{!view_apt.end_hour__c}:{!view_apt.End_Minute__c}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Pre-Screen : </span><apex:outputField value="{!view_apt.Pre_Screen_Type__c}" /></span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Color : </span><apex:outputField value="{!view_apt.Color__c}" /></span>      
+      </apex:outputPanel> 
+      <apex:outputPanel rendered="{!display_admin}">     
+          <span class="apt_line">    
+          <span class="apt_tag" >Room : </span>{!view_apt.consult_room__r.name}</span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Date : </span><apex:outputField value="{!view_apt.Apt_Date__c}" /></span>      
+          <span class="apt_line">    
+          <table><tr><td><span class="apt_tag" >Start Time : </span></td><td><apex:inputField value="{!view_apt.Start_Hour__c}" style="text-align:right;width:20px;display:inline-block;" /></td><td>:</td><td><apex:inputField value="{!view_apt.Start_Minute__c}" style="text-align:right;width:20px;display:inline;" /></td></tr></table></span>
+          <span class="apt_line">    
+          <table><tr><td><span class="apt_tag" >End Time : </span></td><td><apex:inputField value="{!view_apt.End_Hour__c}" style="text-align:right;width:20px;display:inline;" /></td><td>:</td><td><apex:inputField value="{!view_apt.End_Minute__c}" style="text-align:right;width:20px;display:inline;" /></td></tr></table></span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Pre-Screen : </span><apex:inputField value="{!view_apt.Pre_Screen_Type__c}" /></span>      
+          <span class="apt_line">    
+          <span class="apt_tag" >Color : </span><apex:inputField value="{!view_apt.Color__c}" /></span>      
+      </apex:outputPanel>             
+      </td></tr></table>  
+      <table><tr><td style="width:125px;"><apex:commandButton value="Save Changes" action="{!modify_aptblock}" reRender="main_holder,modal_holder" rendered="{!display_admin}" /></td>
+        <td style="width:75px;font-weight:bold;">Notes :</td>
+        <td><apex:inputField value="{!view_apt.Apt_Notes__c}" style="width:260px;height:20px;" rendered="{!display_admin}" /><apex:outputField value="{!view_apt.Apt_Notes__c}" style="width:260px;height:20px;"  rendered="{!if(display_admin,false,true)}" />
+        </td></tr></table>   
+      <apex:outputtext escape="false" value="{!modal_out}" />     
+      </apex:outputPanel>
+            
+    <apex:outputPanel styleClass="modalPopup_history" rendered="{!if(modal_display && modal_type=='history_view',true,false)}" id="historypop">    
+      <apex:variable var="rowclassname" value="hodd" />    
+      <table class="history" width="100%">
+        <tr class="control">
+          <td width="30%">Change By</td>
+          <td width="30%">Action/Patient</td>
+          <td>Notes</td></tr>
+          <apex:repeat value="{!apt_history}" var="ahist">
+            <tr class="{!rowclassname}">
+            <apex:variable var="rowclassname" value="{!if(rowclassname=='hodd','heven','hodd')}" />
+              <td><apex:outputField value="{!ahist.createdbyid}"/><br /><apex:outputfield value="{!ahist.createddate}" /></td>
+              <td><span style="font-weight:bold;">{!ahist.action__c}</span><br /><apex:outputField value="{!ahist.Lead__c}" rendered="{!if(ahist.Lead__c==null,false,true)}" /><apex:outputField value="{!ahist.Account__c}" rendered="{!if(ahist.Account__c==null,false,true)}" /></td>              
+              <td><apex:outputtext escape="false" value="{!ahist.Notes__c}" /></td>
+            </tr>         
+          </apex:repeat>    
+       </table>          
+    </apex:outputPanel>      
+            
+      <!---displaying action buttons----->                
+    <apex:outputPanel styleClass="modalPopup_action" rendered="{!modal_display}" id="modaction">
+      <p style="padding:2px;">    
+        <apex:outputPanel rendered="{!allow_scheduling}" ><apex:commandButton value="Schedule Consult" action="{!schedule_consult}" reRender="main_holder,modal_holder,action_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>
+        <apex:outputPanel rendered="{!if(view_apt.scheduled_lead__r.id==null && view_apt.scheduled_account__r.id==null,false,true)}" ><apex:commandButton value="Cancel Consult" action="{!cancel_consult}" rerender="action_holder,main_holder,modal_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>      
+        <apex:outputPanel rendered="{!if(view_apt.scheduled_lead__r.id==null && view_apt.scheduled_account__r.id==null,false,if(scheduling_lead.id==null && scheduling_account.id==null,true,false))}" ><apex:commandButton value="Reschedule Consult" action="{!reschedule_consult}" rerender="main_holder,modal_holder,action_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>            
+        <apex:outputPanel rendered="{!if(view_apt.scheduled_lead__r.id==null && view_apt.scheduled_account__r.id==null,true,false)}" ><apex:commandButton value="Delete Apt" action="{!delete_aptblock}" rerender="main_holder,modal_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>                    
+        <apex:outputPanel rendered="{!if(view_apt.scheduled_lead__r.id==null && view_apt.scheduled_account__r.id==null,false,true)}" ><apex:commandButton value="Send Reminder" action="{!send_confirmation_sms}" rerender="main_holder,modal_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>                    
+        <apex:outputPanel rendered="{!if(modal_type=='apt_view',true,false)}" ><apex:commandButton value="View History" action="{!history_view}" rerender="modal_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>                    
+        <apex:outputPanel rendered="{!if(modal_type=='history_view',true,false)}" ><apex:commandButton value="View Apt Info" action="{!apt_view}" rerender="modal_holder" /><span class="button_spacer">&nbsp;</span></apex:outputPanel>                   
+      </p>      
+    </apex:outputPanel>      
+  </apex:outputPanel>
+</apex:actionRegion>    
+</apex:outputPanel> 
+
+<!---------- End Modal Pop-up Holder -------------------------------------->
+</apex:form>
+</apex:page>

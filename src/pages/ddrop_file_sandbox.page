@@ -1,0 +1,267 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" docType="html-5.0" controller="ddrop_test_ctrl">
+
+<apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+  
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-hrxfont.css')}"/>    
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-pot.css')}"/>     
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-modal.css')}"/>  
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/forms.css')}"/>  
+
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+
+<style>
+    #droparea {
+        position: relative;
+        height: 5em;
+        font-size: 12pt;
+        color: #ccc;
+        border: 2px dotted #58595b;
+        max-width:200px;
+        max-height:200px
+    }
+    #droparea_out {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        margin-top: -0.5em;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    #file_droparea {
+        position: relative;
+        height: 5em;
+        font-size: 12pt;
+        color: #ccc;
+        border: 2px dotted #58595b;
+        max-width:200px;
+        max-height:200px
+    }
+    #file_droparea_out {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        margin-top: -0.5em;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    </style>
+    <script>
+        var maxWidth = 800, maxHeight = 600, fileName;
+        function canDropHere(event) {          
+          try {                                
+            event.stopPropagation();
+            event.preventDefault();
+			return false;
+          } catch(e) {console.log(e);return false;}          
+        }
+        /*function onDrop(event) {
+          var fr = new FileReader();
+          if(event.dataTransfer.files[0].type.match(/^image\//)) {
+            console.log('Image File detected');
+            $("#droparea_out").css("color","green");
+            $("#droparea_out").html("Image file");
+            fr.addEventListener("load", onFileLoad, true);
+            try {
+                fileName = event.dataTransfer.files[0].name;                
+                console.log('f: ' + fileName);
+                console.log('Type : ' + event.dataTransfer.files[0].type);
+                console.log('Image : ' + event.dataTransfer.files[0].type.match(/^image\//));
+                fr.readAsDataURL(event.dataTransfer.files[0]);
+            } catch(e) { console.log(e); }
+          }  else {
+            console.log('Non-Image File detected');
+            $("#droparea_out").css("color","red");
+            $("#droparea_out").html("Not an image file");
+          }
+          event.stopPropagation();
+          event.preventDefault();
+          return false;
+        }*/
+     function attachment_onDrop(event) {          
+       for (var i = 0; i < event.dataTransfer.files.length; i++) {          
+         var fr = new FileReader();
+         fr.name = event.dataTransfer.files[i].name;
+         fr.addEventListener("load", attachment_onFileLoad, true);
+         try {
+           fileName = event.dataTransfer.files[i].name;                
+           console.log('f: ' + fileName);
+           console.log('Type : ' + event.dataTransfer.files[i].type);
+           fr.readAsDataURL(event.dataTransfer.files[i]);
+         } catch(e) { console.log(e); }
+       }
+       event.stopPropagation();
+       event.preventDefault();
+       return false;
+     }
+     
+     function attachment_onFileLoad(event) {       
+       p2 = event.currentTarget.result.match(/data:(.+);base64,(.+)/);
+       console.log('Type ' + p2[1]);
+       console.log('Base64 ' + p2[2]);  
+       console.log('Target ' + event.currentTarget);
+       console.log('Name ' + event.currentTarget.name);
+                                 
+       console.log('Call to upload file here');    
+       af_upload_attachment(event.currentTarget.name,p2[1],p2[2]);
+     }
+     
+     function attachment_onLoad() {
+            var droparea = document.querySelector("#file_droparea");
+            droparea.addEventListener("drop", attachment_onDrop, true);
+            droparea.addEventListener("dragenter", canDropHere, true);
+            droparea.addEventListener("dragover", canDropHere, true);
+        }
+        
+      function onDrop(event) {
+       //var fr = new FileReader();          
+       for (var i = 0; i < event.dataTransfer.files.length; i++) {          
+         if(event.dataTransfer.files[i].type.match(/^image\//)) {
+           var fr = new FileReader();
+           fr.name = event.dataTransfer.files[i].name;
+           console.log('Image File detected - file ' + i);
+           $("#droparea_out").css("color","green");
+           $("#droparea_out").html("File " + i + " - Image file");
+           fr.addEventListener("load", onFileLoad, true);
+           try {
+             fileName = event.dataTransfer.files[i].name;                
+             console.log('f: ' + fileName);
+             console.log('Type : ' + event.dataTransfer.files[i].type);
+             console.log('Image : ' + event.dataTransfer.files[i].type.match(/^image\//));
+             fr.readAsDataURL(event.dataTransfer.files[i]);
+           } catch(e) { console.log(e); }
+         }  else {
+           console.log('File ' + i + ' - Non-Image File detected');
+           $("#droparea_out").css("color","red");
+           $("#droparea_out").html("Not an image file");
+         }  
+       }
+       event.stopPropagation();
+       event.preventDefault();
+       return false;
+     }
+     
+     
+                
+        function onFileLoad(event) {
+       //check if this is an image file        
+         var sx, sy, scale, p1,
+             img     = document.createElement("img"),
+             canvas  = document.createElement("canvas"),
+             context = canvas.getContext("2d");
+         console.log('Result' + event.currentTarget.result);
+         p2 = event.currentTarget.result.match(/data:(.+);base64,(.+)/);
+         console.log('Result' + p2[1]);
+         console.log('Result' + p2[2]);  
+                     
+         img.src     = event.currentTarget.result;
+         if(img.width > maxWidth || img.height > maxHeight) {
+             scale = Math.min(maxWidth/img.width, maxHeight/img.height);
+             sx    = Math.floor(img.width*scale);
+             sy    = Math.floor(img.height*scale);
+         } else {
+             sx = img.width;
+             sy = img.height;
+         }
+         canvas.width = sx;
+         canvas.height = sy;
+         context.drawImage(img, 0, 0, sx, sy);
+         p1 = canvas.toDataURL().match(/data:(.+);base64,(.+)/);
+         console.log('Call to upload image here');
+         console.log('Name ' + event.currentTarget.name);
+         af_upload_picture(event.currentTarget.name,p1[1],p1[2]);
+     }        
+        
+        function onLoad() {
+            var droparea = document.querySelector("#droparea");
+            droparea.addEventListener("drop", onDrop, true);
+            droparea.addEventListener("dragenter", canDropHere, true);
+            droparea.addEventListener("dragover", canDropHere, true);
+        }
+    </script>
+<body>
+  <apex:form >  
+  <apex:actionFunction name="af_upload_picture" action="{!af_load_photo}"  rerender="drop_holder,pic_holder">
+    <apex:param name="photo_name" value="" assignto="{!photo_name}"  />
+    <apex:param name="photo_content_type" value="" assignto="{!photo_content_type}"  />    
+    <apex:param name="photo_data" value="" assignto="{!photo_data}"  />
+  </apex:actionFunction>
+  
+  <apex:actionFunction name="af_upload_attachment" action="{!af_load_attachment}"  rerender="file_drop_holder,attachment_holder">
+    <apex:param name="photo_name" value="" assignto="{!photo_name}"  />
+    <apex:param name="photo_content_type" value="" assignto="{!photo_content_type}"  />    
+    <apex:param name="photo_data" value="" assignto="{!photo_data}"  />
+  </apex:actionFunction>
+  
+  <div style="display:flex;flex-direction:row;width:100%;">
+    <div style="display:flex;flex-direction:column;width:50%;justify-content:spac-around;">
+	  <apex:outputpanel layout="block" id="drop_holder">
+	  <apex:messages /><br />
+	  <span onclick="onLoad();">Prep drop area</span>  
+	    <div id="droparea">
+	        <div id="droparea_out">
+	            Drop an image file here
+	        </div>
+	    </div>
+	  </apex:outputpanel>
+	    
+	    <br /><br />
+	    <apex:outputpanel layout="block" id="pic_holder">
+	      <apex:outputpanel layout="block" rendered="{!display_photo_holder}">
+	        <apex:repeat var="lpid" value="{!last_photo_id}">
+	          <apex:image url="{!URLFOR($Action.Attachment.Download, lpid.id)}" style="max-width:100%;height:auto;" />
+	          <br /><br /><hr /><br />
+	        </apex:repeat>
+	      </apex:outputpanel>
+	    </apex:outputpanel>
+    </div>
+    <div style="display:flex;flex-direction:column;width:50%;justify-content:spac-around;">
+      <apex:outputpanel layout="block" id="file_drop_holder">
+	  <apex:messages /><br />
+	  <span onclick="attachment_onLoad();">Prep file drop area</span>  
+	    <div id="file_droparea">
+	        <div id="file_droparea_out">
+	            Drop a file here
+	        </div>
+	    </div>
+	  </apex:outputpanel>
+      
+      <br /><br />
+	  <apex:outputpanel layout="block" id="attachment_holder">
+	    <apex:outputpanel layout="block" rendered="{!display_attachment_holder}">
+	      <apex:repeat var="doc" value="{!uploaded_docs}">
+	        {!doc.name} <a href="{!URLFOR($Action.Attachment.Download, doc.id)}">Download</a>
+	        <br /><br /><hr /><br />
+	      </apex:repeat>
+	    </apex:outputpanel>
+	  </apex:outputpanel>
+      
+    </div>
+  </div>
+    
+  </apex:form>   
+</body>
+ 
+</apex:page>

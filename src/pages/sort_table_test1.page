@@ -1,0 +1,789 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="dp_clinical_pot" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClearCare</title>
+    <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  
+<!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css' />
+  
+<!--  <apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />-->
+<!--  <apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>-->
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/mmenu_nav.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc.css')}"/>   
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-buttons.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-patient.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical-calendar.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-clinical.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/cc-pot.css')}"/>  
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/style.css')}"/>     
+
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-clinical-calendar.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.Dental_Practice_Resources,'js/cc-patient.js')}"/>
+  
+    <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'lib/prototype.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.Scriptaculous, 'src/scriptaculous.js')}"></script>
+<script>
+var $j = jQuery.noConflict();
+// $j is now an alias to the jQuery function; creating the new alias is optional.  
+</script>    
+       
+</head>
+<style type="text/css" media="print">
+  .no-print {
+    display:none;
+  }
+</style>
+
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0 auto;
+    padding: 0;
+  }  
+  
+  .pad-main-wrapper {
+    margin-top:145px;
+  }
+  
+  a.nav_anchor {
+    color:black;
+    font-weight:300;
+    font-size: 12pt;
+    letter-spacing: 1px;
+  }
+  
+  a.nav_anchor:hover {
+    color:white;
+    text-decoration:none;
+  }
+  
+  span.dateFormat {
+    display:none;
+  }
+  
+  .cc-field-label {
+    display:inline-block;
+    padding-right:5px;
+    font-weight:bold;
+  }
+  
+  .cc-field-input {
+    border:none;
+    outline:0;
+    font-szie:12pt;    
+  }
+  
+  .cc-email-attachment-item {
+    display:inline-block;
+    padding-right:20px;    
+  }
+  
+  .cc-email-attachment-remove {
+    padding-left:10px;
+    display:inline-block;
+  }
+  
+  .cc-section-header-right-button-container a:hover {
+    color:white;
+    text-decoration:none;
+  }
+  
+  table.bend_table {
+      width:100%;      
+    }
+    
+    tr.bend_header {
+
+    }
+    
+    .cc-bgColor-blue {
+      background-color:rgb(10,102,224);
+    }
+    
+    .gray_under {
+       display:inline-block;
+       border-bottom:1px solid #bfbfbf;
+       padding-left:5px;
+       padding-right:5px;
+     <!--text-decoration: underline;
+      -moz-text-decoration-color: #bfbfbf; /* Code for Firefox */
+      text-decoration-color: #bfbfbf;-->
+    }
+    
+    .hover-blue:hover {
+      color:#189BEB;
+    }
+    
+    .hover-over-red:hover {
+      background-color: rgb(227,20,20);
+    }
+    
+    .no-uline:hover {
+      text-decoration:none;
+    }
+    
+    tr.bend_header td {
+
+    }
+    
+    tr.odd {
+    
+    }
+    
+    tr.odd td {
+      padding-left:5px;
+      border-bottom:1px dotted #bfbfbf;
+    }
+    
+    tr.even {
+        
+    }
+    
+    tr.even td {
+      padding-left:5px;
+      background:#f5f5f5;
+      border-bottom:1px dotted #bfbfbf;
+    }
+    
+</style>
+
+<script type="text/javascript">     
+  var key_timeout;
+  var search_in_progress = false;
+      
+  function qsearch_key(e) {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("search_patients()",600);
+  }   
+  
+  function pot_qsearch_key(e) {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("pot_search_update()",600);
+  }   
+  
+  function apt_qsearch_key(e) {
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("body_refresh()",600);
+  }
+
+  $j(function(){
+    /*
+     * this swallows backspace keys on any non-input element.
+     * stops backspace -> back
+     */
+    var rx = /INPUT|SELECT|TEXTAREA/i;
+
+    $j(document).bind("keydown", function(e){
+        //alert('Alert Pressed : ' + e.which);
+        if( e.which == 8 ){ // 8 == backspace
+            if(!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly ){
+                e.preventDefault();
+            }
+        }
+        if(e.which== 116) {
+          e.preventDefault();
+        }
+    });
+});
+
+function renum_proc() {
+  $j('.cc-appointment-procedures-container').each(function() {
+    //alert('Test ' + this.id + ' Display : ' + $j(this).css('display')); 
+    var cnt = 1;
+    if($j(this).css('display')=='block') {
+      $j('#' + this.id + ' .cc-appointment-procedures-row').each(function() {
+        //alert('Row : ' + this.id);  
+        $j('#' + this.id + ' .cc-appointment-procedures-number').each(function() {
+          //alert('Number ' + $j(this).html());
+          $j(this).html(cnt); 
+          cnt++;         
+        });      
+      });
+    }
+  });
+}
+
+function init_procedure_sort() {
+//alert('start');
+$j('.cc-appointment-procedures-container').each(function() {
+  //alert('Test ' + this.id); 
+  Sortable.create(this.id,{tag:'div',only:'cc-appointment-procedures-row', onUpdate: function(item) { 
+    //alert('Item : ' + item.id);     
+    var pass_string = '';
+    var pass_cnt = 1;
+    $j('#' + item.id + ' .cc-appointment-procedures-row').each(function() { pass_string += this.id; if(pass_cnt>0) {pass_string += '&';} pass_cnt++; });
+    pass_string = pass_string.substring(0, pass_string.length - 1);
+    //alert('Pass String : ' + pass_string);
+    proc_sort(pass_string);              
+  }
+  
+   });
+  //alert('Finished');
+  });
+}
+
+function init_apt_sort() {
+$j('.cc-patient-appointments-list').each(function() {
+  //alert('Test ' + this.id); 
+  Sortable.create(this.id,{tag:'div',only:'cc-patient-appointment-row-container', onUpdate: function(item) { 
+//  alert('Item : ' + item.id);     
+    var pass_string = '';
+    var pass_cnt = 1;
+ // $j('.cc-patient-appointments-list .cc-patient-appointment-row-container').each(function() { pass_string += this.id; if(pass_cnt>0) {pass_string += '&';} pass_cnt++;});
+    $j('#' + item.id + ' .cc-patient-appointment-row-container').each(function() { pass_string += this.id; if(pass_cnt>0) {pass_string += '&';} pass_cnt++; });
+    pass_string = pass_string.substring(0, pass_string.length - 1);
+   // alert('Pass String : ' + pass_string);
+    apt_sort(pass_string,item.id);              
+  }
+  
+   });
+  //,{element:$j$j(this.id + ' .cc-patient-appointment-row-container'),handles: $j$j(this.id + ' .cc-patient-schedule-row-appointmentLabel')});
+  //alert('Finished');
+  });
+}
+
+function fancy_display_procedures(apt_id) {
+  var parent = $j('#' + apt_id);  
+  var child = parent.find('.cc-appointment-procedures-container');
+  var icon_holder = parent.find('.cc-patient-schedule-appointment-arrow');
+  var icon = parent.find('.cc-icon-collapsable');
+  if(icon_holder.attr('state') == 'open') {    
+    //close
+    child.slideUp();    
+    icon.removeClass('cc-rotate-90deg');    
+    icon_holder.attr('state', 'collapsed');
+  } else {    
+    child.slideDown();  
+    icon.addClass('cc-rotate-90deg');  
+    icon_holder.attr('state', 'open');  
+    init_procedure_sort();
+  }
+}
+
+function display_procedures(div_id) {
+
+  /*if($('#' + div_id).css("display")=="none")
+    $('#' + div_id).css({'display':'block'});
+  else
+    $('#' + div_id).css({'display':'none'});*/
+}
+</script>    
+
+<body>
+<apex:form onsubmit="return true;">
+<apex:outputpanel styleclass="cc-wrapper" layout="block">
+<apex:actionFunction name="body_refresh" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="nav_to" action="{!navigate_to}" rerender="none" status="ajaxstatus">
+  <apex:param name="navid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="center_switch" action="{!change_center}" rerender="nav_content,calendar_nav,main_holder" status="ajaxstatus" >
+  <apex:param name="cid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="opatient_search" action="{!open_patient_search}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="cpatient_search" action="{!close_patient_search}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="cconfirmation_modal" action="{!close_confirmation_modal}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="search_patients" action="{!search_consult_records}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="view_patient" action="{!select_search_patient}" rerender="calendar_nav,main_holder" status="ajaxstatus" oncomplete="init_apt_sort();">
+  <apex:param name="ptid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="onew_pot_form" action="{!new_treatment_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="cnew_pot_form" action="{!close_treatment_form}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="change_pot_tab" action="{!select_dr_tab}" rerender="new_pot_holder" status="ajaxstatus" >
+  <apex:param name="tname" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="lower_switch" action="{!lower_arch_change}" rerender="new_pot_holder" status="ajaxstatus" >
+  <apex:param name="aname" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="upper_switch" action="{!upper_arch_change}" rerender="new_pot_holder" status="ajaxstatus" >
+  <apex:param name="aname" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="pot_search_update" rerender="new_pot_holder" status="ajaxstatus" />
+<apex:actionFunction name="select_plan" action="{!select_treatment_plan}" rerender="calendar_nav,main_holder" status="ajaxstatus" oncomplete="init_apt_sort();">
+  <apex:param name="potid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="new_apt_form" action="{!new_appointment_form}" rerender="main_holder" status="ajaxstatus" >
+  <apex:param name="potid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="apt_select" action="{!select_appointment}" rerender="main_holder" oncomplete="init_sort();return false;">
+  <apex:param name="aptid" value="" />
+</apex:actionFunction>  
+<apex:actionFunction name="delete_apt" action="{!delete_pot_apt}" rerender="main_holder" status="ajaxstatus" />
+<apex:actionFunction name="delete_pot" action="{!delete_full_pot}" rerender="calendar_nav,main_holder" status="ajaxstatus" />
+<apex:actionFunction name="apt_sort" reRender="calendar_nav" action="{!test_apt_sort}" status="ajaxstatus"  >
+  <apex:param name="pthru" value="" />
+  <apex:param name="potid" value="" />
+</apex:actionFunction>
+<apex:actionFunction name="proc_sort" rerender="no_holder" action="{!test_procedure_sort}" status="ajaxstatus" oncomplete="renum_proc();" >
+  <apex:param name="pthru" value="" />
+</apex:actionFunction>
+
+
+<apex:outputpanel layout="block" styleclass="cc-nav-wrapper">
+  <apex:outputpanel styleclass="cc-nav-container">
+    <apex:outputpanel styleclass="cc-top-nav-container" id="nav_content" layout="block">
+      <div class="cc-top-nav-left">
+        <apex:outputpanel id="back_holder" styleclass="cc-back-container" layout="block" >
+          <apex:outputpanel ><a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a></apex:outputpanel>
+        </apex:outputpanel>  
+      </div>
+      <div class="cc-top-nav-center">
+        <div class="cc-link-dropdown-container">
+          <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+            <ul class="dropdown-menu overflow-menu" >
+              <apex:repeat var="center" value="{!center_list}">
+                <li class="dropdown-lineitem">
+                  <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+                </li>
+              </apex:repeat>
+            </ul>
+          </span>
+        </div>
+      </div>
+      <div class="cc-top-nav-right">
+        <span class="dropdown drop-hover">
+          <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" styleClass="c-pointer"
+            onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+            onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+            onclick="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';"
+             /></a>
+          <ul class="dropdown-menu gear-menu dropdown-menu-right">
+            <apex:repeat var="gitem" value="{!gear_menu}" >
+                <li class="dropdown-lineitem" style="display:inline-block;">
+                  <a href="{!gitem.Page_URL__c}" style="color:#189BEB;"  
+                      onmouseover="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name_Hover__c)}';this.style.color='black';" 
+                      onmouseout="this.firstChild.src='{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}';this.style.color='#189BEB';">
+                    <apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,gitem.Image_Name__c)}" width="{!if(gitem.name=='Salesforce','30','20')}" height="20" style="display:inline;{!if(gitem.name=='Salesforce','position:relative;left:-7px;margin-right:-6px;','margin-right:5px;')}" />&nbsp;&nbsp;{!gitem.name}
+                  </a>
+                </li>
+            </apex:repeat>
+          </ul>        
+          </span>
+      </div>
+    </apex:outputpanel>
+    <div class="cc-sub-nav-container" >
+      <apex:repeat var="mitem" value="{!clinical_header_items}">
+        <apex:outputpanel layout="block" styleclass="cc-sub-nav-cell" onclick="nav_to('{!mitem.id}')">
+          <button class="cc-sub-nav-top-button cc-color-{!mitem.css_class__c} cc-hover-tooltips-dark-anchor-nav">
+            <i class="ccf-{!mitem.image_name__c} cc-color-font-white"></i>
+            <div>{!mitem.name}</div>          
+          </button>
+          <div class="cc-button-text">
+            {!mitem.name}
+          </div>
+          <div class="cc-button_bg cc-color-{!mitem.css_class__c}">
+
+          </div>
+        </apex:outputpanel>
+      </apex:repeat>
+    </div>
+
+   <apex:outputPanel styleclass="cc-clinical-calendar-nav" layout="block" id="calendar_nav">
+     <!--repeat through all pots and create anchor links here-->
+     <apex:repeat var="pot" value="{!patient_pot_list}" rendered="{!patient_record_selected}">
+       <apex:outputpanel layout="block" styleclass="cc-section-link-black cc-font-light-space">
+         <a class="nav_anchor">{!pot.plan.name}</a>
+       </apex:outputpanel>
+     </apex:repeat>
+     <!--end repeat-->
+               
+     <apex:outputpanel layout="block" styleclass="cc_cc_cal_options-container">
+       <apex:outputpanel layout="block" styleclass="cc-toolbar-button-icon-container">
+         <apex:outputpanel layout="block" styleclass="cc-toolbar-button-patient" onclick="opatient_search();">
+           <i class=" ccf-patient"></i>
+           <apex:outputpanel rendered="{!patient_record_selected}" >{!patient.name}</apex:outputpanel>
+           <apex:outputpanel rendered="{!if(patient_record_selected,false,true)}" >No Patient Selected</apex:outputpanel>
+         </apex:outputpanel>
+         <apex:outputpanel layout="block" styleclass="cc-toolbar-button-icon-tooltip" style="left: 0%; width: 160px; display: none; opacity: 1;">
+           <apex:outputpanel layout="block">Change patient</apex:outputpanel>
+         </apex:outputpanel>
+       </apex:outputpanel>
+       <apex:outputpanel layout="block" styleclass="cc-hover-tooltips-light cc-cursor-hover" rendered="{!patient_record_selected}" onclick="onew_pot_form();">
+         <a class="cc-section-header-add-button nav_anchor" id="cc-patient-add"><i class=" ccf-add-md    "></i></a>
+         <apex:outputpanel styleclass="cc-tooltip cc-center" layout="block" style="top:20%">New POT</apex:outputpanel>
+       </apex:outputpanel>
+     </apex:outputpanel>
+   </apex:outputpanel> <!--end cc-clinical-calendar-nav-->
+  </apex:outputpanel>
+</apex:outputpanel>
+
+<apex:outputpanel layout="block" styleclass="cc-content-wrapper" id="main_holder">
+  <apex:outputpanel layout="block" styleclass="cc-content-container">
+  <apex:actionStatus id="ajaxstatus">
+    <apex:facet name="start">
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 1110; background-color: #f2f2f2;">
+        &nbsp;
+      </div>
+      <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1111; margin: 20% 50%">
+        <!--<apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}"/>-->
+<!--       <img src="http://upload.wikimedia.org/wikipedia/commons/e/ed/Cursor_Windows_Vista.gif" />-->
+        <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+        <!--<img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/5Wits.gif')}" />-->
+      </div>
+    </apex:facet>
+  </apex:actionStatus>  
+  
+  
+  <apex:outputpanel layout="block" styleclass="cc-clinical-content-container" style="padding-top:1em;">
+    <apex:messages />
+    <!--No Patient Selected?-->
+    <apex:outputpanel layout="block" rendered="{!if(patient_record_selected,false,true)}" >
+      Plans of Treatment can not be displayed until you have selected a patient.<br />  Please click on the change patient icon if you need to select one
+    </apex:outputpanel>
+    
+    <apex:outputpanel layout="block" rendered="{!if(patient_record_selected,true,false)}" >
+      <!--Patient Selected - No Plans of Treatment-->
+    
+    
+    
+      <!--Patient Selected - Plans of treatment-->
+      <apex:repeat var="pot" value="{!patient_pot_list}">
+        <apex:outputpanel layout="block" styleclass="cc-section-container">    
+          <apex:outputpanel layout="block" styleclass="cc-section-header cc-font-light-16" id="cc-clinical-POT">
+            <apex:outputpanel layout="block" styleclass="cc_cc-notes-section-header-left cc-clinical-treatmentPlan-name">
+              {!pot.plan.name}
+            </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc_cc-notes-section-header-right">
+              <apex:outputpanel layout="block" styleclass="cc-section-header-right-button-container  cc-hover-tooltips-light ">   </apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-section-header-right-button-container cc-section-button-white-disabled cc-hover-tooltips-light cc-clinical-tp-save" rendered="{!pot.allow_delete}">
+                <apex:commandLink action="{!confirm_pot_removal}" style="color:white;text-decoration:none;">
+                  <apex:param name="activation_id" value="{!pot.plan.id}" assignTo="{!activation_id}" />
+                  <i class="ccf-cancel-thin "></i>
+                </apeX:commandlink>
+                <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center">Remove Treatment Plan</apex:outputpanel>
+              </apex:outputpanel>
+            </apex:outputpanel>                       
+          </apex:outputpanel> <!--end section header--->
+          
+          <apex:outputpanel layout="block" styleclass="cc-clinical-schedule-POT-container">
+            <apex:outputpanel layout="block" styleclass="cc-patient-form-category-header">
+              <apex:outputpanel layout="block">Plan Of Treatment</apex:outputpanel>
+              <apex:outputpanel layout="block" styleclass="cc-subSection-buttons-container">          
+                <apex:outputpanel layout="block" styleclass="cc-subSection-button cc-hover-tooltips-light " onclick="new_apt_form('{!pot.plan.id}');">
+                  <apex:outputpanel layout="block" styleclass="cc-subSection-button-icon cc-subSection-button-addAppointment">
+                    <i class="ccf-add-light cc-font-light"></i>
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center cc-subSection-tooltip-position" >
+                    Add appointment
+                  </apex:outputpanel>
+                </apex:outputpanel>
+              </apex:outputpanel>
+            </apex:outputpanel> 
+            
+            <div class="cc-patient-appointments-list" id="pot_{!pot.plan.id}">
+              <!-- start appointment -->
+              <apex:repeat var="apt" value="{!pot.apts}">
+              <div class="cc-patient-appointment-row-container" id="apt_{!apt.apt.id}">
+                <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row cc-clinical-POT-done">
+                  <div class="cc-patient-schedule-appointment-arrow " state="collapsed" onclick="fancy_display_procedures('apt_{!apt.apt.id}')"><i class="ccf-right-arrow cc-color-font-gray cc-icon-collapsable"></i></div>
+                  <div class="cc-patient-schedule-row-status cc-clinical-pot-num cc-bgColor-blue cc-color-linkBG {!if(apt.allow_delete,'hover-over-red','')}" orderval="{!apt.apt.Sort_Order__c}">
+                    <apex:commandLink rendered="{!apt.allow_delete}" action="{!confirm_apt_removal}" style="color:white;text-decoration:none;" styleclass="no_uline" onmouseover="this.innerHTML='X';" onmouseout="this.innerHTML='{!apt.apt.Sort_Order__c}'">
+                      <apex:param name="activation_id" value="{!apt.apt.id}" assignTo="{!activation_id}" />
+                      {!apt.apt.Sort_Order__c}
+                    </apex:commandLink>
+                    <apex:outputpanel rendered="{!if(apt.allow_delete,false,true)}">{!apt.apt.Sort_Order__c}</apex:outputpanel>
+                  </div>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-appointmentLabel">{!apt.apt.name}</apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-toothNums">
+                     <!--<i class="ccf-appointment cc-cursor-hover cc-color-font-hover-blue "></i> 4, 14, 22, 17, 31, 32, 15, 16, 17, 27, 99-->
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-date cc-clinical-appointment-date-completed cc-hover-tooltips-light">
+
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-date cc-clinical-appointment-date-scheduled cc-hover-tooltips-light ">
+                    Last Apt Date
+                    <apex:outputpanel layout="block" styleclass="cc-tooltip cc-center" style="bottom:-160%; left:35%;">
+                      Completed
+                    </apex:outputpanel>
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-clinical-appointment-date-comments">
+                    Note holder
+                  </apex:outputpanel>
+                </apex:outputpanel>
+                <!-- start procedures -->
+                <div class="cc-appointment-procedures-container cc-clinical-POT-done" style="display: none;" id="proc_{!apt.apt.id}">
+                  <apex:repeat var="proc" value="{!apt.procedures}">
+                  <div class="cc-appointment-procedures-row" id="p_{!proc.id}">
+                    <apex:outputpanel layout="block" styleclass="cc-appointment-procedures-number">{!proc.Sort_Order__c}</apex:outputpanel>
+                    <apex:outputpanel layout="block" styleclass="cc-appointment-procedures-label">{!proc.name}</apex:outputpanel>
+                    <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-toothSelection cc-hover-tooltips-light ">
+                      <i class="ccf-appointment cc-cursor-hover cc-color-font-hover-blue " onclick="window.location=&quot;POT-teethSelected.html&quot;"></i>
+                      <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-toothSelected-numbers">
+                        <!--4, 14, 22-->
+                      </apex:outputpanel>
+                    </apex:outputpanel>
+                  </div>
+                  </apex:repeat>
+                </div>
+                <!-- eND procedures -->
+              </div>
+              </apex:repeat>
+              <!-- end appointment -->
+              <!--new apt holder---->
+              <apex:outputpanel rendered="{!if(pot.plan.id==new_apt_form_id,true,false)}" style="padding-left:40px;">
+                <apex:outputpanel layout="block" styleclass="cc-patient-appointment-row-container">
+                <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row cc-clinical-POT-done">
+                  <div class="cc-patient-schedule-appointment-arrow cc-invisible " state="collapsed"><i class="ccf-right-arrow cc-color-font-gray cc-icon-collapsable cc-rotate-90deg"></i></div>
+                  <div class="cc-patient-schedule-row-status cc-color-linkBg cc-clinical-pot-num" style="background-color: rgb(10, 102, 224);">{!pot_next_sort_value}</div>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-appointmentLabel">
+                    <apex:inputText value="{!new_apt_name}" styleclass="input_standard" onfocus="if(this.value=='Enter Appointment') {this.value='';}" onkeyup="apt_qsearch_key();" /><span class="spacer">&nbsp;</span>
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-toothNums">
+                    <apex:selectList value="{!apt_filter}" onchange="body_refresh();" size="1">
+                      <apex:selectOptions value="{!apt_category_list}" />
+                    </apex:selectList><span class="spacer">&nbsp;</span>
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-date cc-clinical-appointment-date-completed cc-hover-tooltips-light">
+                    <apex:commandLink action="{!add_appointment_step}" reRender="main_holder" value="Save" styleclass="lblue" status="ajaxstatus"/>
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-patient-schedule-row-date cc-clinical-appointment-date-scheduled cc-hover-tooltips-light ">
+                    <apex:commandLink action="{!hide_apt_form}" reRender="main_holder" value="Cancel" styleclass="lblue" status="ajaxstatus" />                   
+                  </apex:outputpanel>
+                  <apex:outputpanel layout="block" styleclass="cc-clinical-appointment-date-comments">
+                    <apex:commandLink action="{!reset_apt_form}" reRender="main_holder" value="Reset" styleclass="lblue" status="ajaxstatus" />
+                  </apex:outputpanel>
+                </apex:outputpanel>
+                </apex:outputpanel>
+                <apex:outputpanel styleclass="procedure_matches">
+                  <apex:repeat var="sresult" value="{!search_appointments}" >
+                    <span onclick="apt_select('{!sresult.id}');" class="overflow_option"><apex:outputText value="{!sresult.name}" /></span>
+                  </apex:repeat>
+                </apex:outputpanel>
+              </apex:outputpanel>
+              <!--end new apt holder-->
+            </div>
+          </apex:outputpanel> <!---POT Container---->
+          
+        </apex:outputpanel> <!--end cc-section-container--->
+      </apex:repeat> <!--end repeat through plans of treatment-->
+      
+
+      
+      
+      
+    </apex:outputpanel>
+    
+  </apex:outputpanel>
+  
+  <!-- START PATIENT SEARCH MODAL------------------>
+  <apex:outputpanel layout="block" rendered="{!display_patient_search_modal}">
+  <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-close">
+        <div id="cc-patient-patient-search-close-button" onclick="cpatient_search();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </div>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-info">
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Name:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_name}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>      
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Phone:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_phone}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();"/>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block" styleclass="cc-patientProfile-row">
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-label">Email:</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patientProfile-input-container">
+            <apex:input styleclass="cc-patientProfile-input" value="{!search_email}" onkeydown="if(event.keyCode==13){this.blur();}" onkeyup="qsearch_key();" />
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder"> </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-inputBottomBorder-off"> </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>                 
+      <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results" rendered="{!if(search_result_size>0,true,false)}">
+        <div class="cc-patient-schedule-search-results-row-container" id="cc-patient-patient-search-results-row-container" style="opacity: 1;">
+          <apex:outputpanel layout="block" styleclass="cc-patient-schedule-search-results-row-label">Search Results</apex:outputpanel>
+          <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-options">
+            <apex:repeat var="patient" value="{!consult_search_results}" >
+              <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result" style="margin-top:10px;margin-bottom:20px;" onclick="view_patient('{!patient.id}');">
+                <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-results-row-result-name">{!patient.name}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.phone}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.billingstreet}</apex:outputpanel>
+                <apex:outputpanel layout="block" styleclass="">{!patient.Email__c}</apex:outputpanel>
+              </apex:outputpanel>
+            </apex:repeat>
+          </apex:outputpanel>
+        </div>
+      </apex:outputpanel><!--end search results-->      
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel><!---END PATIENT SEARCH MODAL----->
+  
+  <!--Start New POT Modal-------->
+  <apex:outputpanel layout="block" rendered="{!display_new_treatment_modal}">
+<!--  <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">-->
+  
+  <apex:outputpanel layout="block"  styleclass="cc-clinical-addPOT-wrapper" style="z-index: 1100; opacity: 1;" id="new_pot_holder">
+    <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+    <apex:messages />
+      <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-close">
+        <apex:outputpanel layout="block" id="cc-clinical-addPOT-close-button" onclick="cnew_pot_form();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </apex:outputpanel>
+      </apex:outputpanel>
+      
+      <!--Start Opportunity Holder-->
+      <apex:outputpanel layout="block" rendered="{!if(new_pot_display=='start',true,false)}" style="width:100%;">
+        <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-section-topHeader">Select Prosth Exam Record</apex:outputpanel>
+        <apex:outputpanel layout="block" rendered="{!if(num_available_patient_starts==0,true,false)}">
+          There are no start records for this patient without a treatment plan.  Please create a new prosth exam record before continuing.
+        </apex:outputpanel>
+        
+        <apex:outputpanel layout="block" rendered="{!if(num_available_patient_starts==0,false,true)}" style="width:100%;">        
+          <apex:outputpanel layout="block" style="padding-top:1em;width:100%;">
+            <table class="bend_table"> 
+              <tr class="bend_header">
+                <th><span class="gray_under">Name</span></th>
+                <th><span class="gray_under">Treatment Plan</span></th>
+                <th><span class="gray_under">Treatment Amount</span></th>
+                <th><span class="gray_under">Prosth Exam Date</span></th>
+              </tr>
+              <apex:variable var="rowclassname" value="odd" />
+              <apex:repeat var="start" value="{!patient_available_starts}">
+                <tr class="{!rowclassname}">
+                <apex:variable var="rowclassname" value="{!if(rowclassname=='odd','even','odd')}" />
+                  <td>
+                    <apex:commandlink value="{!start.o.name}" rerender="new_pot_holder" action="{!select_treatment_opp}" styleclass="lblue" status="ajaxstatus">
+                      <apex:param name="pot_opp" value="{!start.o.id}" assignTo="{!pot_opp}" />
+                    </apex:commandlink>              
+                  </td>
+                  <td><apex:outputtext value="{!start.tx_name}" /></td>
+                  <td><apex:outputfield value="{!start.o.Treatment_Amount__c}" /></td>
+                  <td><apex:outputText value="{0,date,M'/'dd'/'yyyy}">
+                    <apex:param value="{!start.o.closedate}"/>
+                    </apex:outputText>
+                  </td>
+                </tr>  
+              </apex:repeat>
+            </table>
+          </apex:outputpanel>
+        </apex:outputpanel>
+      </apex:outputpanel>
+      <!--End Opportunity Holder-->
+      
+      <!--START POT Selection Holder-->
+      <apex:outputpanel layout="block" rendered="{!if(new_pot_display=='pot',true,false)}" style="width:100%;">
+        <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-section-topHeader">Plan Of Treatment Templates</apex:outputpanel>
+        <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-subject-container">
+          <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-section-header">
+            <apex:repeat var="tab" value="{!doctor_tab_list}">                                   
+              <apex:outputpanel layout="block" styleclass="{!if(selected_pot_tab==tab,'cc-clinical-addPOT-section-header-cell-selected','cc-clinical-addPOT-section-header-cell')}" onclick="change_pot_tab('{!tab}');">{!tab}</apex:outputpanel>
+            </apex:repeat>
+          </apex:outputpanel>
+        </apex:outputpanel>
+        
+        <!--Blank Template Holder---->
+        <apex:outputpanel layout="block" style="width:100%;padding-top:20px;" rendered="{!if(selected_pot_tab=='Blank Template',true,false)}">
+          <span class="form-line" style="padding-right:30px;">
+            Plan Name :&nbsp; <apex:inputtext value="{!new_pot_name}" styleclass="input_standard" onfocus="if(this.value=='Enter Plan Name') {this.value='';}" /><span class="spacer">&nbsp;</span>
+            <apex:commandLink action="{!create_blank_pot}" reRender="calendar_nav,main_holder" value="Save" styleclass="lblue" status="ajaxstatus" />
+          </span>
+        </apex:outputpanel>        
+        <!--end blank Template Holder-->
+        
+        <!--POT Search Holder---->        
+        <apex:outputpanel layout="block" style="width:100%;" rendered="{!if(selected_pot_tab=='Blank Template',false,true)}">
+          <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-section-container">
+            <apex:outputpanel layout="block" styleclass="cc-clinical-addPOT-list-container_na" style="padding-top:15px;overflow-y:auto;">
+              <apex:inputtext value="{!pot_search}" onfocus="if(this.value=='Quick Search') {this.value='';}" styleclass="input_standard" onkeyup="pot_qsearch_key();"/><br /><br />
+              <!--Upper Arch Selection-->
+              <span class="dropdown drop-hover">Upper Arch :<br />&nbsp;&nbsp;
+                <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!upper_arch}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+                <ul class="dropdown-menu overflow-menu" style="margin-top:0px;" >
+                  <apex:repeat var="arch_type" value="{!upper_arch_options}">
+                    <li style="margin-top:0px;margin-bottom:0px;padidng-top:0px;padding-bottom:0px;" class="dropdown-lineitem"><a href="javascript:upper_switch('{!arch_type}');" style="color:#189BEB"><apex:outputtext value="{!arch_type}" /></a></li>
+                  </apex:repeat>
+                </ul>
+             </span><br />
+             <!--Lower Arch Selection-->
+             <span class="dropdown drop-hover">Lower Arch :<br />&nbsp;&nbsp;
+                <a class="dropdown-toggle nav_color " data-toggle="dropdown"><apex:outputtext value="{!lower_arch}"  style="padding-right:5px;" styleClass="c-pointer"  /><span class="caret"></span></a>
+                <ul class="dropdown-menu overflow-menu" style="margin-top:0px;" >
+                  <apex:repeat var="arch_type" value="{!lower_arch_options}">
+                    <li style="margin-top:0px;margin-bottom:0px;padidng-top:0px;padding-bottom:0px;" class="dropdown-lineitem"><a href="javascript:lower_switch('{!arch_type}');" style="color:#189BEB"><apex:outputtext value="{!arch_type}" /></a></li>
+                  </apex:repeat>
+                </ul>
+             </span>                           
+            </apex:outputpanel>
+            <apex:outputpanel layout="block" styleclass="cc-clincial-addPOT-tp-container" style="margin-top:0;">
+              <apex:outputpanel layout="block" styleclass="cc-clincial-addPOT-tp-container-list-container">
+                <apex:outputpanel layout="block" styleclass="cc-clincial-addPOT-tp-container-list-section" style="overflow-y:auto;">
+<!--                  <div class="cc-clincial-addPOT-tp-container-list-header">Upper and Lower</div>-->
+                  <apex:outputpanel layout="block" style="padding-top:10px;">
+                    <apex:repeat var="pot" value="{!search_treatment_plans}">
+                      <span class="c-pointer hover-blue" onclick="select_plan('{!pot.id}');">{!pot.name}</span><br />
+                    </apex:repeat>
+<!--                    <ul>
+                      <li tp-uid="Upper and Lower AO4 - Dr. Adams">Upper and Lower AO4</li>
+                    </ul>-->
+                  </apex:outputpanel>
+                </apex:outputpanel>                        
+              </apex:outputpanel>
+            </apex:outputpanel>
+          </apex:outputpanel>
+        </apex:outputpanel>
+        <!--end POT Search Holder-->
+      </apex:outputpanel> <!--End POT Selection Holder-->
+      
+    </apex:outputpanel>
+  </apex:outputpanel>  
+  </apex:outputpanel>
+  <!---END New POT Modal-->
+  
+  <!---START Removal Confirmation Modal------->
+  <apex:outputpanel layout="block" rendered="{!confirmation_modal_display}">
+  <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-wrapper" style="z-index: 1100; opacity: 1;">
+    <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-container" style="box-shadow: rgba(0, 0, 0, 0.74902) 0px 0px 70px -15px;">
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-close">
+        <div id="cc-patient-patient-search-close-button" onclick="cconfirmation_modal();">
+          <i class="ccf-cancel-thin cc-color-font-black cc-cursor-hover"></i>
+        </div>
+      </apex:outputpanel>
+      <apex:outputpanel layout="block" styleclass="cc-patient-patient-search-info" style="width: 100%; text-align: center; padding-top: 10px;">
+        <apex:outputtext value="{!modal_out}" escape="false" /><br /><br /><br />
+
+        <apex:outputpanel layout="block" rendered="{!if(confirmation_modal_type=='appointment',true,false)}" >
+          <span class="confirm-btn" onclick="delete_apt();">Confirm</span><span class="spacer">&nbsp;</span>
+          <span class="cancel-btn" onclick="cconfirmation_modal();">Cancel</span>
+        </apex:outputpanel>
+        <apex:outputpanel layout="block" rendered="{!if(confirmation_modal_type=='pot',true,false)}" >
+          <span class="confirm-btn" onclick="delete_pot();">Confirm</span><span class="spacer">&nbsp;</span>
+          <span class="cancel-btn" onclick="cconfirmation_modal();">Cancel</span>
+        </apex:outputpanel>
+      
+      </apex:outputpanel>
+    </apex:outputpanel>
+  </apex:outputpanel>
+  </apex:outputpanel>  
+  <!--End Confirmation Modal------------------>
+  
+  </apex:outputpanel> <!--end cc-content-container-->
+</apex:outputpanel> <!--end cc-content-wrapper-->
+</apex:outputpanel> <!--end cc-wrapper-->
+
+</apex:form>
+</body>
+</apex:page>

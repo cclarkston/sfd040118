@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>24.0</apiVersion>
+    <availableInTouch>false</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>Quick button I put together for Meridith that shifts the avaliable consults at the center leavle down a week.  Will disappear once we get scheduling completed.</description>
+    <label>ShiftCenterConsults</label>
+</ApexPage>

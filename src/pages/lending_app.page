@@ -1,0 +1,15 @@
+<apex:page controller="CtrlLendingApp" sidebar="false" showHeader="false" doctype="html-5.0" title="PreQ" standardStylesheets="true">
+<link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300,400,500,700" media="screen" />
+<apex:stylesheet value="{!URLFOR($Resource.Assets, 'css/lending-app.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+
+    <apex:panelBar >
+
+        <apex:panelBarItem label="Item 1">data 1</apex:panelBarItem>
+
+        <apex:panelBarItem label="Item 2">data 2</apex:panelBarItem>
+
+        <apex:panelBarItem label="Item 3">data 3</apex:panelBarItem>
+
+    </apex:panelBar>    
+</apex:page>

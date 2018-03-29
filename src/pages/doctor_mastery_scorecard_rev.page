@@ -1,0 +1,290 @@
+<apex:page controller="dr_mastery_scorecard" docType="html-5.0">
+<head>
+  <meta charset="UTF-8" />
+  <title>Doctor Mastery Scorecard</title> 
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/fonts.css')}"/>
+</head>
+
+<style>    
+  .filter_header {
+    margin-bottom: 2em;
+    font-weight: bold;
+    font-size: 14pt;
+    justify-content: flex-start;
+    align-items: center;
+  }   
+  
+  .summary_holder_box {
+    display: flex;
+    background: #eeeeee;
+    max-width: 850px;
+    border: 1px solid #bbbbbb;
+    border-radius: 5px 5px 5px 0px;
+    min-width:650px;
+  }
+  
+  .summary_box_col {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    min-width: 300px;
+  }
+  
+  .summary_doctor_info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .subscript_span {
+    font-size: 8pt;
+    font-style: italic;
+    padding-bottom: 5px;
+  }
+  
+  .doctor_name {
+    font-weight: bold;
+    font-size: 14pt;
+    padding-bottom: 10px;
+  }
+  
+  .next_steps_holder {  
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-left: 10px;
+    padding-top: 5px;
+  }
+  
+  .scorecard_date {
+    font-size:12pt;
+  }
+  
+  .summary_mastery_info {
+    display: flex;
+    flex-direction: column;
+    border: 1px dotted #bbbbbb;
+    border-radius: 0px 7px 7px 0px;
+    padding: 3px;
+  }
+  
+  .mastery_score {
+    width: 100%;
+    display: inline-flex;
+    height: 30px;
+    justify-content: center;
+    font-size: 12pt;
+    align-items: center;
+    font-weight:bold;
+    background: #5ef7ea; /* Old browsers */
+    background: -moz-linear-gradient(left, #5ef7ea 0%, #ffffff 45%, #ffffff 48%, #ffffff 55%, #5ef7ea 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left, #5ef7ea 0%,#ffffff 45%,#ffffff 45%,#ffffff 55%,#5ef7ea 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right, #5ef7ea 0%,#ffffff 45%,#ffffff 55%,#ffffff 49%,#38ecdd 100%);    
+  }
+  
+
+  
+  .background_layer {
+    
+  }
+  
+  ul li {
+    margin-left: .5em;
+  }
+  
+  li {
+    font-style:italic;
+    line-height:20px;
+  }
+  
+  .metrics_holder {
+    display: flex;
+    min-width: 300px;
+    max-width: 300px;
+    background: #eeeeee;
+    padding:5px;
+  }
+  
+  .metrics_box_col {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    padding-right: 15px;
+    height:100px;
+  }
+  
+  .metrics_label_box {
+    display: flex;
+    font-weight: bold;
+    font-size: 12pt;
+    padding-left: 20px;
+  }
+  
+  .metrics_label {
+  
+  }
+    
+  .metrics_box_score {
+        display: flex;
+    flex-direction: column;
+    height: 45px;
+    border: 1px dotted #cccccc;
+    margin-bottom: 3px;
+    padding-top: 1px;
+    padding-left: 3px;
+  }
+  
+  .metrics_score {
+    display: flex;
+        justify-content: flex-end;
+    padding-right: 15px;
+    font-size: 14pt;
+    font-style: italic;
+  }
+</style>
+
+<body>
+<apex:form >
+
+<apex:actionFunction name="snap_date_change" action="{!refresh_scorecard}" status="ajaxstatus" rerender="mholder" />
+
+<apex:actionStatus id="ajaxstatus">
+  <apex:facet name="start">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10110; background-color: #f2f2f2;">
+      &nbsp;
+    </div>
+    <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10111; margin: 20% 50%">
+      <img src="{!URLFOR($Resource.Dental_Practice_Resources,'Images/Circle-out.gif')}" />
+    </div>
+  </apex:facet>
+</apex:actionStatus> 
+
+<p class="filter_header">Scorecard for &nbsp;&nbsp;
+  <apex:selectList value="{!scorecard_user}" onchange="snap_date_change();" size="1" rendered="{!is_admin}" >
+    <apex:selectOptions value="{!user_option_list}" />
+  </apex:selectList>&nbsp;&nbsp;
+  <apex:outputtext value="{!scorecard_name}" rendered="{!if(is_admin,false,true)}" />
+
+  <apex:selectList value="{!current_month}" onchange="snap_date_change();" size="1" >
+    <apex:selectOptions value="{!month_option_list}" />
+  </apex:selectList>&nbsp;&nbsp;
+  <apex:selectList value="{!current_year}" onchange="snap_date_change();" size="1" >
+    <apex:selectOptions value="{!year_option_list}" />
+  </apex:selectList>
+</p>  
+    
+<apex:outputpanel layout="block" id="mholder">
+  <apex:outputpanel id="error_holder" ><apex:messages style="color:red;font-style:italics;padding-top:3px;" /></apex:outputpanel>
+  <apex:outputpanel layout="block" id="sholder" rendered="{!if(scorecard_data.size>0,true,false)}">    
+    <div class="summary_holder_box">
+      <div class="summary_box_col">
+        <p class="summary_doctor_info">
+          <span class="subscript_span">Summary for</span>
+          <span class="doctor_name">Dr. Cleveland Jones</span>
+          <span class="scorecard_date">March 2018</span>
+        </p>
+        <p class="summary_mastery_info">        
+          <span class="subscript_span">Mastery Level</span>
+          <span class="background_layer">
+            <span class="mastery_score">{!scorecard.overall_mastery_text}</span>
+          </span>
+        </p>
+      </div>
+      <div class="summary_box_col" style="flex-grow:1;padding-right:5px;padding-top:5px;padding-bottom:5px;">
+        <div class="next_steps_holder">
+          <span class="subscript_span">Next Steps</span>
+          <ul class="next_steps_list">
+            <li class="next_steps_step">Deliver 100 more arches</li>
+            <li class="next_steps_step">Continue to work for Clearhoice for 312 days</li>
+            <li class="next_steps_step">Increase gross margin by 9%</li>            
+          </ul>
+        </div>
+      </div>
+    </div><br /><br /><br />
+    
+    <div class="metrics_holder">
+      <div class="metrics_box_col">
+        <div class="metrics_label_box">
+          <span class="metrics_label">CCEs</span>
+        </div>
+        <p class="summary_mastery_info">        
+          <span class="subscript_span">Mastery Level</span>
+          <span class="background_layer">
+            <span class="mastery_score">{!scorecard.cce_mastery_level_text}</span>
+          </span>
+        </p>
+      </div>
+      <div class="metrics_box_col">
+        <div class="metrics_box_score">
+          <span class="subscript_span">Current Value</span>
+          <span class="metrics_score">300</span>
+        </div>
+        <div class="metrics_box_score">
+          <span class="subscript_span">Next Value</span>
+          <span class="metrics_score">350</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="metrics_holder">
+      <div class="metrics_box_col">
+        <div class="metrics_label_box">
+          <span class="metrics_label">In Network</span>
+        </div>
+        <p class="summary_mastery_info">        
+          <span class="subscript_span">Mastery Level</span>
+          <span class="background_layer">
+            <span class="mastery_score">{!scorecard.in_network_mastery_text}</span>
+          </span>
+        </p>
+      </div>
+      <div class="metrics_box_col">
+        <div class="metrics_box_score">
+          <span class="subscript_span">Current Value</span>
+          <span class="metrics_score">300</span>
+        </div>
+        <div class="metrics_box_score">
+          <span class="subscript_span">Next Value</span>
+          <span class="metrics_score">350</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="metrics_holder">
+      <div class="metrics_box_col">
+        <div class="metrics_label_box">
+          <span class="metrics_label">COE</span>
+        </div>
+        <p class="summary_mastery_info">        
+          <span class="subscript_span">Mastery Level</span>
+          <span class="background_layer">
+            <span class="mastery_score">{!scorecard.coe_mastery_text}</span>
+          </span>
+        </p>
+      </div>
+      <div class="metrics_box_col">
+        <div class="metrics_box_score">
+          <span class="subscript_span">Current Value</span>
+          <span class="metrics_score">300</span>
+        </div>
+        <div class="metrics_box_score">
+          <span class="subscript_span">Next Value</span>
+          <span class="metrics_score">350</span>
+        </div>
+      </div>
+    </div>
+        
+  </apex:outputpanel>
+  
+  <apex:outputtext value="There is no scorecard data available to display" rendered="{!if(scorecard_data.size>0,false,true)}" />
+  
+</apex:outputpanel>
+
+
+
+
+
+</apex:form>
+</body>
+</apex:page>

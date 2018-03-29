@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>21.0</apiVersion>
+    <availableInTouch>false</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>This is the Visual Force page being displayed on the large monitors in the Call Center and Ops.  Shows each center with the number of Dental Inquires for the day.</description>
+    <label>LeadsByCenter</label>
+</ApexPage>

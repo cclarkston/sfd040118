@@ -1,0 +1,89 @@
+<apex:page controller="disable_demo" docType="html-5.0" >
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+<style>
+  .input_section {
+  
+  }
+  
+  .input_line {
+    padding-bottom:1em;
+  }
+  
+  .input_text {
+  
+  }
+  
+  .input_val {
+    padding-left:20px;
+  } 
+  
+  .input_disabled {
+    cursor:not-allowed;
+    border:0;
+    background:white;
+  }
+ 
+  .body {
+    padding-left:20px;
+  }
+</style>
+
+</head>
+
+<body>
+<apex:form >
+  <h1>Center - {!center.name}</h1><br /><br />
+  
+  <apex:outputpanel layout="block" styleclass="input_section">
+    <apex:outputpanel layout="block" styleclass="input_line">
+      <apex:outputpanel styleclass="input_text">Calendar Name (text): </apex:outputpanel>
+      <apex:outputpanel styleclass="input_val">
+        <apex:inputfield value="{!center.Calendar_Name__c}" onclick="{!disable_script}save_function_name_here();" styleclass="{!disable_style}" />
+      </apex:outputpanel>      
+    </apex:outputpanel>
+    <apex:outputpanel layout="block" styleclass="input_line">
+      <apex:outputpanel styleclass="input_text">Use Alternative URL (checkbox) : </apex:outputpanel>
+      <apex:outputpanel styleclass="input_val">
+        <apex:inputfield value="{!center.Use_Alternate_Url__c}" onclick="{!disable_script}save_function_name_here();" styleclass="{!disable_style}" />
+      </apex:outputpanel>      
+    </apex:outputpanel>
+    <apex:outputpanel layout="block" styleclass="input_line">
+      <apex:outputpanel styleclass="input_text">Sales Region (picklist) : </apex:outputpanel>
+      <apex:outputpanel styleclass="input_val">
+        <apex:inputfield value="{!center.Sales_Region__c}" onclick="{!disable_script}save_function_name_here();" styleclass="{!disable_style}" />
+      </apex:outputpanel>      
+    </apex:outputpanel>
+    <apex:outputpanel layout="block" styleclass="input_line">
+      <apex:outputpanel styleclass="input_text">Icat Flex Center (radio) : </apex:outputpanel>
+      <apex:outputpanel styleclass="input_val">
+        <apex:selectRadio value="{!center.iCAT_Flex_Center__c}" disabled="{!input_disabled}">
+          <apex:selectOptions value="{!yes_no_list}"/>
+        </apex:selectRadio>              
+      </apex:outputpanel>      
+    </apex:outputpanel>
+    
+    
+    <h1>Dynamic Version (controller side)</h1><br /><br />
+    
+    <apex:dynamicComponent componentValue="{!dynamic_disable}" />
+  
+  
+  </apex:outputpanel>
+  
+  <script>
+  window.onload = function() {
+    $("input.input_disabled").each(function(){
+      $(this).prop("disabled", true);
+    });    
+    
+    $("select.input_disabled").each(function(){
+      $(this).prop("disabled", true);
+    });    
+  }
+  </script>
+
+</apex:form>
+</body>
+</apex:page>

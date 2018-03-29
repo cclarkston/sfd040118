@@ -1,0 +1,59 @@
+<!-- is actually rendering the LeadScore__c color  -->
+
+<apex:page standardController="lead" extensions="CtrlPrescreenColor" sidebar="false" showHeader="false" doctype="html-5.0" title="Prescreen" standardStylesheets="true">
+<link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300,400,500,700" media="screen" />
+
+<style>
+/* CONTENT */
+body {
+  font-family: Raleway,'Open Sans', sans-serif;
+  font-weight: bold;
+}
+.content {
+  border-radius: 2px;
+  color: white;
+  font-size: 1rem;
+  height: 1.7rem;
+  padding-top: 0.5rem;
+  text-align: center;
+}
+.loading {
+  color: black;
+  border: 1px solid white;
+}
+/* LEADSCORE COLORS */
+.green {
+  background-color: green;
+}
+.yellow {
+  color: #36454f;
+  background-color: yellow;
+}
+.red {
+  background-color: red;
+}
+.blue {
+  background-color: blue;
+}
+.black {
+  background-color: black;
+}
+.dark-gray {
+  background-color: darkgray;
+}
+.purple {
+  background-color: purple;
+}
+.gray {
+  background-color: gray;
+}
+</style>
+
+<apex:form >
+    <apex:outputPanel id="main">
+        <apex:outputPanel layout="block" styleClass="content {! color }">
+             <apex:outputText value="{! leadScore }"></apex:outputText>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:form>
+</apex:page>

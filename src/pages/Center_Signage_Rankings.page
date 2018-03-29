@@ -1,0 +1,318 @@
+<apex:page controller="ctrl_salesranking" readonly="true" sidebar="false" showHeader="false">
+    <head>
+        <meta http-equiv="refresh" content="60"/>
+    </head>
+	<!-- <apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}" />
+	<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" /> -->
+
+	<!-- Alon's version -->
+    <style>
+		table {
+			margin-bottom: 1em;
+		}
+        table.main {
+            width: 400px;
+			border-collapse: collapse;
+        }
+        table.main td {
+            padding: 5px;
+        }
+		table.main td:first-child {
+			font-weight: bold;
+		}
+        table.large-font {
+            font-size: x-large;
+        }
+        table.striped tbody tr:nth-child(odd){
+            background-color: aliceblue;
+        }
+        table.hover tbody tr:hover {
+            background-color: lightgray;
+        }
+        /*tr.subheading, tr.subheading:hover {
+            background-color: cornflowerblue !important;
+            font-size: xx-large;
+        }
+        tr.subheading td {
+            color: white;
+            text-align: center;
+        }
+        tr.important {
+            /*Styling to highlight information in a particular row*/
+            font-weight: bold;
+        }*/
+        td {
+            text-align: right;
+        }
+        td:first-child {
+            text-align: left;
+            text-indent: .5em;
+        }
+        /*tr.subheading {
+            text-align: center;
+            font-weight: bold;
+            border-top: 1em solid white;
+            border-bottom: .5em solid white;
+        }
+        tr.subheading td {
+            text-indent: 0;
+        }
+        tr.space-after {
+            border-bottom: 1em solid white;
+        }*/
+        td a {
+            text-decoration: underline;
+        }
+		thead tr {
+			background-color: cornflowerblue;
+			font-size: xx-large;
+		}
+		table.totals thead tr {
+			background-color: darkcyan;
+		}
+		table.cramped tbody td {
+			font-size: large;
+		}
+		table.cramped tbody td:first-child {
+			font-size: medium;
+		}
+		thead td {
+			color: white;
+			text-align: center;
+			font-weight: bold;
+		}
+		thead.title td {
+			text-align: center;
+		}
+		.half {
+			display: inline-block;
+			vertical-align: top;
+			padding-left: 1em;
+			padding-right: 1em;
+		}
+		tfoot td:first-child {
+			font-size: medium;
+			text-align: center;
+			background-color: white;
+		}
+		.container {
+			text-align: center;
+		}
+    </style>
+
+
+	<script type="text/javascript">
+		function use_fancy_cursor(t) {
+		document.body.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+		t.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+		}
+
+		function default_cursor(t) {
+		document.body.style.cursor = 'default';
+		t.style.cursor='default';
+		}
+	</script>
+
+	<apex:form style="padding-top:0;display:inline;margin-top:0;" onsubmit="">
+		<apex:actionstatus id="status_load">
+			<apex:facet name="start">
+				<div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;height: 100%;opacity:0.65;width:100%;">
+					<div class="waitingHolder" style="top: 74.2px; width: 91px;">
+						<img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+						<span class="waitingDescription">Loading...</span>
+					</div>
+				</div>
+			</apex:facet>
+		</apex:actionstatus>
+
+		<apex:outputPanel id="message_holder" layout="block" style="padding-left:20px;font-weight:bold;color:red;font-size:12pt;">
+			<apex:messages />
+		</apex:outputPanel>
+
+		<apex:actionFunction oncomplete="default_cursor(this);" name="interval_change" action="{!change_report_interval}" rerender="main_holder,message_holder" status="status_load"/>
+
+		<div class="container">
+			<div style="margin-bottom:2em;text-align:center;">
+				<div style="margin-bottom:.5em;color:#5789AE;font-size:x-large;font-family:arial;font-weight:bold;">Sales Rankings</div>
+				<div>
+					<span style="font-size:large;font-weight:bold;">Report Interval:</span>
+					<apex:selectList value="{!report_interval}" multiselect="false" size="1" onchange="interval_change();">
+						<apex:selectOptions value="{!IntervalOptions}"></apex:selectoptions>
+					</apex:selectList>
+				</div>
+			</div>
+
+			<apex:outputPanel id="main_holder">
+				<div class="row">
+					<div class="half">
+						<table class="main large-font hover striped totals" id="revenue">
+							<thead class="title">
+								<tr>
+									<td colspan="2">Revenue</td>
+								</tr>
+							</thead>
+							<tr>
+								<td>Sold</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!sold_dollars}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+							<tr>
+								<td>Cancelled</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!cancelled_dollars}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+							<tr>
+								<td>Net Sold</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!sold_dollars - cancelled_dollars}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="half">
+						<table class="main large-font hover striped totals" id="collections">
+							<thead class="title">
+								<tr>
+									<td colspan="2">Collections</td>
+								</tr>
+							</thead>
+							<tr>
+								<td>Collected</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!collected_dollars}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+							<tr>
+								<td>Refunded</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!refunded_dollars}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+							<tr>
+								<td>GP Fees</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!gp_collected_fees + gp_refunded_fees}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+							<tr>
+								<td>Net Collected</td>
+								<td>
+									<apex:outputText value="${0,number,##,##,##0}" >
+										<apex:param value="{!collected_dollars + refunded_dollars + gp_collected_fees + gp_refunded_fees}" />
+									</apex:outputtext>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<div class="row">
+					<div class="half">
+						<apex:outputPanel id="center_start_holder">
+							<table class="main large-font hover striped cramped">
+								<thead>
+									<tr>
+										<td>Center</td>
+										<apex:outputPanel rendered="{!$CurrentPage.parameters.Detailed == 'true'}">
+											<td>Starts</td>
+											<td>Consults</td>
+										</apex:outputPanel>
+										<td>Sales</td>
+										<td>TCR</td>
+									</tr>
+								</thead>
+								<tbody>
+									<apex:repeat value="{!center_start_dollars}" var="center_starts" >
+										<tr>
+											<td>{!center_starts.display_name}</td>
+											<apex:outputPanel rendered="{!$CurrentPage.parameters.Detailed == 'true'}">
+												<td>{!center_starts.starts}</td>
+												<td>{!center_starts.consults}</td>
+											</apex:outputPanel>
+											<td>
+												<apex:outputText value="${0,number,##,##,##0}" >
+													<apex:param value="{!center_starts.display_value}" />
+												</apex:outputtext>
+											</td>
+											<td>
+												<apex:outputText value="{0,number,##,##,##0.00%}" >
+													<apex:param value="{!center_starts.close_rate}" />
+												</apex:outputtext>
+											</td>
+										</tr>
+									</apex:repeat>
+								</tbody>
+								<tfoot>
+									<tr>
+										<td colspan="3">
+											<apex:commandlink rendered="{!center_limit}" value="Show all centers" action="{!display_all_center}" rerender="center_start_holder" status="status_load" />
+										</td>
+									</tr>
+								</tfoot>
+							</table>
+						</apex:outputPanel>
+					</div>
+					<div class="half">
+						<apex:outputPanel id="pec_start_holder">
+							<table class="main large-font hover striped cramped">
+								<thead>
+									<tr>
+										<td>PEC</td>
+										<apex:outputPanel rendered="{!$CurrentPage.parameters.Detailed == 'true'}">
+											<td>Starts</td>
+											<td>Consults</td>
+										</apex:outputPanel>
+										<td>Sales</td>
+										<td>TCR</td>
+									</tr>
+								</thead>
+								<tbody>
+									<apex:repeat value="{!pec_start_dollars}" var="pec_starts" >
+										<tr>
+											<td>{!pec_starts.display_name}</td>
+											<apex:outputPanel rendered="{!$CurrentPage.parameters.Detailed == 'true'}">
+												<td>{!pec_starts.starts}</td>
+												<td>{!pec_starts.consults}</td>
+											</apex:outputPanel>
+											<td>
+												<apex:outputText value="${0,number,##,##,##0}" >
+													<apex:param value="{!pec_starts.display_value}" />
+												</apex:outputtext>
+											</td>
+											<td>
+												<apex:outputText value="{0,number,##,##,##0.00%}" >
+													<apex:param value="{!pec_starts.close_rate}" />
+												</apex:outputtext>
+											</td>
+										</tr>
+									</apex:repeat>
+								</tbody>
+								<tfoot>
+									<tr>
+										<td colspan="3">
+											<apex:commandlink rendered="{!pec_limit}" value="Show all PECs" action="{!display_all_pec}" rerender="pec_start_holder" status="status_load" />
+										</td>
+									</tr>
+								</tfoot>
+							</table>
+						</apex:outputPanel>
+					</div>
+				</div>
+			</apex:outputPanel>
+		</div>
+	</apex:form>
+</apex:page>

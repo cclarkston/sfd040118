@@ -1,0 +1,586 @@
+<apex:page >
+<style>
+  span.box_head {
+    font-weight:bold;
+    font-size:12pt;  
+    display:block;
+  }
+  
+  span.ribbon_header {
+    font-weight:bold;
+    font-size:10pt;
+    display:block;
+  }
+  
+  image.ribbon {
+    position:relative;
+  }
+  
+  span.small_ribbon_rank_large {
+    position:relative;
+    top:-128px;
+    left:-7px;
+    font-weight:bold;
+    font-size:18pt;
+    color:white;
+    text-align:center;
+    display:inline-block;
+    width:20px;
+  }
+  
+  span.ribbon_rank_large {
+    position:relative;
+    top:-113px;
+    left:-0px;
+    font-weight:bold;
+    font-size:18pt;
+    color:white;
+    text-align:center;
+    display:inline-block;
+    width:20px;
+  }
+  
+  span.ribbon_rank_large_dark {
+    position:relative;
+    top:-113px;
+    left:-0px;
+    font-weight:bold;
+    font-size:18pt;
+    color:black;
+    text-align:center;
+    display:inline-block;
+    width:20px;
+  }
+  
+  
+  span.ribbon_rank_large_75 {
+    position:relative;
+    text-align:center;
+    display:inline-block;
+    width:20px;
+    top:-43px;
+    left:-37px;
+    font-weight:bold;
+    font-size:14pt;
+    color:white;
+  }
+  
+  span.good_rank {
+    font-weight:bold;
+    font-family:verdana;
+    font-size:12pt;
+    color:#5789AE;
+  }
+  
+  span.bad_rank {
+    font-weight:bold;
+    font-family:verdana;
+    font-size:12pt;
+    color:red;  
+  }
+  
+  table.semi_rounded {
+    border-bottom-left-radius:10px;
+    -moz-border-bottom-left-radius:10px;
+    -webkit-border-bottom-left-radius:10px;
+    border:1px solid black;
+    border-bottom-right-radius:10px;
+    -moz-border-bottom-right-radius:10px;
+    -webkit-border-bottom-right-radius:10px;
+    box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+    -moz-box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+    -webkit-box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+  }
+  
+    table.semi_rounded tr.header td {
+    /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIwLjM0Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMC43NSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.75) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.34)), color-stop(100%,rgba(0,0,0,0.75))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#57000000', endColorstr='#bf000000',GradientType=0 ); /* IE6-8 */
+  }
+  
+    table.semi_rounded td.brown_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2Q1Y2VhNiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjQwJSIgc3RvcC1jb2xvcj0iI2M5YzE5MCIgc3RvcC1vcGFjaXR5PSIwLjYiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I3YWQ3MCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+background: -moz-linear-gradient(top,  rgba(213,206,166,1) 0%, rgba(201,193,144,0.6) 40%, rgba(183,173,112,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(213,206,166,1)), color-stop(40%,rgba(201,193,144,0.6)), color-stop(100%,rgba(183,173,112,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', endColorstr='#00b7ad70',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded {
+    border-radius:10px;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    border:1px solid black;
+    box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+    -moz-box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+    -webkit-box-shadow: 7px 7px 11px 1px rgba(74, 78, 79, 0.75);
+  }
+  
+  p.rank_holder {
+    float:left;
+  }
+  
+  table.rounded tr.header {
+  
+  }
+  
+  table.rounded td.brown_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2Q1Y2VhNiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjQwJSIgc3RvcC1jb2xvcj0iI2M5YzE5MCIgc3RvcC1vcGFjaXR5PSIwLjYiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I3YWQ3MCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+background: -moz-linear-gradient(top,  rgba(213,206,166,1) 0%, rgba(201,193,144,0.6) 40%, rgba(183,173,112,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(213,206,166,1)), color-stop(40%,rgba(201,193,144,0.6)), color-stop(100%,rgba(183,173,112,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(213,206,166,1) 0%,rgba(201,193,144,0.6) 40%,rgba(183,173,112,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', endColorstr='#00b7ad70',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded td.orange_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VkOTAxNyIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjElIiBzdG9wLWNvbG9yPSIjZWQ5MTE5IiBzdG9wLW9wYWNpdHk9IjAuNzUiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2Y2ZTZiNCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+background: -moz-linear-gradient(top,  rgba(237,144,23,0.75) 0%, rgba(237,145,25,0.75) 1%, rgba(246,230,180,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(237,144,23,0.75)), color-stop(1%,rgba(237,145,25,0.75)), color-stop(100%,rgba(246,230,180,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(237,144,23,0.75) 0%,rgba(237,145,25,0.75) 1%,rgba(246,230,180,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(237,144,23,0.75) 0%,rgba(237,145,25,0.75) 1%,rgba(246,230,180,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(237,144,23,0.75) 0%,rgba(237,145,25,0.75) 1%,rgba(246,230,180,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(237,144,23,0.75) 0%,rgba(237,145,25,0.75) 1%,rgba(246,230,180,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bfed9017', endColorstr='#00f6e6b4',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded td.purple_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzk0NmJlNSIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjQ3JSIgc3RvcC1jb2xvcj0iI2M4NWVjNyIgc3RvcC1vcGFjaXR5PSIwLjQiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2E4NDlhMyIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+background: -moz-linear-gradient(top,  rgba(148,107,229,0.75) 0%, rgba(200,94,199,0.4) 47%, rgba(168,73,163,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(148,107,229,0.75)), color-stop(47%,rgba(200,94,199,0.4)), color-stop(100%,rgba(168,73,163,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(148,107,229,0.75) 0%,rgba(200,94,199,0.4) 47%,rgba(168,73,163,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(148,107,229,0.75) 0%,rgba(200,94,199,0.4) 47%,rgba(168,73,163,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(148,107,229,0.75) 0%,rgba(200,94,199,0.4) 47%,rgba(168,73,163,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(148,107,229,0.75) 0%,rgba(200,94,199,0.4) 47%,rgba(168,73,163,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf946be5', endColorstr='#00a849a3',GradientType=0 ); /* IE6-8 */
+
+  }
+  
+  table.rounded td.grey_grad {
+  color:white;
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIwLjY1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=0 ); /* IE6-8 */
+
+
+  }
+  
+  table.rounded tr.header td {
+    /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIwLjM0Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMC43NSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.75) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.34)), color-stop(100%,rgba(0,0,0,0.75))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(0,0,0,0.34) 0%,rgba(0,0,0,0.75) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#57000000', endColorstr='#bf000000',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded td.blue_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2IwZDRlMyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM4OGJhY2YiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(176,212,227,1) 0%, rgba(136,186,207,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(176,212,227,1)), color-stop(100%,rgba(136,186,207,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(176,212,227,1) 0%,rgba(136,186,207,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(176,212,227,1) 0%,rgba(136,186,207,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(176,212,227,1) 0%,rgba(136,186,207,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(176,212,227,1) 0%,rgba(136,186,207,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b0d4e3', endColorstr='#0088bacf',GradientType=0 ); /* IE6-8 */  
+  }
+  
+  table.rounded td.yellow_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmY4OCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmODgiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(255,255,136,1) 0%, rgba(255,255,136,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,136,1)), color-stop(100%,rgba(255,255,136,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(255,255,136,1) 0%,rgba(255,255,136,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(255,255,136,1) 0%,rgba(255,255,136,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(255,255,136,1) 0%,rgba(255,255,136,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(255,255,136,1) 0%,rgba(255,255,136,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffff88', endColorstr='#00ffff88',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded td.green_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzYxYzQxOSIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNiNGUzOTEiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(97,196,25,0.75) 0%, rgba(180,227,145,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,196,25,0.75)), color-stop(100%,rgba(180,227,145,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf61c419', endColorstr='#00b4e391',GradientType=0 ); /* IE6-8 */
+  }
+  
+    table.semi_rounded td.green_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzYxYzQxOSIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNiNGUzOTEiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(97,196,25,0.75) 0%, rgba(180,227,145,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,196,25,0.75)), color-stop(100%,rgba(180,227,145,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(97,196,25,0.75) 0%,rgba(180,227,145,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf61c419', endColorstr='#00b4e391',GradientType=0 ); /* IE6-8 */
+  }
+  
+  table.rounded td.pink_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmMDA4NCIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZjAwODQiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(255,0,132,0.75) 0%, rgba(255,0,132,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,0,132,0.75)), color-stop(100%,rgba(255,0,132,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(255,0,132,0.75) 0%,rgba(255,0,132,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(255,0,132,0.75) 0%,rgba(255,0,132,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(255,0,132,0.75) 0%,rgba(255,0,132,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(255,0,132,0.75) 0%,rgba(255,0,132,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bfff0084', endColorstr='#00ff0084',GradientType=0 ); /* IE6-8 */
+
+  }
+  
+  table.semi_rounded td.lpink_grad {
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZjNzFhMiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmYzcxYTIiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(252,113,162,1) 0%, rgba(252,113,162,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,113,162,1)), color-stop(100%,rgba(252,113,162,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(252,113,162,1) 0%,rgba(252,113,162,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(252,113,162,1) 0%,rgba(252,113,162,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(252,113,162,1) 0%,rgba(252,113,162,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(252,113,162,1) 0%,rgba(252,113,162,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fc71a2', endColorstr='#00fc71a2',GradientType=0 ); /* IE6-8 */
+
+  }
+  
+    table.semi_rounded td.lblue_grad {
+    /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRmODViYiIgc3RvcC1vcGFjaXR5PSIwLjc1Ii8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0Zjg1YmIiIHN0b3Atb3BhY2l0eT0iMCIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  rgba(79,133,187,0.75) 0%, rgba(79,133,187,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(79,133,187,0.75)), color-stop(100%,rgba(79,133,187,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(79,133,187,0.75) 0%,rgba(79,133,187,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(79,133,187,0.75) 0%,rgba(79,133,187,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(79,133,187,0.75) 0%,rgba(79,133,187,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(79,133,187,0.75) 0%,rgba(79,133,187,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf4f85bb', endColorstr='#004f85bb',GradientType=0 ); /* IE6-8 */
+
+    }
+</style>
+
+  Option 1<br /><br />
+  <table>
+  <tr>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head" style="color:white">True Close Rate - 17.8%</span></td></tr>
+    <tr>
+      <td class="orange_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="orange_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_red.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table>
+  </td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate <span style="color:blue;">17.8%</span></span></td></tr>
+    <tr>
+      <td class="grey_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="grey_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td> 
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr ><td colspan="2" align="center" style="border-bottom:2px solid black;color:red;"><span class="box_head">True Close Rate <span style="color:black;">17.8%</span></span></td></tr>
+    <tr>
+      <td class="purple_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="purple_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table></td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr ><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate <span style="color:blue;">17.8%</span></span></td></tr>
+    <tr>
+      <td class="brown_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_red.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="brown_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr ><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate <span style="color:blue;">17.8%</span></span></td></tr>
+    <tr>
+      <td class="blue_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="blue_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table></td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr ><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate <span style="color:blue;">17.8%</span></span></td></tr>
+    <tr>
+      <td class="green_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_red.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="green_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td>
+  </tr>
+  <tr><td>&nbsp;</td></tr>
+  <tr>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white"><span class="box_head">True Close Rate <span >17.8%</span></span></td></tr>
+    <tr>
+      <td class="yellow_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="yellow_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_red.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table></td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white"><span class="box_head">True Close Rate <span style="">17.8%</span></span></td></tr>
+    <tr>
+      <td class="pink_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_red.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="pink_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table></td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="semi_rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white"><span class="box_head">True Close Rate <span style="">17.8%</span></span></td></tr>
+    <tr>
+      <td class="brown_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="brown_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table></td>
+    <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="semi_rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white;"><span class="box_head">True Close Rate <span style="">17.8%</span></span></td></tr>
+    <tr>
+      <td class="green_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">1</span>
+      </td>
+      <td class="green_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td>
+      <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="semi_rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white;"><span class="box_head">True Close Rate <span style="">17.8%</span></span></td></tr>
+    <tr>
+      <td class="lpink_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="lpink_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_green.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td>
+     <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="semi_rounded" cellspacing="0">
+    <tr class="header"><td colspan="2" align="center" style="border-bottom:2px solid black;color:white;"><span class="box_head">True Close Rate <span style="">17.8%</span></span></td></tr>
+    <tr>
+      <td class="lblue_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_blue.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large">1</span>
+      </td>
+      <td class="lblue_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <apex:image url="{!URLFOR($Resource.Ribbon_Images, 'large_ribbon_150_yellow.png')}" styleClass="ribbon" /> 
+        <span class="ribbon_rank_large_dark">20</span>
+      </td>
+    </tr>
+  </table></td>
+  
+  </tr></table>
+  <br /><hr /><br />
+  
+  Option 2<br /><br />
+  <table class="rounded" cellspacing="0">
+    <tr><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate</span></td></tr>
+    <tr>
+      <td class="yellow_grad" style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <img class="ribbon" src = 'https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQp&oid=00DV00000001IX0&lastMod=1426803427000' />
+        <span class="ribbon_rank_large_75">1</span>
+      </td>
+      <td class="yellow_grad" align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <img class="ribbon" src = 'https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQp&oid=00DV00000001IX0&lastMod=1426803427000' />
+        <span class="ribbon_rank_large_75">20</span>
+      </td>
+    </tr>
+  </table>
+
+    <br /><hr /><br />
+  
+  Option 3<br /><br />
+  <table class="rank_holder">
+  <tr>
+    <td>
+  <table class="rounded" cellspacing="0">
+    <tr><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate</span></td></tr>
+    <tr>
+      <td style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <img src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQo&oid=00DV00000001IX0&lastMod=1426803407000' /><br />
+
+      </td>
+      <td  align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <img src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQo&oid=00DV00000001IX0&lastMod=1426803407000' /><br />
+      </td>
+    </tr>
+        <tr><td style="border-top:1px solid black;border-right:2px solid black" align="center" width="110px" ><span class="good_rank">Rank # 1</span></td>
+          <td style="border-top:1px solid black;" align="center" width="110px" ><span class="bad_rank">Rank # 20</span></td></tr>
+  </table> 
+  </td>
+  <td style="width:40px;">&nbsp;</td>
+  <td>
+  <table class="rounded" cellspacing="0">
+    <tr><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate</span></td></tr>
+    <tr>
+      <td style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+        <img class="ribbon" src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQo&oid=00DV00000001IX0&lastMod=1426803407000' />
+        <span class="small_ribbon_rank_large">1</span>
+      </td>
+      <td align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+        <img class="ribbon" src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQo&oid=00DV00000001IX0&lastMod=1426803407000' />
+        <span class="small_ribbon_rank_large">20</span>
+      </td>
+    </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+    <br /><hr /><br />
+  
+  Option 4<br /><br />
+  <table class="rounded" cellspacing="0">
+    <tr><td colspan="2" align="center" style="border-bottom:2px solid black;"><span class="box_head">True Close Rate</span></td></tr>
+    <tr>
+      <td style="border-right:2px solid black;" align="center" width="110px" >
+        <span class="ribbon_header">National</span>
+         <img src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQj&oid=00DV00000001IX0&lastMod=1426803376000' /><br />
+      </td>
+      <td  align="center" width="110px;">
+        <span class="ribbon_header">Regional</span>
+<img src='https://c.cs12.content.force.com/servlet/servlet.ImageServer?id=015V0000000BXQj&oid=00DV00000001IX0&lastMod=1426803376000' /><br />
+
+      </td>
+    </tr>
+        <tr><td style="border-top:1px solid black;border-right:2px solid black" align="center" width="110px" ><span class="good_rank">Rank # 1</span></td>
+        <td style="border-top:1px solid black;" align="center" width="110px" ><span class="bad_rank">Rank # 20</span></td></tr>
+  </table> 
+  
+  
+  
+  
+    <br /><hr /><br />
+</apex:page>

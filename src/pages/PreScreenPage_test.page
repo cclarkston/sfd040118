@@ -1,0 +1,63 @@
+<apex:page standardController="Lead" >
+    
+    <b>Data Copy Page for Pre Screen</b><p></p>
+    
+     <span>Center Location is </span><span id="Center">{!lead.Center_Master_Location__c}</span>
+     
+     <p></p>
+     <p>Pre Screen website: Click 
+     <a href="http://sfcstu.com/" target="_blank">here</a>
+     </p>
+    <p></p>  
+  
+    <BUTTON onClick="ClipBoard(copyID);">Copy ID</BUTTON>
+    <SPAN ID="copyID">{!lead.ID}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copyFName);">Copy First Name</BUTTON>
+    <SPAN ID="copyFName">{!lead.firstname}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copySName);">Copy Last Name</BUTTON>
+    <SPAN ID="copySName">{!lead.lastname}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copyStreet);">Copy Street</BUTTON>
+    <SPAN ID="copyStreet">{!lead.street}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copyCity);">Copy City</BUTTON>
+    <SPAN ID="copyCity">{!lead.city}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copyState);">Copy State</BUTTON>
+    <SPAN ID="copyState">{!lead.state}</SPAN>
+    <p></p>
+    <BUTTON onClick="ClipBoard(copyZIP);">Copy ZIP</BUTTON>
+    <SPAN ID="copyZIP">{!lead.postalcode}</SPAN>
+    <p></p>
+   
+    <TEXTAREA ID="holdtext" STYLE="display:none;"></TEXTAREA>
+    
+    <input type="hidden" name="pre_post_direction" value="{!lead.Prescreen_Post_Directional__c}">
+<input type="hidden" name="pre_pre_direction" value="{!lead.Prescreen_Pre_Directional__c}">
+<input type="hidden" name="pre_status" value="{!lead.Pre_Screen_Status__c}">
+<input type="hidden" name="pre_street_name" value="{!lead.Prescreen_Street_Name__c}">
+<input type="hidden" name="pre_street_number" value="{!lead.Prescreen_Street_Number__c}">
+<input type="hidden" name="pre_screen_time" value="{!lead.Pre_Screen_Time__c}">
+<input type="hidden" name="pre_screen_type" value="{!lead.Prescreen_Type__c}">
+<input type="hidden" name="pre_screen_extension" value="{!lead.Prescreen_ExtensionNumber__c}">
+
+
+    
+    <script>
+    function ClipBoard(theSel)
+    {
+    holdtext.innerText = theSel.innerText;
+    Copied = holdtext.createTextRange();
+    Copied.execCommand("Copy");
+    }
+    </script>
+     <apex:form > 
+
+    Change Pre Screen Result: 
+    <apex:inputField value="{!lead.Pre_Screen__c}"/> <p/>
+    <apex:commandButton action="{!save}" value="Save Pre Screen Result"/> 
+    </apex:form> 
+    
+</apex:page>

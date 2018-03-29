@@ -1,0 +1,19 @@
+<apex:page controller="MicroSite">
+	<apex:stylesheet value="{! URLFOR($Resource.MicroSiteCSS, 'Campaign1.css') }" />
+	<div id="Container"><header id="Header">
+	<h1><a href="" title="Clear Choice">Clear Choice</a></h1>
+	<apex:insert name="HeaderNav" /> </header>
+	<div id="Content">
+	<div id="ColumnLeft"><apex:insert name="Left" /></div>
+	<div id="Copy">
+	<p><strong>Requested URL: </strong>{!URL} <br />
+	<strong>Requested Params: </strong>{!Params} <br />
+	<strong>Cookie Data: </strong>{!Cookie} <br />
+	<strong>Referer: </strong>{!Referer} <br />
+	<strong>Referers: </strong>{!Referes}<br />
+	</p>
+	<apex:insert name="Center" /></div>
+	<div id="ColumnRight"><apex:insert name="Right" /></div>
+	</div>
+	<footer id="Footer"> <apex:insert name="FooterNav" /> </footer></div>
+</apex:page>

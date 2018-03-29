@@ -1,0 +1,30 @@
+<apex:page showHeader="false" sidebar="false" controller="daily_quote" action="{!select_quote}">
+<style>
+  span.quote_text {
+    display:block;
+    padding-bottom:1em;
+    font-style:italic;
+    font-size:12pt;        
+    padding-left:10px;      
+  }
+
+  span.quote_from {
+    font-weight:bold;
+    font-size:10pt;
+    display:block;
+    padding-left:10px;      
+  }
+  
+  div.quote_holder {
+    margin-left:10px;
+    margin-right:10px;
+    border-top:4px dotted #5789AE;
+    border-bottom:4px dotted #5789AE;    
+    width:400px;    
+  }
+</style>
+<div class="quote_holder" style="margin-top:1em;margin-bottom:1em;">
+<span class="quote_text">{!daily_quote.Quote_Text__c}</span>
+<span class="quote_from">-&nbsp;&nbsp;{!daily_quote.Quote_From__c}</span>
+</div>
+</apex:page>

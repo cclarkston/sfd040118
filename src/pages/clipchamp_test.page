@@ -1,0 +1,143 @@
+<apex:page standardController="Account">
+	<style type="text/css">
+		* {
+			box-sizing: border-box;
+		}
+		#main {
+			padding: 20px;
+		}
+		#content {
+			padding: 20px;
+		}
+		h1 {
+			font-size: 50px;
+			background-color: steelblue;
+			color: white;
+			display: block;
+			padding: 10px;
+		}
+		.row {
+			display: block;
+		}
+		.output-label, .output-data {
+			display: inline-block;
+			font-size: xx-large;
+		}
+		.output-label {
+			width: 10em;
+			font-weight: bold;
+		}
+		#patient {
+			margin: 2em 0;
+		}
+
+		input, label {
+			cursor: pointer;
+			font-size: large;
+		}
+		label {
+			vertical-align: middle;
+		}
+		#confirmation-wrapper {
+			margin: 4em 0;
+		}
+		.record-button {
+			width: 100px;
+			height: 100px;
+			border-radius: 50%;
+			font-size: 25px;
+			font-weight: bold;
+			color: white;
+			line-height: 25px;
+			text-align: center;
+			padding: 37px 0;
+			margin: 2em;
+		}
+		.record-button:after {
+			content: "Record";
+		}
+		.record-button.fake {
+			background-color: gray;
+			cursor: not-allowed;
+		}
+		.record-button.real {
+			display: none;
+			background-color: indianred;
+			cursor: pointer;
+		}
+		#confirmation-checkbox:checked ~ .record-button.fake {
+			display: none;
+		}
+		#confirmation-checkbox:checked ~ .record-button.real {
+			display: block;
+		}
+	</style>
+
+    <apex:includeScript value="https://api.clipchamp.com/pZeRQlnm-8ILig3qIz2m-lHpI7I/button.js"/>
+    <apex:remoteObjects jsNamespace="RemoteObjectModel">
+        <apex:remoteObjectModel name="Account" jsShorthand="Consult" fields="ID,Consult_Video__c"></apex:remoteObjectModel>
+    </apex:remoteObjects>
+
+	<div id="main">
+		<h1>Consult Video Recording</h1>
+		<div id="content">
+			<div class="row">
+				<div class="output-label">Recording User</div>   <div class="output-data">{!$User.FirstName + ' ' + $User.LastName}</div>
+			</div>
+			<div class="row">
+				<div class="output-label">Recording Region</div> <div class="output-data">{!account.Center__r.Sales_Region__c}</div>
+			</div>
+			<div class="row">
+				<div class="output-label">Recording Center</div> <div class="output-data">{!account.Center__r.Name}</div>
+			</div>
+			<div id="patient" class="row">
+				<div class="output-label">Patient</div>          <div class="output-data"><a href='/{!$CurrentPage.parameters.ID}'>{!account.Name}</a></div>
+			</div>
+
+
+			<div id="confirmation-wrapper">
+				<input id="confirmation-checkbox" type="checkbox">
+					<label for="confirmation-checkbox">Has the patient approved this recording?</label>
+				</input>
+				<div class="record-button fake"></div>
+				<div class="record-button real" onclick="start_clipchamp()"></div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var process = clipchamp({
+								output:           'gdrive',
+								gdrive:           {folder: region_name() + '/' + center_name() + '/' + user_name()},
+								title:            'Press Spacebar to pause recording',
+								enable:           ['no-branding'],
+								size:             'large',
+								color:            'white',
+								inputs:           ['camera'],
+								camera:           {limit: '3600'},
+								experimental:     ['overlong-recording'],
+								encoding:         {resolution: '480p', format: 'webm_vp9'},
+								style:            {text: ".publisher-logo{width:200px;margin-top:-4px;}.global-header .publisher-title{color:gray;padding:0;}.glyphicon-remove:before{color:red;}.webcam-active{border-radius:5px;}.btn{border:none;}._webcam_rec_space_to_toggle{display:none;}._webcam_rec_finish{border-width:1px;border-style:solid;}#submit_video{background-color:steelblue;margin-top:15px;}#submit_video:hover{background-color:cornflowerblue;}#record_again{background-color:indianred;color:white;padding:9px 12px}#record_again:hover{background-color:red;}._btn_record_again{font-size:20px;}"},
+								logo:             'https://c.na2.visual.force.com/resource/1475749927000/CCLogo_2016',
+								upload:           {filename: '{!$CurrentPage.parameters.ID}'},
+								onUploadComplete: function(data) {
+									var consult_object = new RemoteObjectModel.Consult();
+									consult_object.update(["{!$CurrentPage.parameters.ID}"], {Consult_Video__c: data.url});
+								}
+		});
+		function start_clipchamp() {
+			process.open();
+		}
+
+		function region_name() {
+			return '{!account.Center__r.Sales_Region__c}';
+		}
+		function center_name() {
+			return '{!account.Center__r.Name}';
+		}
+		function user_name() {
+			return '{!$User.FirstName + ' ' + $User.LastName}';
+		}
+	</script>
+
+</apex:page>

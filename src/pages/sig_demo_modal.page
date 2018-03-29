@@ -1,0 +1,151 @@
+<apex:page controller="AnyObjectSignatureController" showheader="true" sidebar="false" standardStylesheets="false">
+<script>var $j = jQuery.noConflict();</script>
+<apex:stylesheet value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.JQuery)}"  />
+<apex:includeScript value="{!URLFOR($Resource.JQueryMobile,'/jquerymobile/jquery.mobile-1.3.2.min.js')}"/>
+
+
+<div id="sig_holder" style="display:none;">
+<canvas id="signatureCanvas" width="315" height="400" style="border: 1px solid black;"/>  
+<input type="button" value="Clear Signature" name="Clear Sig" onclick="reset_sig();" />
+</div>
+
+<input type="button" value="Sign Now" onclick="show_sign_block();" />
+
+<apex:includeScript value="/soap/ajax/28.0/connection.js"/>
+
+<script>
+
+sforce.connection.sessionId = "{!$Api.Session_Id}";
+var canvas = document.getElementById("signatureCanvas");
+var context = canvas.getContext("2d");
+var mouseButton = 0;
+var lastX = lastY = null;
+var ehsId = '1';
+var first_offset = 0;
+var drawingUtil;
+var isDrawing = false;
+
+function saveSignature() {
+
+    var image = canvas.toDataURL().split(',')[1];
+    ehsSignatureExtensionController.saveSignature(ehsId,image,handleResult);
+}
+
+function handleResult(result,event) {
+    if(result.success) {
+        window.top.location.href='/'+ehsId;
+    } else {
+        alert('Error: '+result.errorMessage);
+    }
+}
+
+function show_sign_block() {
+  alert('Test');
+  document.getElementById("sig_holder").style.display = 'block';
+}
+
+function reset_sig() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function handleEvent(event) {
+    if(event.type==="mousedown"||event.type==="touchstart") {
+        mouseButton = event.which || 1;
+        lastX = lastY = null;
+        context.strokeStyle = "rgba(155,0,0,0.5)";  
+    }
+    if(event.type==="touchcancel" || event.type==="touchcancel" || event.type==="mouseup") {
+        mouseButton = 0;
+        lastX = lastY = null;
+    }
+    if((event.type==="touchmove" || event.type==="mousemove") && mouseButton) {
+        var newX, newY;
+        var canvasX = 0, canvasY = 0, obj = event.srcElement || event.target;
+        do {
+            canvasX += obj.offsetLeft;
+            canvasY += obj.offsetTop;
+            /*if(first_offset==0) {
+              alert(obj.offsetLeft);
+              alert(obj.offsetTop);
+              first_offset = 1;
+            }*/
+        } while(obj = obj.offsetParent);
+        if(event.targetTouches && event.targetTouches.length) {
+            newX = event.targetTouches[0].clientX - (canvasX);
+            newY = event.targetTouches[0].clientY - (canvasY);
+        } else {
+            newX = event.offsetX;
+            newY = event.offsetY;
+        }
+        if(!lastX && !lastY) {
+            lastX = newX;
+            lastY = newY;
+            context.beginPath();
+            context.moveTo(lastX,lastY);
+            context.lineTo(lastX,lastY,lastX,lastY);
+            context.stroke();
+        } else {
+            context.beginPath();
+            context.moveTo(lastX,lastY);
+            context.lineTo(newX,newY);
+            context.stroke();
+            lastX = newX;
+            lastY = newY;
+        }
+    }
+    if(event.type==="mousedrag" || (event.type==="selectstart" && (event.srcElement||event.target)===canvas)) {
+        event.returnValue=false;
+        event.stopPropagation();
+        event.preventDefault();
+        return false;
+    }
+}
+
+//Start Event for Signature Captuare on HTML5 Canvas
+function start(event) 
+{
+    isDrawing = true;
+    canvas = document.getElementById("signatureCanvas");
+    context = canvas.getContext("2d");    
+    context.strokeStyle = "rgba(155,0,0,0.5)";      
+    context.beginPath();
+     context.moveTo(event.touches[0].pageX - canvas.getBoundingClientRect().left,event.touches[0].pageY - canvas.getBoundingClientRect().top);
+}
+
+//Event while someone is drawing to caputre the path while they draw....
+function draw(event) {
+    event.preventDefault();
+    if(isDrawing) {     
+        context.lineTo(event.touches[0].pageX - canvas.getBoundingClientRect().left,event.touches[0].pageY - canvas.getBoundingClientRect().top);
+        context.stroke();
+    }
+}
+
+
+//Event when someone stops drawing their signature line
+function stop(event) {
+    if(isDrawing) {
+        context.stroke();
+        context.closePath();
+        isDrawing = false;
+    }
+}
+
+
+canvas.addEventListener("mousedrag",handleEvent,true);
+canvas.addEventListener("mousemove",handleEvent,true);
+canvas.addEventListener("mousedown",handleEvent,true);
+window.addEventListener("mouseup",handleEvent,true);
+
+//canvas.addEventListener("touchstart",handleEvent,true);
+//canvas.addEventListener("touchmove",handleEvent,true);
+//window.addEventListener("touchend",handleEvent,true);
+canvas.addEventListener("touchstart",start,false);
+canvas.addEventListener("touchmove",draw,false);
+canvas.addEventListener("touchend",stop,false);
+window.addEventListener("selectstart",handleEvent,true);
+</script>
+
+
+</apex:page>

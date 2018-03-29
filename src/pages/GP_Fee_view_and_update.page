@@ -1,0 +1,59 @@
+<apex:page controller="ctrl_GP_Fee_view_and_update" showHeader="true" sidebar="true">
+	<style>
+		.pbSubheader {
+			background-color: steelblue !important;
+		}
+	</style>
+
+	<apex:form >
+		<apex:actionFunction name="populate_fees" action="{!retrieve_center_gp_fee_records}" reRender="services" />
+
+		<apex:sectionHeader title="Set a Center's GP Fees" />
+		<apex:pageBlock >
+			<apex:pageMessages />
+
+			<apex:pageBlockButtons location="top">
+				<apex:commandButton action="{!save}" value="Save" />
+			</apex:pageBlockButtons>
+
+			<apex:pageBlockSection >
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="" />
+					<apex:selectList value="{!center_ID}" size="1" onchange="populate_fees()">
+						<apex:selectOptions value="{!center_options}"/>
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+				<apex:pageBlockSectionItem ><apex:outputLabel value="SINGLE" /><apex:outputLabel value="" /></apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem ><apex:outputLabel value="DOUBLE" /><apex:outputLabel value="" /></apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+
+			<apex:outputPanel id="services">
+				<apex:pageBlockSection title="Service 1" collapsible="false">
+					<apex:inputField value="{!single_service1.Phase_1__c}"          taborderhint="1" /> <apex:inputField value="{!double_service1.Phase_1__c}"          taborderhint="6" />
+					<apex:outputField value="{!single_service1.Phase_2_Titanium__c}" />                 <apex:outputField value="{!double_service1.Phase_2_Titanium__c}" />
+					<apex:outputField value="{!single_service1.Phase_2_Zirconia__c}" />                 <apex:outputField value="{!double_service1.Phase_2_Zirconia__c}" />
+					<apex:inputField value="{!single_service1.Titanium__c}"         taborderhint="4" /> <apex:inputField value="{!double_service1.Titanium__c}"         taborderhint="9" />
+					<apex:inputField value="{!single_service1.Zirconia__c}"         taborderhint="5" /> <apex:inputField value="{!double_service1.Zirconia__c}"         taborderhint="10" />
+				</apex:pageBlockSection>
+				<apex:pageBlockSection title="Service 2" collapsible="false">
+					<apex:outputField value="{!single_service2.Phase_1__c}" />                           <apex:outputField value="{!double_service2.Phase_1__c}" />
+					<apex:inputField value="{!single_service2.Phase_2_Titanium__c}" taborderhint="12" /> <apex:inputField value="{!double_service2.Phase_2_Titanium__c}" taborderhint="17" />
+					<apex:inputField value="{!single_service2.Phase_2_Zirconia__c}" taborderhint="13" /> <apex:inputField value="{!double_service2.Phase_2_Zirconia__c}" taborderhint="18" />
+					<apex:inputField value="{!single_service2.Titanium__c}"         taborderhint="14" /> <apex:inputField value="{!double_service2.Titanium__c}"         taborderhint="19" />
+					<apex:inputField value="{!single_service2.Zirconia__c}"         taborderhint="15" /> <apex:inputField value="{!double_service2.Zirconia__c}"         taborderhint="20" />
+				</apex:pageBlockSection>
+				<apex:pageBlockSection title="Service 3" collapsible="false">
+					<apex:outputField value="{!single_service3.Phase_1__c}" />                           <apex:outputField value="{!double_service3.Phase_1__c}" />
+					<apex:inputField value="{!single_service3.Phase_2_Titanium__c}" taborderhint="22" /> <apex:inputField value="{!double_service3.Phase_2_Titanium__c}" taborderhint="27" />
+					<apex:inputField value="{!single_service3.Phase_2_Zirconia__c}" taborderhint="23" /> <apex:inputField value="{!double_service3.Phase_2_Zirconia__c}" taborderhint="28" />
+					<apex:inputField value="{!single_service3.Titanium__c}"         taborderhint="24" /> <apex:inputField value="{!double_service3.Titanium__c}"         taborderhint="29" />
+					<apex:inputField value="{!single_service3.Zirconia__c}"         taborderhint="25" /> <apex:inputField value="{!double_service3.Zirconia__c}"         taborderhint="30" />
+				</apex:pageBlockSection>
+			</apex:outputPanel>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

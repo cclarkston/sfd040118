@@ -1,0 +1,12 @@
+<apex:page controller="dp_navigation_header" >
+<head>
+  <apex:stylesheet value="{!URLFOR($Resource.Dental_Practice_Resources, 'css/dp_css_main.css')}"/>
+</head>
+<body>
+
+<span class="c-pointer">Test - should be pointer</span><br /><hr /><br />
+<!--<apex:repeat value="{!time_labels}" var="label">
+  {!label}<br />
+</apex:repeat>-->
+</body>
+</apex:page>

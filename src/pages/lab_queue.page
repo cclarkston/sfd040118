@@ -1,0 +1,362 @@
+<apex:page controller="ctrl_lab_queue" sidebar="false">    
+<apex:stylesheet value="{!URLFOR($Resource.StandardVFStyle,'my_style.css')}" />
+<apex:stylesheet value="{!URLFOR($Resource.tooltip_test,'tooltip/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.tooltip_test,'tooltip/script.js')}"/>    
+<apex:stylesheet value="{!URLFOR($Resource.Modal_Resources,'modal/style.css')}" />
+<apex:includeScript value="{!URLFOR($Resource.Modal_Resources,'modal/script.js')}"/>
+
+<style> 
+  .modalPopup_outer{z-index:3;} .popupBackground{z-index:2;}
+  span.hideCurrDate span.dateInput span.dateFormat{  
+        display:none;  
+  }  
+  span.blank {
+    font-style:italic;
+    font-weight:bold;    
+  }  
+  tr.control a {
+    text-decoration:none;
+  }
+  span.form_line {
+    display:block;
+    padding-bottom:1em;    
+  }
+
+  p.tooltip_holder {
+    font-family:georgia;
+    color:yellow;
+    text-align:center;
+    font-size:10pt;
+  }
+
+span.nav_item {
+  display:inline-block;
+  width:150px;
+  text-align:center;
+  height:20px;
+  margin-top:5px;
+  margin-bottom:5px;  
+  margin-left:10px;  
+}
+
+span.nav_item:hover {
+  color:red;  
+  font-weight:bold;
+}
+
+span.nav_selected {
+  display:inline-block;
+  width:150px;
+  text-align:center;
+  height:20px;
+  margin-top:5px;
+  margin-bottom:5px;  
+  margin-left:10px;  
+  color:blue;
+}
+  .modalPopup_outer {
+    top:200px;  
+    left:20%;
+  }
+</style>
+
+
+<script type="text/javascript">
+function use_fancy_cursor(t) {
+  document.body.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+  t.style.cursor = "url({!URLFOR($Resource.Cursor)}), wait";
+}
+
+function default_cursor(t) {
+  document.body.style.cursor = 'default';
+  t.style.cursor='default';
+}
+
+ 
+  var key_timeout;
+  var search_in_progress = false;
+   
+  function search_now() {
+    search_in_progress = false;  
+    search_cases(); 
+  } 
+    
+  function search_key() {    
+    if(search_in_progress)
+      clearTimeout(key_timeout);
+    search_in_progress = true;  
+    key_timeout = setTimeout("search_now()",600);
+  }   
+  function claim_ticket2(test_id) {alert(test_id);claim_ticket();}
+</script>
+
+ <script>
+var ie_check = false;
+var ie_ver; 
+
+function getInternetExplorerVersion()
+// Returns the version of Internet Explorer or a -1
+// (indicating the use of another browser).
+{
+  var rv = -1; // Return value assumes failure.
+  if (navigator.appName == 'Microsoft Internet Explorer') {
+    var ua = navigator.userAgent;
+    var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+    if (re.exec(ua) != null)
+      rv = parseFloat( RegExp.$1 );
+  }
+  return rv;
+}
+
+function ietruebody(){
+return (document.compatMode && document.compatMode!="BackCompat")? document.documentElement : document.body
+}
+
+var ie=document.all;
+var ns6=document.getElementById && !document.all
+var offsetxpoint=-250;
+var offsetypoint=20;
+
+function note_modal(e) {
+  /*getScrollXY() ;
+  alertSize();
+  if(!ie_check)
+    ie_ver = getInternetExplorerVersion();    
+//  alert('Height : ' + scrH + ' Width : ' + scrW + ' X Pos : ' + scrX + ' Y Pos : ' + scrY + ' PageY : ' + e.pageY + ' PageX : ' + e.pageX);  
+  if (! document.styleSheets) return
+    var CSSRules;  // IE uses rules...
+    for (var i = 0; i < document.styleSheets.length; i++) {
+        (document.styleSheets[0].cssRules) ? CSSRules = 'cssRules' : CSSRules = 'rules';     
+        for (var j = 0; j < document.styleSheets[i][CSSRules].length; j++) {                             
+            if (document.styleSheets[i][CSSRules][j].selectorText == '.modalPopup_outer') {  
+  //            alert('Test');                        
+              var curX=(ns6)?e.pageX : e.clientX+ietruebody().scrollLeft;
+              var curY=(ns6)?e.pageY : e.clientY+ietruebody().scrollTop;
+    //          alert('Cur X: ' + curX + ' Cur Y : ' + curY);
+      //        alert('ietruebody.clientwidth : ' + ietruebody().clientWidth + ' Client X : ' + e.clientX + ' Offset : ' + offsetxpoint );
+              var rightedge=ie&&!window.opera? e.clientX+offsetxpoint + 500 : e.clientX+offsetxpoint-20 + 500;
+              var bottomedge=ie&&!window.opera? ietruebody().clientHeight-e.clientY-offsetypoint : window.innerHeight-e.clientY-offsetypoint-20
+        //      alert('Right Edge : ' + rightedge + ' bottom edge : ' + bottomedge);
+          //    alert('Width : ' + document.styleSheets[i][CSSRules][j].style.width );              
+              var leftedge=(offsetxpoint<0)? offsetxpoint*(-1) : -1000
+            //  alert('Left Edge : ' + leftedge);
+              var newleft;
+              var newtop;             
+               
+              if (rightedge>scrW)
+                newleft = curX-500+"px";   
+              else if (curX<leftedge)
+                newleft = curX;
+              else
+                newleft = curX+offsetxpoint+"px"; 
+       //       alert(newleft);
+              document.styleSheets[i][CSSRules][j].style.left = newleft; 
+              if(curY-scrY<300) 
+                newtop = scrY-75;
+              else
+                newtop = curY-300;
+              document.styleSheets[i][CSSRules][j].style.top = newtop+"px";                                          
+      }
+    }   
+  }*/
+  display_ticket_form();       
+}
+</script>
+
+
+
+<apex:form style="padding-top:0;display:inline;margin-top:0;" >     
+  <apex:actionFunction oncomplete="default_cursor(this);"  action="{!display_new_ticket_form}" name="display_ticket_form" reRender="modal_holder" />
+  <apex:actionFunction name="search_cases" action="{!case_search}" reRender="main_holder">
+  </apex:actionFunction>
+  <apex:actionFunction oncomplete="default_cursor(this);" name="change_lab_center" action="{!case_search}" rerender="main_holder">
+  </apex:actionFunction>
+  <apex:actionFunction oncomplete="default_cursor(this);" name="change_sort" action="{!change_sort_filter}" rerender="main_holder">
+    <apex:param name="sfilter" value="" />
+  </apex:actionFunction>
+  <apex:actionFunction oncomplete="default_cursor(this);" name="claim_ticket" action="{!grab_ticket}" rerender="main_holder">
+    <apex:param name="tid" value="" />
+  </apex:actionFunction>
+  <apex:actionFunction oncomplete="default_cursor(this);" name="switch_queue" action="{!change_queue}" rerender="main_holder">
+    <apex:param name="squeue" value="" />
+  </apex:actionFunction>
+
+<div id="header" style="border-bottom:3px solid black;padding-top:0;margin-top:0;">
+<table style="width:100%;padding-top:0;">
+<tr>
+  <td width="400px;">
+    <span style="display:block;padding-bottom:.5em;">
+      <span style="display:inline-block;font-weight:bold;width:100px;">Ticket # : </span>
+      <apex:inputText value="{!search_ticket}" onkeyup="search_key();"/>
+    </span>        
+    <span style="display:block;padding-bottom:.5em;">
+      <span style="display:inline-block;font-weight:bold;width:100px;">Patient Name : </span>
+      <apex:inputText value="{!search_apt_name}" onkeyup="search_key();"/>
+    </span>    
+  <span style="display:block;padding-bottom:.5em;">  
+    <span style="display:inline-block;font-weight:bold;width:100px;">Case Type : </span> 
+    <apex:selectList value="{!search_ctype}"  size="1"  onchange="search_key();">
+    <apex:selectOptions value="{!CaseTypeOptions}"></apex:selectOptions>
+  </apex:selectList></span>    
+
+  
+  <span style="display:block;padding-bottom:.5em;">
+      <span style="display:inline-block;font-weight:bold;width:100px;">Assigned To : </span>
+      <apex:inputText value="{!search_assigned}" onkeyup="search_key();"/>
+    </span>     
+ </td>
+  <td width="500px;" style="border-right:2px solid black;vertical-align:top;">    
+   <span style="display:block;padding-bottom:.5em;">  
+      <span style="display:inline-block;font-weight:bold;width:100px;">Due Date : </span>   <span class="hideCurrDate"> <apex:inputField value="{!search_date_start.Due_Date__c}" style="padding-left:5px;"/> &nbsp; to &nbsp; <apex:inputfield value="{!search_date_end.Due_Date__c}" style="padding-left:5px;"/>   </span></span>                          
+
+  <span style="display:block;padding-bottom:.5em;">  
+    <span style="display:inline-block;font-weight:bold;width:100px;">Procedure : </span> 
+    <apex:selectList value="{!search_ptype}" size="1" onchange="search_key();" >
+    <apex:selectOptions value="{!ProcedureTypeOptions}"></apex:selectOptions>
+    </apex:selectList></span>
+  <apex:commandButton value="Search Cases" action="{!case_search}" reRender="main_holder"/>
+  </td>
+  <td><h1 class="report_header">Lab Queue</h1></td>  
+</tr>
+</table>
+</div>
+
+<br />
+<apex:outputPanel rendered="{!display_admin}" layout="block;">
+  <span style="font-weight:bold;">Lab :  &nbsp;<apex:selectList value="{!selected_center}" onchange="use_fancy_cursor(this);change_lab_center();" size="1" >
+    <apex:selectOptions value="{!CenterOptions}"></apex:selectOptions>
+  </apex:selectList></span>
+</apex:outputPanel> 
+<apex:outputPanel rendered="{!if(display_lab_manager || display_lab_user,true,false)}">       
+   <span style="font-weight:bold;">Lab : &nbsp;<apex:outputText value="{!selected_center}" /></span>
+</apex:outputPanel> 
+<input type="button" value="New Ticket" onclick="use_fancy_cursor(this);note_modal(event);" />
+
+
+
+
+
+
+<apex:outputPanel id="main_holder" rendered="true" layout="block" style="padding-top:2em;padding-left:20px;" >     
+
+
+<apex:outputpanel id="case_filter" layout="block" style="  margin-bottom:1em; height:30px; font-size:12pt;  background-color:#C9E4E4;  color:black;  border-top:2px solid black;  border-bottom:2px solid black;  width:95%;">  
+<span style="display:inline-block;width:30px;">&nbsp;</span>
+<span class="{!if(search_status=='mine','nav_selected','nav_item')}" onclick="use_fancy_cursor(this);switch_queue('mine');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to display all Open Tickets assigned to you</p>');" onmouseout="tooltip.hide();">My Tickets</span>
+<span class="{!if(search_status=='unassigned','nav_selected','nav_item')}" onclick="use_fancy_cursor(this);switch_queue('unassigned');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to display all Unassigned Tickets</p>');" onmouseout="tooltip.hide();">Unassigned</span>
+<span class="{!if(search_status=='all_open','nav_selected','nav_item')}" onclick="use_fancy_cursor(this);switch_queue('all_open');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to display all Open Tickets</p>');" onmouseout="tooltip.hide();">In Progress</span>
+<span class="{!if(search_status=='all','nav_selected','nav_item')}" onclick="use_fancy_cursor(this);switch_queue('all');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to display all Tickets</p>');" onmouseout="tooltip.hide();">All tickets</span>
+<span class="{!if(search_status=='Completed','nav_selected','nav_item')}" onclick="use_fancy_cursor(this);switch_queue('Completed');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to display all Completed Tickets</p>');" onmouseout="tooltip.hide();">Completed</span>
+</apex:outputpanel>
+
+  
+  <table class="accs_details" width="95%">
+    <tr class="control">
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('name');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Ticket #</p>');" onmouseout="tooltip.hide();">Ticket #</span></td>
+      <td width="15%"><span onclick="use_fancy_cursor(this);change_sort('windent_patient__r.name');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Patient Name</p>');" onmouseout="tooltip.hide();">Patient Name</span></td>
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('due_date__c');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Due Date</p>');" onmouseout="tooltip.hide();">Due Date</span></td>
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('case_type__c');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Case Type</p>');" onmouseout="tooltip.hide();">Case Type</span></td>
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('case_sub_type__c');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Case Sub Type</p>');" onmouseout="tooltip.hide();">Sub Type</span></td>
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('procedure_type__c');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Procedure Type</p>');" onmouseout="tooltip.hide();">Procedure</span></td>
+      <td width="10%"><span onclick="use_fancy_cursor(this);change_sort('status__c');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Status</p>');" onmouseout="tooltip.hide();">Status</span></td>        
+      <td width="18%"><span onclick="use_fancy_cursor(this);change_sort('assigned_to__r.name');" onmouseover="tooltip.show('<p class=\'tooltip_holder\'>Click to sort by Assigned To</p>');" onmouseout="tooltip.hide();">Assigned To</span></td>        
+    </tr>    
+    
+    <apex:variable var="rowclassname" value="accs" />
+    <apex:repeat value="{!case_list}" var="cases">
+    <tr class="{!rowclassname}">
+    <apex:variable var="rowclassname" value="{!if(rowclassname=='accs','accs_b','accs')}" />  
+      <td class="indent"><apex:outputLink target="_blank"  value="/apex/lab_ticket?tid={!cases.id}" style="color:blue;" ><apex:outputfield value="{!cases.name}" /></apex:outputlink></td>
+      <td class="indent"><apex:outputfield value="{!cases.windent_patient__r.name}" /></td>
+      <td align="center"><span onmouseover="tooltip.show('<p class=\'tooltip_holder\' style=\'text-align:left;color:white;width:160px;\'><span style=\'display:inline-block;width:70px;color:yellow;\'>Apt Date :</span>{!DAY(cases.apt_date__c)}/{!MONTH(cases.apt_date__c)}/{!YEAR(cases.apt_date__c)}<br/><span style=\'display:inline-block;width:70px;color:yellow;\'>From :</span> {!cases.time_from__c}<br/><span style=\'display:inline-block;width:70px;color:yellow;\'>To :</span>{!cases.time_to__c}</p>');" onmouseout="tooltip.hide();"><apex:outputfield value="{!cases.Due_Date__c}" rendered="{!display_lab_user}" /><span class="hideCurrDate"><apex:inputfield value="{!cases.Due_Date__c}" rendered="{!if(display_admin||display_lab_manager,true,false)}" style="padding-left:5px;"/></span></span></td>
+      <td align="center"><apex:outputfield value="{!cases.Case_Type__c}" /></td>
+      <td align="center"><apex:outputfield value="{!cases.Case_Sub_Type__c}" /></td>
+      <td align="center"><apex:outputfield value="{!cases.Procedure_Type__c}" />&nbsp;</td>                    
+      <td align="center"><apex:outputfield value="{!cases.Status__c}" />&nbsp;</td>  
+      <td align="center"><apex:outputtext value="{!if(cases.Assigned_to__r.name=='',current_name,cases.assigned_to__r.name)}"  rendered="{!if(display_lab_user && cases.Status__c<>'Unassigned',true,false)}" />
+        <apex:outputpanel rendered="{!if(display_lab_user && cases.Status__c=='Unassigned',true,false)}" ><input type="button" value="Claim Ticket" onclick="use_fancy_cursor(this);claim_ticket('{!cases.id}');"/></apex:outputpanel>
+        <apex:selectList value="{!cases.Assigned_To__c}" size="1" rendered="{!if(display_lab_manager || display_admin,true,false)}" >
+          <apex:selectOptions value="{!assign_list}"></apex:selectOptions>
+        </apex:selectList>&nbsp;</td>   
+    </tr> 
+    </apex:repeat>    
+    </table>
+
+  <apex:outputPanel id="msg" layout="block" style="padding-top:1em;" >
+    <apex:commandButton action="{!save}" value="Save" reRender="main_holder" oncomplete="default_cursor(this);" onclick="use_fancy_cursor(this);"  /><apex:outputtext id="msgholder" value="{!result_msg}" style="display:inline-block;padding-left:10px;font-size:12pt;" escape="false" />
+  </apex:outputPanel>
+
+  <span class="page_span">Page {!page} of {!num_pages} 
+    <apex:commandButton value="Prev" action="{!prev}" rendered="{!if(display_prev==true,true,false)}" style="margin-left:20px;" reRender="main_holder" />
+    <apex:commandButton value="Next" action="{!next}" rendered="{!if(display_next==true,true,false)}" style="margin-left:20px;" reRender="main_holder" />
+  </span>    
+
+  
+  
+  <apex:outputPanel rendered="{!display_error_msg}" layout="block" >
+    <apex:outputtext value="{!error_msgs}" escape="false" style="padding-left:20px;"/>
+  </apex:outputPanel>
+
+    <apex:outputPanel id="modal_holder" style="z-index:3000;" >
+    <apex:actionRegion >
+      <apex:actionFunction oncomplete="default_cursor(this);" action="{!close_modal}" name="close_pop" rerender="modal_holder" />  
+    
+    
+       <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!modal_display}"/>
+        <apex:outputPanel styleClass="modalPopup_outer" layout="block" rendered="{!modal_display}" id="outerpop">
+        <span class="modalPopup_outerheader" onclick="use_fancy_cursor(this);close_pop();">Close X</span>
+    
+          <apex:outputPanel styleClass="modalPopup_inner" rendered="{!modal_display}" id="innerpop">    
+       <span style="display:block;text-align:center;padding-bottom:1em;padding-top:2px;"><span style="font-weight:bold;color:red">New Ticket Form</span></span>
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;"><span style="color:red;">*&nbsp;</span>Patient :</span><apex:inputfield value="{!new_lab_case.Windent_Patient__c}" /></span>
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;"><span style="color:red;">*&nbsp;</span>Case Type :</span><apex:inputfield value="{!new_lab_case.Case_Type__c}" /></span>
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;">&nbsp;&nbsp;Case Sub Type :</span><apex:inputfield value="{!new_lab_case.Case_Sub_Type__c}" /></span>  
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;">&nbsp;&nbsp;Procedure Type :</span><apex:inputfield value="{!new_lab_case.Procedure_Type__c}" /></span>    
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;"><span style="color:red;">*&nbsp;</span>Due Date :</span><apex:inputfield value="{!new_lab_case.Due_Date__c}" /></span>    
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;"><span style="color:red;">*&nbsp;</span>Clinic :</span><apex:outputfield value="{!new_lab_case.Clinic_Name__c}"  rendered="{!if(display_lab_user || display_lab_manager,true,false)}"/><apex:inputfield value="{!new_lab_case.Clinic_Name__c}" rendered="{!display_admin}" /></span>         
+  <span style="display:block;padding-bottom:10px;padding-left:5px;">
+    <span style="font-weight:bold;display:inline-block;width:125px;">&nbsp;&nbsp;Assigned To :</span>
+    <apex:outputtext value="new_lab_case.assigned_to__r.name)}"  rendered="{!if(display_lab_user,true,false)}" />
+    <apex:selectList value="{!new_lab_case.Assigned_To__c}" size="1" rendered="{!if(display_lab_manager || display_admin,true,false)}" >
+          <apex:selectOptions value="{!assign_list}"></apex:selectOptions>
+        </apex:selectList></span>    
+
+        
+          <apex:outputtext escape="false" value="{!modal_out}" /><br />    
+          </apex:outputPanel>              
+                
+          <!---displaying action buttons----->                
+        <apex:outputPanel styleClass="modalPopup_action" rendered="{!modal_display}" id="modaction">
+          <p style="padding:2px;">  
+            <apex:commandButton onclick="use_fancy_cursor(this);" oncomplete="default_cursor(this);"  value="Add Ticket" rerender="main_holder" action="{!add_ticket}" /> </p>
+        </apex:outputPanel>      
+      </apex:outputPanel>
+    </apex:actionRegion>    
+    </apex:outputPanel>  
+
+
+
+
+
+
+
+
+
+
+</apex:outputpanel>
+
+
+
+
+
+
+
+
+</apex:form>
+</apex:page>

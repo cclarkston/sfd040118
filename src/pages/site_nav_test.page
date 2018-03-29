@@ -1,0 +1,273 @@
+<apex:page controller="dp_navigation_header" sidebar="false" showHeader="false" >
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<!--  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css' />
+
+  <style>
+  * {
+     font-size: 11pt;
+     font-family: 'Source Sans Pro', sans-serif;
+   }
+
+  .dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0; 
+   }
+
+   .dropdown-header {
+     margin-right:7px;
+     padding-right:0;
+     padding-left:2px;
+     margin-left:7px;
+     border-bottom:2px solid grey;
+     font-size:11pt;
+     margin-bottom:3px;
+   }
+   
+   .dropdown-lineitem {
+     margin-left:10px;
+     padding-left:0px;
+     margin-bottom:5px;
+     padding-right:20px;
+   }
+   
+   .dropdown-lineitem:hover {
+     margin-left:15px;
+     padding-right:15px;
+   }
+   
+   .color-box {
+     width:20px;
+     height:20px;
+     display:inline-block;
+     margin-right:10px;
+   }
+   
+   a[role=menuitem] {
+<!--not sure why color is not taking here - will need to look at later maybe-->
+   }
+   
+   div#nav-header {
+     border-bottom:2px solid #58595B;
+<!--     padding-bottom:4px;
+     margin-bottom:10px;
+     padding-left:10px;-->
+     line-height:25px; 
+     height:60px; 
+     margin:0px auto;
+     background:white;
+     padding-left:20px;
+     padding-right:20px;
+   }
+   
+   div#nav-fixed {
+     width:100%;
+     position:fixed;
+     top:0px;     
+   }
+   
+   .mholder {
+     padding-top:65px;
+     padding-right:20px;
+     padding-left:20px;
+   }
+   
+   .nav_color {
+     color:#189BEB;
+   }
+   
+   .caret {
+   
+   }
+   
+   .overflow-menu {
+     height:200px;
+     overflow:auto;
+   }
+   
+   .gear-menu {
+     <!--border:1px solid #189BEB;-->
+     color:#189BEB;
+   }
+   
+   .qsearch {
+     width:400px;
+     border:1px solid #ADAEB0;
+   }
+   
+
+   
+   .qsearch-btn {
+    font-family: 'Source Sans Pro', Georgia;
+    color: #ffffff;
+    font-size: 14px;
+    background: #939598;
+    padding: 4px 15px 6px 15px;
+    border: solid #adaebo 1px;
+    text-decoration: none;
+   }
+
+   .qsearch-btn:hover {
+     background: #3cb0fd;
+    <!-- background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+     background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+     background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+     background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+     background-image: linear-gradient(to bottom, #3cb0fd, #3498db);-->
+     text-decoration: none;
+     color:white;
+   }
+   
+   .add-box {
+     background:#1074BC;
+     width:27px;
+     height:27px;
+     vertical-align:bottom;
+     margin-bottom:0px;
+     color:white;
+     font-size:22pt;
+     display:inline-block;
+     margin-left:20px;
+     font-weight:bold;
+     -webkit-border-radius: 4;
+    -moz-border-radius: 4;
+     border-radius: 4px;
+   }
+   
+  </style>
+</head>
+<body>
+<apex:form >
+<apex:messages />
+<apex:actionFunction name="body_refresh" rerender="main_holder" />
+
+<div id="nav-fixed">
+<div id="nav-header">
+<apex:actionRegion >
+<apex:actionFunction name="nav_to" action="{!navigate_to}" rerender="none">
+  <apex:param name="navid" value=""  />
+</apex:actionFunction>
+<apex:actionFunction name="center_switch" action="{!change_center}" rerender="nav_content,main_holder" >
+  <apex:param name="cid" value="" />
+</apex:actionFunction>
+
+<apex:outputpanel id="nav_content">
+<table style="width:100%">
+<tr>
+  <td>
+    <a href="javascript:window.history.go(-1);" class="nav_color">&lt; Back</a>
+  </td>
+  <td align="center">  
+    <span class="dropdown">
+      <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:outputtext value="{!current_center.name}"  style="padding-right:5px;"/><span class="caret"></span></a>
+        <ul class="dropdown-menu overflow-menu" >
+          <apex:repeat var="center" value="{!center_list}">
+            <li class="dropdown-lineitem">
+<!--              <span class="nav_color" onclick="center_switch('{!center.id}');return false;"><apex:outputText value="{!center.name}" /></span>-->
+              <a href="javascript:center_switch('{!center.id}');" style="color:#189BEB"><apex:outputtext value="{!center.name}" /></a>
+<!--              <span style="color:#189BEB" onclick="center_switch('{!center.id}');return false;"><apex:outputtext value="{!center.name}" /></span>-->
+            </li>
+          </apex:repeat>
+        </ul>
+    </span>        
+  </td>
+  <td><span class="dropdown">
+      <a class="dropdown-toggle nav_color" data-toggle="dropdown"><apex:image url="{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}" width="25" height="25" 
+        onmouseover="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_black.png')}';"
+        onmouseout="this.src='{!URLFOR($Resource.Dental_Practice_Resources,'Images/gear_blue.png')}';" /></a>
+      <ul class="dropdown-menu gear-menu dropdown-menu-right">
+        <li class="dropdown-lineitem"><a href="/apex/ccare_bend_mmenu" style="color:#189BEB;">Admin Menu</a></li>
+      </ul>
+        
+    </span>
+  </td>
+</tr>
+<tr>
+  <td>
+  <div class="dropdown">
+<!--    <button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">Tutorials<span class="caret"></span></button>-->
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="color:black;"><span class="color-box" style="background:#BE84BA;">&nbsp;</span>Appointment Codes</a>
+    
+    <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">    
+<!--      <li role="presentation" class="dropdown-header">Clinical</li>
+      <li role="presentation" class="dropdown-lineitem"><a role="menuitem" tabindex="-1" href="javascript:nav_to();" style="color:#189BEB"><span class="color-box" style="background:#8E8250;">&nbsp;</span>Plans of Treatment</a></li>
+      <li role="presentation" class="dropdown-lineitem"><a role="menuitem" tabindex="-1" href="#" style="color:#189BEB"><span class="color-box" style="background:#BE84BA;">&nbsp;</span>Appointment Codes</a></li>
+      <li role="presentation" class="dropdown-lineitem"><a role="menuitem" tabindex="-1" href="#" style="color:#189BEB"><span class="color-box" style="background:#4A6C9F;">&nbsp;</span>Procedure</a></li>
+      <br />
+      <li role="presentation" class="dropdown-header">Facility</li>
+      <li role="presentation" class="dropdown-lineitem"><a role="menuitem" tabindex="-1" href="#" style="color:#189BEB"><span class="color-box" style="background:#924072;">&nbsp;</span>Staff</a></li>
+      <li role="presentation" class="dropdown-lineitem"><a role="menuitem" tabindex="-1" href="#" style="color:#189BEB"><span class="color-box" style="background:#86BBBB;">&nbsp;</span>Rooms</a></li>-->
+      <!--building menu dynamically from code here-->
+      <apex:repeat var="menu_line" value="{!navigation_menu}" >
+        <!--is menu line a header?-->
+        <apex:outputpanel rendered="{!if(menu_line.menu_type=='Header',true,false)}"> 
+          <li role="presentation" class="dropdown-header"><apex:outputtext value="{!menu_line.menu_name}" /></li>
+        </apex:outputpanel>
+        <!--is menu line a page?-->
+        <apex:outputpanel rendered="{!if(menu_line.menu_type=='Page',true,false)}">
+          <li role="presentation" class="dropdown-lineitem">
+            <a role="menuitem" tabindex="-1" href="javascript:nav_to('{!menu_line.menu_id}');" style="color:#189BEB">
+              <span class="color-box" style="background:{!menu_line.menu_nav_color};">&nbsp;</span><apex:outputtext value="{!menu_line.menu_name}" />
+            </a>
+          </li>
+        </apex:outputpanel>
+        <!--is it a call for a spacer-->
+        <apex:outputpanel rendered="{!if(menu_line.menu_type=='Spacer',true,false)}"><br /></apex:outputpanel>
+      </apex:repeat>      
+    </ul>
+  </div>
+  </td>
+  <td align="center">
+    <apex:inputText value="{!quick_search_field}" styleClass="qsearch" onchange="body_refresh();" /><a class="qsearch-btn" >Search</a>
+    <span class="add-box">+</span>
+  </td>
+  <td>
+  </td>
+</tr>
+</table>  
+</apex:outputPanel>
+</apex:actionRegion>  
+</div>
+</div>
+
+<apex:outputPanel id="main_holder" styleClass="mholder" layout="block">
+Current qsearch value : &nbsp;<apex:outputtext value="{!quick_search_field}" /><br /><br />
+<span onclick="this.scrollIntoView(true);alert('done');">Random content here</span><br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+Random content here<br /><br />
+</apex:outputPanel>
+
+
+</apex:form>
+</body>
+</apex:page>

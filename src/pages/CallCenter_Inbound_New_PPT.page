@@ -1,0 +1,366 @@
+<apex:page controller="ctrl_CallCenter_Inbound_New_PPT" sidebar="false" showHeader="true" standardStylesheets="false" docType="html-5.0">
+<apex:stylesheet value="{!URLFOR($Resource.Assets, 'css/callcenter-inbound-ppt.css')}"/>
+
+	<apex:form >
+		<!-- <apex:outputText value="{!lead.latlong__Latitude__s} {!lead.latlong__Longitude__s} {!lead.Center__r.DEC__c}" rendered="false"/> -->
+		<apex:outputText value="{!lead.latlong__Latitude__s} {!lead.latlong__Longitude__s}" rendered="false"/>
+
+		<apex:actionFunction name="select_center" action="{!select_center}" reRender="pages, next-button">
+			<apex:param name="selected_center_ID" assignTo="{!selected_center_ID}" value=""/>
+		</apex:actionFunction>
+		<apex:actionFunction name="refresh" reRender="pages, next-button"/>
+		<!-- <apex:actionFunction name="prepare_page" oncomplete="expand_selected_center('{!current_saved_center_ID}')" reRender="pages, next-button"/> -->
+
+
+		<apex:variable value="Contact Info"			var="page1_title"/>
+		<apex:variable value="Address Verification" var="page2_title"/>
+		<apex:variable value="Center Selection"		var="page3_title"/>
+		<apex:variable value="Patient History"		var="page4_title"/>
+		<apex:variable value="Scheduling"			var="page5_title"/>
+
+		<apex:pageBlock id="pages" title="New Prospective Patient" mode="edit">
+			<apex:pageBlockButtons id="header-buttons" location="top">
+				<apex:commandButton action="{!go_to_page_1}" value="{!page1_title}" reRender="pages" styleClass="{!IF(page_number == 1, 'active-button', '')}" />
+				<apex:commandButton action="{!go_to_page_2}" value="{!page2_title}" reRender="pages" styleClass="{!IF(page_number == 2, 'active-button', '')}" />
+				<apex:commandButton action="{!go_to_page_3}" value="{!page3_title}" reRender="pages" styleClass="{!IF(page_number == 3, 'active-button', '')}" oncomplete="expand_selected_center('{!current_saved_center_ID}')" />
+				<apex:commandButton action="{!go_to_page_4}" value="{!page4_title}" reRender="pages" styleClass="{!IF(page_number == 4, 'active-button', '')}" />
+				<apex:commandButton action="{!go_to_page_5}" value="{!page5_title}" reRender="pages" styleClass="{!IF(page_number == 5, 'active-button', '')}" />
+			</apex:pageBlockButtons>
+			<apex:pageBlockButtons id="footer-buttons" location="bottom">
+				<apex:commandButton id="verify-address-button" action="{!open_address_modal}" value="Verify Address" styleClass="real-button" reRender="pages" rendered="{!page_number == 1}"/>
+				<apex:commandButton id="next-button"           action="{!next_page}"          value="Next"           styleClass="real-button" reRender="pages" disabled="{! !ok_to_proceed}" />
+			</apex:pageBlockButtons>
+
+			<apex:outputPanel >
+
+				<apex:outputPanel id="page1" layout="block" rendered="{!page_number == 1}" styleClass="page">
+					<h1>{!page1_title}</h1>
+					<div class="row person-info">
+						<div class="column">
+							<div class="section personal">
+								<div class="row call-type">
+									<div class="label"></div>
+									<apex:selectRadio value="{!lead.Inbound_Call__c}">
+										<apex:selectOptions value="{!call_type_options}"/>
+									</apex:selectRadio>
+								</div>
+								<div class="row">
+									<div class="label">First Name</div><apex:inputField value="{!lead.FirstName}"/>
+								</div>
+								<div class="row">
+									<div class="label">Last Name</div><apex:inputField value="{!lead.LastName}"/>
+								</div>
+								<div class="row">
+									<div class="label">Gender</div>
+									<!-- <apex:inputField value="{!lead.Gender__c}"/> -->
+									<apex:selectRadio value="{!lead.Gender__c}">
+										<apex:selectOptions value="{!gender_options}"/>
+									</apex:selectRadio>
+								</div>
+							</div>
+							<div class="section contact">
+								<div class="row">
+									<div class="label">Email</div><apex:inputField value="{!lead.Email}" styleClass="input email"/>
+										<apex:inputField id="refused_checkbox" value="{!lead.Refused_to_give_email__c}" styleClass="checkbox-button refused"/>
+										<label id="refused-label" class="checkbox-button-label" for="{!$Component.refused_checkbox}">
+											Refused
+										</label>
+										<!-- <div class="checkbox-button-label" for="{!$Component.refused_checkbox}">Refused</div> -->
+								</div>
+								<div class="row">
+									<div class="label">Primary Phone</div><apex:inputField value="{!lead.Phone}"/>
+								</div>
+								<div class="row">
+									<div class="label">Secondary Phone</div><apex:inputField value="{!lead.MobilePhone}"/>
+								</div>
+								<div class="row">
+									<div class="label">Phone Notes</div><apex:inputField value="{!lead.Phone_Notes__c}"/>
+								</div>
+							</div>
+							<div class="section address row">
+								<div id="street-address" class="row">
+									<div class="label street">&nbsp;</div>
+									<apex:inputField value="{!lead.Street}" styleClass="input street" html-placeholder="Street"/>
+								</div>
+								<div class="row">
+									<div class="label street">Address</div>
+									<apex:inputField value="{!lead.City}" styleClass="input city same-line" html-placeholder="City"/>
+									<apex:inputField value="{!lead.State}" styleClass="input state same-line" html-placeholder="State"/>
+									<apex:inputField value="{!lead.PostalCode}" styleClass="input zip same-line" html-placeholder="Zip"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="address-buttons">
+							<div class="address-button-container">
+								<a class="faux-button" href="http://maps.google.com/maps/place/{!lead.Street}+{!lead.City}+{!lead.State}" target="_blank">
+									Google Map
+								</a>
+								<a class="faux-button" href="http://www.411.com/name/{!lead.FirstName}-{!lead.LastName}/{!lead.City}-{!lead.State}" target="_blank">
+									411 Lookup
+								</a>
+								<a class="faux-button" href="http://www.bing.com/search?q={!lead.Street}+{!lead.City}+{!lead.State}+&go=&qs=n&sk=&form=QBLH" target="_blank">
+									Bing Lookup
+								</a>
+								<a class="faux-button" href="http://www.whitepages.com/name/{!lead.FirstName}-{!lead.LastName}/{!lead.City}-{!lead.State}" target="_blank">
+									WhitePages
+								</a>
+							</div>
+						</div>
+					</div>
+
+					<apex:outputPanel layout="block" rendered="{!display_address_modal}" styleClass="modal">
+						<h2>Verified Address</h2>
+						<div class="row person-info">
+							<div class="row">
+								<apex:outputText value="{!verified_address.street1}" styleClass="input street" html-placeholder="Street"/>
+							</div>
+							<div class="row">
+								<apex:outputText value="{!verified_address.city},"    styleClass="input city  same-line" html-placeholder="City"/>
+								<apex:outputText value="{!verified_address.state}"    styleClass="input state same-line" html-placeholder="State"/>
+								<apex:outputText value="{!verified_address.zip_code}" styleClass="input zip   same-line" html-placeholder="Zip"/>
+							</div>
+						</div>
+						<apex:commandButton action="{!close_address_modal}"      value="Cancel" styleClass="real-button float-left" reRender="pages" />
+						<apex:commandButton action="{!approve_verified_address}" value="OK"     styleClass="real-button float-right" reRender="pages" />
+					</apex:outputPanel>
+				</apex:outputPanel>
+				<!-- <apex:pageBlockSection id="page1" title="Contact Info" columns="1" rendered="{!page_number == 1}">
+				</apex:pageBlockSection> -->
+
+				<div class="page2">
+					<apex:pageBlockSection id="page2" title="Pre-Screen" columns="1" rendered="{!page_number == 2}">
+						<!-- <apex:include pageName="StrikeForce1__USAddressVerification"/> -->
+							<!-- <apex:iframe src="https://strikeforce1.cs12.visual.force.com/apex/USAddressVerification?MappingName=LeadAddress&id={!lead.id}"/> -->
+					</apex:pageBlockSection>
+				</div>
+
+				<apex:outputPanel id="page3" layout="block" rendered="{!page_number == 3}" styleClass="page page3">
+					<h1>{!page3_title}</h1>
+					<div class="row current-center">
+						<div class="label">Current Center:</div>
+						<div class="center-name">{!lead.Center__r.Name}</div>
+					</div>
+					<apex:repeat value="{!center_wrappers}" var="center">
+						<div id="center-{!center.record.ID}" class="dental-center {!IF(selected_center_ID == center.record.ID, 'selected', 'compressed')}">
+							<div onclick="toggle_details('{!center.record.ID}')" class="toggler expander click-to-expand">
+								+
+							</div>
+							<div onclick="toggle_details('{!center.record.ID}')" class="toggler compressor click-to-expand">
+								–
+							</div>
+							<div onclick="toggle_details('{!center.record.ID}')"  class="distance click-to-expand">
+								{!center.distance} miles
+							</div>
+							<div onclick="toggle_details('{!center.record.ID}')"  class="center-name click-to-expand">
+								{!center.record.name}
+							</div>
+							<div class="action-buttons">
+								<div onclick="select_center('{!center.record.ID}')" class="select-button">Select</div>
+							</div>
+							<div id="details-{!center.record.ID}" class="details">
+								<div id="alert-row" class="row">
+									<div class="center-alert hover-expand {!IF(center.record.Center_Alerts__c == null, 'hidden', '')}">
+										{!center.record.Center_Alerts__c}
+									</div>
+								</div>
+								<div id="address-row" class="row">
+									<div class="column">
+										<div class="address">
+											<div class="center-details-heading">Address</div>
+											<a href="https://www.google.com/maps/place/{!center.record.Street_1__c}+{!center.record.City__c}+{!center.record.State__c}+{!center.record.Zip_Code__c}, ' ', '+')}" target="_blank">
+												<span class="address-row">{!center.record.Street_1__c}</span>
+												<span class="address-row">{!center.record.Street_2__c}</span>
+												<span class="address-row"><span class="address-city">{!center.record.City__c}</span>, {!center.record.State__c} {!center.record.Zip_Code__c}</span>
+											</a>
+										</div>
+									</div>
+									<div class="column">
+										<div class="holder {!IF(ISBLANK(center.record.Directions__c), 'hidden', '')}">
+											<div class="center-details-heading">Directions</div>
+											<a href="https://www.google.com/maps/dir/{!lead.Street}+{!lead.City}+{!lead.State}+{!lead.PostalCode}/{!center.record.Street_1__c}+{!center.record.City__c}+{!center.record.State__c}+{!center.record.Zip_Code__c}" target="_blank">
+												<span class="directions hover-expand">
+													<apex:outputField value="{!center.record.Directions__c}"/>
+												</span>
+											</a>
+										</div>
+									</div>
+								</div>
+								<div id="staff-row" class="row">
+									<div class="column">
+										<div class="staff-trigger"><span class="large-symbol">☞</span> Staff <span class="large-symbol">☜</span></div>
+										<div class="staff-list">
+											<div class="staff-heading">
+												Doctors
+											</div>
+											<apex:outputText value="None" rendered="{!center_roster[center.record.ID]['doctors'][0] == '0'}" styleClass="staff-name"/>
+											<apex:repeat value="{!center_roster[center.record.ID]['doctors']}" var="doctor" first="1">
+												<div class="staff-name">
+													{!doctor}
+												</div>
+											</apex:repeat>
+											<div class="staff-heading">
+												Patient Education Consultants
+											</div>
+											<apex:outputText value="None" rendered="{!center_roster[center.record.ID]['pecs'][0] == '0'}" styleClass="staff-name"/>
+											<apex:repeat value="{!center_roster[center.record.ID]['pecs']}" var="pec" first="1">
+												<div class="staff-name">
+													{!pec}
+												</div>
+											</apex:repeat>
+											<!-- <div class="staff-heading">
+												DEC
+											</div>
+											<apex:outputText value="None" rendered="{!center_roster[center.record.ID]['decs'][0] == '0'}" styleClass="staff-name"/>
+											<apex:repeat value="{!center_roster[center.record.ID]['decs']}" var="dec" first="1">
+												<div class="staff-name">
+													{!dec}
+												</div>
+											</apex:repeat> -->
+											<div class="staff-heading">
+												Center Administrators
+											</div>
+											<apex:outputText value="None" rendered="{!center_roster[center.record.ID]['cas'][0] == '0'}" styleClass="staff-name"/>
+											<apex:repeat value="{!center_roster[center.record.ID]['cas']}" var="ca" first="1">
+												<div class="staff-name">
+													{!ca}
+												</div>
+											</apex:repeat>
+										</div>
+									</div>
+									<div class="column">
+										<div class="phone-number">
+											<span class="label phone-label">Care Connection Team:</span>{!center.record.Call_Center_Marketing__c}
+										</div>
+										<div class="phone-number">
+											<span class="label phone-label">Local Front Desk:</span>{!center.record.Local_Front_Desk__c}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</apex:repeat>
+					<div class="debug hidden">
+						Page: {!page_number}<br/>
+						Selected Center ID: {!selected_center_ID}<br/>
+						OK to proceed? {!ok_to_proceed}<br/>
+						Current Center: {!lead.Center__r.Name}
+					</div>
+				</apex:outputPanel>
+
+				<apex:outputPanel id="page4" layout="block" rendered="{!page_number == 4}" styleClass="page page4">
+					<h1>{!page4_title}</h1>
+					<div class="row dental-conditions">
+						<!-- <apex:repeat value="{!dental_conditions_upper}" var="condition">
+							<div class="">
+								<apex:inputCheckbox id="test_checkbox" value="{!condition}" onchange="use_fancy_cursor(this);refresh();" styleClass="custom-checkbox"/>
+								<label for="{!$Component.test_checkbox}" class="custom-checkbox-label">Rejuvenation Package</label>
+							</div>
+						</apex:repeat> -->
+						<div class="row history">
+							<div class="column">
+								<div class="multi-select">
+									<h2>Upper</h2>
+									<apex:inputField value="{!lead.Dental_Conditions_Upper__c}"/>
+								</div>
+								<div class="multi-select">
+									<h2>Lower</h2>
+									<apex:inputField value="{!lead.Dental_Conditions_Lower__c}"/>
+								</div>
+							</div>
+							<div class="column right-column">
+								<div class="row missing-teeth">
+									<div class="label">Upper missing/damaged teeth</div>
+									<apex:inputField value="{!lead.Missing_Upper__c}" styleClass="small-number"/>
+								</div>
+								<div class="row missing-teeth">
+									<div class="label">Lower missing/damaged teeth</div>
+									<apex:inputField value="{!lead.Missing_Lower__c}" styleClass="small-number"/>
+								</div>
+								<div class="row">
+									<h3>Patient History</h3>
+									<apex:inputField value="{!lead.Patient_History__c}"/>
+								</div>
+								<div class="row check-history">
+									<apex:inputField id="check_history_checkbox" value="{!lead.Check_Medical_History__c}" styleClass="checkbox-button"/>
+									<label id="check-history-label" class="checkbox-button-label" for="{!$Component.check_history_checkbox}">
+										Check History
+									</label>
+								</div>
+								<div class="row">
+									<h3>Patient Future</h3>
+									<apex:inputField value="{!lead.Patient_Future__c}"/>
+								</div>
+								<div class="row">
+									<h3>InfoCision Notes</h3>
+									<div class="infocision-notes hover-expand">
+										<apex:outputField value="{!lead.Description}"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row quotes">
+							<h2>Quotes</h2>
+							<div class="quotes">
+								<div class="column">
+									<apex:inputField value="{!lead.Fees_Quoted__c}"/>
+								</div>
+								<div class="column tooth-chart">
+									<apex:image url="{!URLFOR($Resource.Call_Center_Customization,'')}" width="369px"/>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="debug hidden">
+						Page: {!page_number}<br/>
+						Selected Center ID: {!selected_center_ID}<br/>
+						OK to proceed? {!ok_to_proceed}<br/>
+						Current Center: {!lead.Center__r.Name}
+					</div>
+				</apex:outputPanel>
+
+				<apex:outputPanel id="page5" layout="block" rendered="{!page_number == 5}" styleClass="page">
+					<h1>{!page5_title}</h1>
+					<apex:iframe src="https://c.cs12.visual.force.com/apex/lead_consult_search_development?id={!lead.id}"/>
+				</apex:outputPanel>
+			</apex:outputPanel>
+		</apex:pageBlock>
+	</apex:form>
+
+	<script>
+		function expand_selected_center(current_center_id) {
+			var centers = document.getElementsByClassName("dental-center");
+			current_center_id = current_center_id.substring(0, 15);
+			if (!current_center_id) {centers[0].classList.remove("compressed");}
+			else {
+				var id;
+				for (i = 0; i < centers.length; i++) {
+					id = centers[i].id;
+					id = id.substring(id.indexOf('-') + 1, id.indexOf('-') + 16);
+					if (current_center_id == id) {
+						centers[i].classList.remove("compressed");
+						centers[i].classList.add("selected");
+					}
+					else {
+						centers[i].classList.add("compressed");
+						centers[i].classList.remove("selected");
+					}
+				}
+			}
+		}
+
+		function toggle_details(ID) {
+			var center = document.getElementById("center-" + ID);
+			if (center.classList.contains("compressed")) {center.classList.remove("compressed");}
+			else {center.classList.add("compressed");}
+			// var details = document.getElementById("details-" + ID);
+			// if (details.hasAttribute("hidden")) {details.removeAttribute("hidden");}
+			// else {details.setAttribute("hidden", "true");}
+		}
+	</script>
+
+</apex:page>

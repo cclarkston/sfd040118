@@ -1,0 +1,55 @@
+<apex:page showHeader="false" sidebar="false">
+	<style type="text/css">
+		h1 {
+			font-size: 2em;
+		}
+		#record-button {
+		    width: 100px;
+		    height: 100px;
+		    background-color: red;
+		    border-radius: 50%;
+		    font-size: 25px;
+		    font-weight: bold;
+		    color: white;
+		    line-height: 25px;
+		    text-align: center;
+		    padding: 37px 0;
+		    box-sizing: border-box;
+		    cursor: pointer;
+		}
+	</style>
+
+    <apex:includeScript value="https://api.clipchamp.com/pZeRQlnm-8ILig3qIz2m-lHpI7I/button.js"/>
+
+	<div id="record-button" onclick="start_clipchamp()">Record</div>
+
+	<script type="text/javascript">
+		var process = clipchamp({
+								output:           'gdrive',
+								gdrive:           {folder: region_name() + '/' + center_name() + '/' + user_name()},
+								title:            ' ',
+								enable:           ['no-branding'],
+								size:             'large',
+								inputs:           ['camera'],
+								camera:           {limit: "3600"},
+								experimental:     ["overlong-recording"],
+								encoding:         {resolution: "480p"},
+								logo:             'https://c.na2.visual.force.com/resource/1475749927000/CCLogo_2016',
+		});
+		function start_clipchamp() {
+			process.open();
+		}
+
+		function region_name() {
+			return 'Test Region';
+		}
+		function center_name() {
+			return 'Test Center';
+		}
+		function user_name() {
+			return 'Test User';
+		}
+	</script>
+
+	<!-- Ask Vince what we want to happen before the video can be recorded... and, more importantly, what we want to record (like Initials of the PEC making the recording) -->
+</apex:page>
